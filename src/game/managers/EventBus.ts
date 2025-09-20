@@ -15,6 +15,7 @@ export type EventPayloads = {
   'ui:countdown:tick': { remainingMs: number }
   'ui:countdown:extend': { deltaMs: number }
   'ui:feedback': { type: 'correct' | 'wrong' | 'timeout' | 'combo' | 'speed' }
+  'ui:choice': { choice: boolean }
   'tool:use': { type: 'magnify' | 'watch' | 'flash' }
   'tool:hints': { targetSkills: string[]; hint: string }
   'progress:update': { index: number; total: number }

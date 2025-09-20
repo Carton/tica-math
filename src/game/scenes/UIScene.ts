@@ -3,6 +3,9 @@ import { on, off, emit } from '@/game/managers/EventBus'
 
 export default class UIScene extends Phaser.Scene {
   private progressText?: Phaser.GameObjects.Text
+  private countdownText?: Phaser.GameObjects.Text
+  private remainingMs = 0
+  private timer?: Phaser.Time.TimerEvent
 
   constructor() {
     super('UIScene')
@@ -17,6 +20,12 @@ export default class UIScene extends Phaser.Scene {
       color: '#a9ffea',
     }).setDepth(10)
 
+    this.countdownText = this.add.text(width - 20, 20, '00:00', {
+      fontFamily: 'monospace',
+      fontSize: '20px',
+      color: '#ffd166',
+    }).setOrigin(1, 0)
+
     const btnTrue = this.add.text(width / 2 - 120, height - 80, '✅ 真相 (T/→)', {
       fontFamily: 'sans-serif', fontSize: '24px', color: '#0b1021', backgroundColor: '#2de1c2', padding: { x: 14, y: 8 }
     }).setOrigin(0.5).setInteractive({ useHandCursor: true })
@@ -25,15 +34,56 @@ export default class UIScene extends Phaser.Scene {
       fontFamily: 'sans-serif', fontSize: '24px', color: '#0b1021', backgroundColor: '#ff6b6b', padding: { x: 14, y: 8 }
     }).setOrigin(0.5).setInteractive({ useHandCursor: true })
 
-    btnTrue.on('pointerup', () => emit('question:answer', { isCorrect: true, timeMs: 1000 }))
-    btnFalse.on('pointerup', () => emit('question:answer', { isCorrect: false, timeMs: 1000 }))
+    btnTrue.on('pointerup', () => emit('ui:choice', { choice: true }))
+    btnFalse.on('pointerup', () => emit('ui:choice', { choice: false }))
+
+    this.input.keyboard?.on('keydown-T', () => emit('ui:choice', { choice: true }))
+    this.input.keyboard?.on('keydown-RIGHT', () => emit('ui:choice', { choice: true }))
+    this.input.keyboard?.on('keydown-F', () => emit('ui:choice', { choice: false }))
+    this.input.keyboard?.on('keydown-LEFT', () => emit('ui:choice', { choice: false }))
 
     on('progress:update', ({ index, total }) => {
       this.progressText?.setText(`线索 ${index}/${total}`)
     })
 
+    on('ui:countdown:start', ({ totalMs }) => this.startCountdown(totalMs))
+    on('ui:countdown:extend', ({ deltaMs }) => this.extendCountdown(deltaMs))
+
     this.events.on(Phaser.Scenes.Events.SHUTDOWN, () => {
       off('progress:update', () => {})
+      off('ui:countdown:start', () => {})
+      off('ui:countdown:extend', () => {})
+      this.timer?.remove()
     })
+  }
+
+  private startCountdown(totalMs: number) {
+    this.timer?.remove()
+    this.remainingMs = totalMs
+    this.updateCountdownText()
+    this.timer = this.time.addEvent({ delay: 100, loop: true, callback: () => {
+      this.remainingMs -= 100
+      if (this.remainingMs <= 0) {
+        this.remainingMs = 0
+        this.updateCountdownText()
+        this.timer?.remove()
+        emit('question:timeout', undefined as any)
+      } else {
+        this.updateCountdownText()
+      }
+    }})
+  }
+
+  private extendCountdown(deltaMs: number) {
+    this.remainingMs += deltaMs
+    this.updateCountdownText()
+  }
+
+  private updateCountdownText() {
+    const sec = Math.ceil(this.remainingMs / 1000)
+    const s = sec % 60
+    const m = Math.floor(sec / 60)
+    const pad = (n: number) => (n < 10 ? `0${n}` : `${n}`)
+    this.countdownText?.setText(`${pad(m)}:${pad(s)}`)
   }
 }

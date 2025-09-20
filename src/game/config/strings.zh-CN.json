@@ -1,0 +1,26 @@
+{
+  "ui": {
+    "start": "开始破案",
+    "back": "返回事务所",
+    "true": "真相",
+    "false": "伪证",
+    "clue": "线索",
+    "case_cleared": "案件告破！",
+    "case_summary": "案件告一段落"
+  },
+  "skills": {
+    "estimate": { "name": "估算神功", "hint": "凑个整，估个大概，跑偏的答案快走开！" },
+    "lastDigit": { "name": "尾数追踪术", "hint": "别管前面多复杂，先看尾巴抓一抓！" },
+    "parity": { "name": "奇偶密码", "hint": "奇奇变偶，偶偶还偶，奇偶得奇，乘法有偶便是偶！" },
+    "castingOutNines": { "name": "弃九验算法", "hint": "数字加加加，加到一位查一查！" },
+    "carryBorrow": { "name": "进位/借位陷阱", "hint": "留心十位变化，进位借位别走丢。" },
+    "specialDigits": { "name": "特殊数字指纹", "hint": "5和10，看队尾；3和9，看肚里（各位相加）！" },
+    "inverseOp": { "name": "逆运算大法", "hint": "加变减，乘变除，反向追踪不会输！" },
+    "times11": { "name": "和11交朋友", "hint": "两头一拉，中间一加！" }
+  },
+  "tools": {
+    "magnify": "真相放大镜",
+    "watch": "时间慢走怀表",
+    "flash": "思维闪电"
+  }
+}
