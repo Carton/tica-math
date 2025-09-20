@@ -26,11 +26,56 @@
         *   `useTool(toolName, question)` 方法会根据道具名称和当前题目，触发相应的游戏内事件（如在 `GameScene` 中显示提示动画，或通知 `UIScene` 增加计时器时间）。
 
 *   **资源管理 (Asset Management):**
-    *   所有资源路径将集中在一个配置文件中管理。
-    *   图片资源将使用 Texture Atlas (纹理图集) 进行打包，以优化加载速度和性能。
-    *   音频将使用 Phaser 的音频管理器加载，区分背景音乐 (Music) 和音效 (Sound)。
+    *   所有资源路径集中在配置文件统一管理，优先使用 Texture Atlas / Multi-Atlas。
+    *   字体通过 `this.load.font(key, url, 'opentype')` 直接加载 TTF/OTF，避免额外 WebFont 依赖。
+    *   加载阶段使用 `PreloaderScene`，展示进度与提示；支持按需增量加载（关卡切换时只加载新增资源）。
+    *   音频：区分 BGM 与 SFX 两类声道；BGM 循环播放、统一音量管理，SFX 使用音效池减少创建开销。
 
 *   **状态管理 (State Management):**
-    *   使用 Phaser 的 [Registry](https://newdocs.phaser.io/docs/3.70.0/Phaser.Data.DataManager) 来存储全局游戏状态，如当前关卡、总得分、已解锁的徽章等。这使得数据可以在不同场景之间轻松共享。
+    *   使用 Phaser 的 [Registry](https://newdocs.phaser.io/docs/3.70.0/Phaser.Data.DataManager) 共享跨场景状态（当前关卡、分数、徽章等）。
+    *   通过事件总线（`this.game.events`）协调 `GameScene` 与 `UIScene`，例如：题目变化、计时变更、道具使用、关卡结束。
+    *   轻量持久化：关键数据（最高等级、徽章）通过 `localStorage` 同步。
+
+*   **缩放与分辨率 (Scale):**
+    *   目标画布基准 1280×720。使用 `ScaleManager` 设置 `mode=FIT`、`autoCenter=CENTER_BOTH`，保证宽高比并自适应居中。
+    *   监听 `scale.resize`，在 `UIScene` 中更新布局（进度条、按钮、提示区域）以适配不同视口。
+
+*   **场景与流程 (Scenes & Flow):**
+    *   `BootScene` → `PreloaderScene` → `MainMenuScene` → `GameScene` + `UIScene`（并行）→ `LevelEndScene`。
+    *   `UIScene` 仅承载 HUD/按钮，不依赖 `GameScene` 相机；通过事件进行解耦通信。
+    *   合理使用 `this.scene.launch/pause/resume/stop` 组合控制场景生命周期。
+
+*   **时间与计时 (Time & Timeline):**
+    *   每题倒计时使用 `this.time.addEvent({ delay: 1000, loop: true })` 驱动；道具“时间慢走”直接修改剩余秒数或 `timeScale`。
+    *   关卡/结算过场采用 `Timeline` 将音效、Tween、提示按序编排，便于统一维护反馈节奏。
+
+*   **输入与可用性 (Input & UX):**
+    *   按钮统一 `setInteractive({ useHandCursor: true })`，扩大可点区域，移动端优先触控命中。
+    *   支持键盘快捷：True/False 分别映射为 `ArrowLeft/ArrowRight` 或 `A/D`。
+    *   防抖与禁用态：回答后短暂禁用按钮，避免连点误触；在动画/过渡期间锁输入。
+
+*   **音频 (Audio):**
+    *   背景音乐与音效分组控制；音量与静音状态保存在 Registry 并持久化。
+    *   关键事件（正确/错误/通关/失败）绑定专属 SFX，强化即时反馈。
+
+*   **核心模块细化:**
+    *   `QuestionGenerator.js`
+        *   纯函数或无副作用类：`generate(difficultyConfig): Question[] | Question`。
+        *   返回结构包含 `questionString`, `isTrue`, `targetSkill`，便于道具联动。
+        *   单元测试覆盖：正确题/策略性错误题的分布与字段完整性。
+    *   `DifficultyManager.js`
+        *   从外部 JSON 读取曲线；提供 `getCurrentDifficultyConfig()`、`levelUp()`、`reset()`。
+        *   输出可控参数：数字范围、运算符概率、时间限制、混合运算开关。
+    *   `DetectiveToolsManager.js`
+        *   跟踪每关剩余次数；`useTool(toolName, question)` 发出对应事件（如 `TOOLS/MAGNIFY`, `TOOLS/SLOW_TIME`, `TOOLS/INSIGHT`）。
+        *   与 `UIScene` 协作处理视觉提示与计时修改；与 `GameScene` 协作修改题面装饰与提示文案。
+
+*   **测试 (Unit / E2E):**
+    *   单元测试：`QuestionGenerator` 策略性错误生成、`DifficultyManager` 曲线边界、`DetectiveToolsManager` 次数与事件。
+    *   集成/E2E：模拟 10 题流程与评分阈值、倒计时与道具交互（时间增加正确生效）、多分辨率下 UI 点击准确性。
+
+*   **性能与包体:**
+    *   使用 Multi-Atlas 合并小图；对大图开启压缩；视频与大音频按需加载。
+    *   开发期启用 Vite 分包与缓存；生产构建剔除未用场景与调试代码。
 
 * * *
