@@ -3,6 +3,7 @@ import { emit, on, off } from '@/game/managers/EventBus'
 import { DifficultyManager } from '@/game/managers/DifficultyManager'
 import { QuestionGenerator } from '@/game/managers/QuestionGenerator'
 import type { Question } from '@/game/utils/types'
+import { ToolManager } from '@/game/managers/ToolManager'
 
 export default class GameScene extends Phaser.Scene {
   private questionIndex = 0
@@ -37,8 +38,9 @@ export default class GameScene extends Phaser.Scene {
     this.children.removeAll()
     const params = DifficultyManager.getParams(this.level)
     this.current = QuestionGenerator.createQuestion(params)
+    ToolManager.setQuestion(this.current)
 
-    const exprText = this.add.text(640, 360, this.current.questionString, { fontFamily: 'monospace', fontSize: '48px', color: '#ffffff' }).setOrigin(0.5)
+    this.add.text(640, 360, this.current.questionString, { fontFamily: 'monospace', fontSize: '48px', color: '#ffffff' }).setOrigin(0.5)
 
     emit('progress:update', { index: this.questionIndex + 1, total: this.total })
     emit('question:new', { question: this.current })

@@ -1,9 +1,11 @@
 import Phaser from 'phaser'
 import { on, off, emit } from '@/game/managers/EventBus'
+import { ToolManager } from '@/game/managers/ToolManager'
 
 export default class UIScene extends Phaser.Scene {
   private progressText?: Phaser.GameObjects.Text
   private countdownText?: Phaser.GameObjects.Text
+  private hintText?: Phaser.GameObjects.Text
   private remainingMs = 0
   private timer?: Phaser.Time.TimerEvent
 
@@ -42,17 +44,31 @@ export default class UIScene extends Phaser.Scene {
     this.input.keyboard?.on('keydown-F', () => emit('ui:choice', { choice: false }))
     this.input.keyboard?.on('keydown-LEFT', () => emit('ui:choice', { choice: false }))
 
+    // 道具按钮
+    const toolsY = height - 140
+    const b1 = this.add.text(width - 260, toolsY, '🔍', { fontSize: '28px' }).setInteractive({ useHandCursor: true })
+    const b2 = this.add.text(width - 200, toolsY, '⏱️', { fontSize: '28px' }).setInteractive({ useHandCursor: true })
+    const b3 = this.add.text(width - 140, toolsY, '⚡', { fontSize: '28px' }).setInteractive({ useHandCursor: true })
+
+    b1.on('pointerup', () => ToolManager.use('magnify'))
+    b2.on('pointerup', () => ToolManager.use('watch'))
+    b3.on('pointerup', () => ToolManager.use('flash'))
+
+    this.hintText = this.add.text(20, height - 140, '', { fontFamily: 'sans-serif', fontSize: '18px', color: '#ffffff', wordWrap: { width: width - 300 } })
+
     on('progress:update', ({ index, total }) => {
       this.progressText?.setText(`线索 ${index}/${total}`)
     })
 
     on('ui:countdown:start', ({ totalMs }) => this.startCountdown(totalMs))
     on('ui:countdown:extend', ({ deltaMs }) => this.extendCountdown(deltaMs))
+    on('tool:hints', ({ hint }) => this.showHint(hint))
 
     this.events.on(Phaser.Scenes.Events.SHUTDOWN, () => {
       off('progress:update', () => {})
       off('ui:countdown:start', () => {})
       off('ui:countdown:extend', () => {})
+      off('tool:hints', () => {})
       this.timer?.remove()
     })
   }
@@ -85,5 +101,9 @@ export default class UIScene extends Phaser.Scene {
     const m = Math.floor(sec / 60)
     const pad = (n: number) => (n < 10 ? `0${n}` : `${n}`)
     this.countdownText?.setText(`${pad(m)}:${pad(s)}`)
+  }
+
+  private showHint(hint: string) {
+    this.hintText?.setText(hint)
   }
 }
