@@ -1,4 +1,5 @@
 import Phaser from 'phaser'
+import { SaveManager } from '@/game/managers/SaveManager'
 
 export default class MainMenuScene extends Phaser.Scene {
   constructor() {
@@ -12,6 +13,10 @@ export default class MainMenuScene extends Phaser.Scene {
       fontSize: '32px',
       color: '#ffffff',
     }).setOrigin(0.5)
+
+    const userId = SaveManager.getCurrentUserId()
+    const user = SaveManager.getCurrent()
+    this.add.text(width / 2, title.y + 40, `当前用户: ${userId}  最高关: ${user.bestLevel}  徽章:${user.badges.length}`, { fontFamily: 'monospace', fontSize: '14px', color: '#a9ffea' }).setOrigin(0.5)
 
     const start = this.add.text(width / 2, title.y + 100, '开始破案 ▶', {
       fontFamily: 'sans-serif',
@@ -30,8 +35,9 @@ export default class MainMenuScene extends Phaser.Scene {
     }).setOrigin(0.5).setInteractive({ useHandCursor: true })
 
     start.on('pointerup', () => {
-      this.scene.start('GameScene')
-      this.scene.launch('UIScene')
+      const level = user.bestLevel || 1
+      this.scene.start('GameScene', { level })
+      this.scene.launch('UIScene', { level })
     })
 
     honor.on('pointerup', () => this.scene.start('HonorScene'))
