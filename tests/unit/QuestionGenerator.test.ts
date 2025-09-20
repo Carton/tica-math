@@ -9,7 +9,10 @@ describe('QuestionGenerator', () => {
       operations: ['+', '-'] as ('+' | '-' | '*' | '/')[],
       complexity: 'simple' as const,
       timeLimit: 30,
-      allowThreeNumbers: false
+      allowThreeNumbers: false,
+      allowNegativeNumbers: false,
+      allowFractions: false,
+      allowDecimals: false
     }
     generator = new QuestionGenerator(simpleConfig)
   })
@@ -89,7 +92,10 @@ describe('QuestionGenerator', () => {
         operations: ['*', '/'] as ('+' | '-' | '*' | '/')[],
         complexity: 'mixed' as const,
         timeLimit: 20,
-        allowThreeNumbers: true
+        allowThreeNumbers: true,
+        allowNegativeNumbers: false,
+        allowFractions: false,
+        allowDecimals: false
       }
 
       generator.updateDifficulty(newConfig)

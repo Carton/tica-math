@@ -16,12 +16,19 @@ export default class DifficultyManager {
   }
 
   private initializeDifficultyLevels(): DifficultyLevel[] {
+    const baseConfig = {
+      allowNegativeNumbers: false,
+      allowFractions: false,
+      allowDecimals: false
+    }
+
     return [
       // Level 1-5: Basic single-digit operations
       {
         level: 1,
         score: 0,
         config: {
+          ...baseConfig,
           numberRange: [1, 9],
           operations: ['+', '-'],
           complexity: 'simple',
@@ -33,6 +40,7 @@ export default class DifficultyManager {
         level: 2,
         score: 100,
         config: {
+          ...baseConfig,
           numberRange: [1, 20],
           operations: ['+', '-'],
           complexity: 'simple',
@@ -44,6 +52,7 @@ export default class DifficultyManager {
         level: 3,
         score: 250,
         config: {
+          ...baseConfig,
           numberRange: [1, 50],
           operations: ['+', '-'],
           complexity: 'simple',
@@ -55,6 +64,7 @@ export default class DifficultyManager {
         level: 4,
         score: 450,
         config: {
+          ...baseConfig,
           numberRange: [10, 99],
           operations: ['+', '-'],
           complexity: 'simple',
@@ -66,6 +76,7 @@ export default class DifficultyManager {
         level: 5,
         score: 700,
         config: {
+          ...baseConfig,
           numberRange: [10, 99],
           operations: ['+', '-'],
           complexity: 'simple',
@@ -78,6 +89,7 @@ export default class DifficultyManager {
         level: 6,
         score: 1000,
         config: {
+          ...baseConfig,
           numberRange: [10, 99],
           operations: ['+', '-', '*'],
           complexity: 'simple',
@@ -89,6 +101,7 @@ export default class DifficultyManager {
         level: 7,
         score: 1350,
         config: {
+          ...baseConfig,
           numberRange: [20, 99],
           operations: ['+', '-', '*'],
           complexity: 'simple',
@@ -100,6 +113,7 @@ export default class DifficultyManager {
         level: 8,
         score: 1750,
         config: {
+          ...baseConfig,
           numberRange: [50, 99],
           operations: ['+', '-', '*'],
           complexity: 'mixed',
@@ -111,6 +125,7 @@ export default class DifficultyManager {
         level: 9,
         score: 2200,
         config: {
+          ...baseConfig,
           numberRange: [100, 999],
           operations: ['+', '-'],
           complexity: 'simple',
@@ -122,6 +137,7 @@ export default class DifficultyManager {
         level: 10,
         score: 2700,
         config: {
+          ...baseConfig,
           numberRange: [100, 999],
           operations: ['+', '-', '*'],
           complexity: 'mixed',
@@ -129,15 +145,74 @@ export default class DifficultyManager {
           allowThreeNumbers: true
         }
       },
-      // Level 11+: Advanced challenges
+      // Level 11-15: Advanced challenges with new features
       {
         level: 11,
         score: 3250,
         config: {
+          ...baseConfig,
+          allowDecimals: true,
           numberRange: [100, 999],
           operations: ['+', '-', '*', '/'],
           complexity: 'mixed',
           timeLimit: 18,
+          allowThreeNumbers: true
+        }
+      },
+      {
+        level: 12,
+        score: 3850,
+        config: {
+          ...baseConfig,
+          allowDecimals: true,
+          allowNegativeNumbers: true,
+          numberRange: [50, 999],
+          operations: ['+', '-', '*', '/'],
+          complexity: 'mixed',
+          timeLimit: 17,
+          allowThreeNumbers: true
+        }
+      },
+      {
+        level: 13,
+        score: 4500,
+        config: {
+          ...baseConfig,
+          allowDecimals: true,
+          allowNegativeNumbers: true,
+          allowFractions: true,
+          numberRange: [1, 50],
+          operations: ['+', '-', '*', '/'],
+          complexity: 'mixed',
+          timeLimit: 16,
+          allowThreeNumbers: false
+        }
+      },
+      {
+        level: 14,
+        score: 5200,
+        config: {
+          allowNegativeNumbers: true,
+          allowFractions: true,
+          allowDecimals: true,
+          numberRange: [1, 100],
+          operations: ['+', '-', '*', '/'],
+          complexity: 'mixed',
+          timeLimit: 15,
+          allowThreeNumbers: true
+        }
+      },
+      {
+        level: 15,
+        score: 6000,
+        config: {
+          allowNegativeNumbers: true,
+          allowFractions: true,
+          allowDecimals: true,
+          numberRange: [1, 999],
+          operations: ['+', '-', '*', '/'],
+          complexity: 'mixed',
+          timeLimit: 14,
           allowThreeNumbers: true
         }
       }

@@ -1,11 +1,14 @@
 import QuestionGenerator, { Question } from '@/game/managers/QuestionGenerator'
 import DifficultyManager from '@/game/managers/DifficultyManager'
 import DetectiveToolsManager from '@/game/managers/DetectiveToolsManager'
+import AssetManager from '@/game/managers/AssetManager'
+import { DEFAULT_ASSET_CONFIG } from '@/game/config/AssetConfig'
 
 export default class GameScene extends Phaser.Scene {
   private questionGenerator!: QuestionGenerator
   private difficultyManager!: DifficultyManager
   private detectiveToolsManager!: DetectiveToolsManager
+  private assetManager!: AssetManager
   private currentQuestion: Question | null = null
   private timerEvent!: Phaser.Time.TimerEvent
   private questionText!: Phaser.GameObjects.Text
@@ -14,9 +17,20 @@ export default class GameScene extends Phaser.Scene {
   private progressFill!: Phaser.GameObjects.Rectangle
   private isProcessingAnswer: boolean = false
   private questionStartTime: number = 0
+  private isPaused: boolean = false
+  private pauseMenu!: Phaser.GameObjects.Container
+  private pauseButton!: Phaser.GameObjects.Container
+  private questionArea!: Phaser.GameObjects.Container
+  private background!: Phaser.GameObjects.Image
 
   constructor() {
     super({ key: 'GameScene' })
+  }
+
+  preload() {
+    // Initialize asset manager and preload all assets
+    this.assetManager = new AssetManager(this, DEFAULT_ASSET_CONFIG)
+    this.assetManager.preload()
   }
 
   init() {
@@ -43,6 +57,16 @@ export default class GameScene extends Phaser.Scene {
     this.createTimer()
     this.createProgressBar()
 
+    // Start background music if audio is available
+    try {
+      this.assetManager.playBackgroundMusic()
+    } catch (error) {
+      console.warn('Background music could not be played:', error)
+    }
+
+    // Create animations for feedback
+    this.createAnimations()
+
     // Notify game start
     this.game.events.emit('LEVEL/START', {
       level: this.registry.get('game:level'),
@@ -53,32 +77,50 @@ export default class GameScene extends Phaser.Scene {
   }
 
   createBackground() {
-    const background = this.add.rectangle(
-      0, 0,
-      this.cameras.main.width,
-      this.cameras.main.height,
-      0x1a1a2e
-    )
-    background.setOrigin(0, 0)
+    // Try to use asset background, fallback to colored rectangle if not loaded
+    try {
+      this.background = this.assetManager.createBackground()
+    } catch (error) {
+      console.warn('Background asset not loaded, using fallback:', error)
+      const background = this.add.rectangle(
+        0, 0,
+        this.cameras.main.width,
+        this.cameras.main.height,
+        0x1a1a2e
+      )
+      background.setOrigin(0, 0)
+      this.background = background as any
+    }
   }
 
   createQuestionArea() {
     const centerX = this.cameras.main.width / 2
     const centerY = this.cameras.main.height / 3
 
-    const noteBackground = this.add.rectangle(centerX, centerY, 400, 200, 0xffffff)
-    noteBackground.setStrokeStyle(2, 0x333333)
+    // Try to use asset-based question area, fallback to simple design
+    try {
+      const questionElements = this.assetManager.createQuestionArea(centerX, centerY)
+      this.questionArea = questionElements.container
+      this.questionText = questionElements.text
+    } catch (error) {
+      console.warn('Question area assets not loaded, using fallback:', error)
+      const noteBackground = this.add.rectangle(centerX, centerY, 400, 200, 0xffffff)
+      noteBackground.setStrokeStyle(2, 0x333333)
 
-    this.add.text(centerX, centerY - 60, '线索', {
-      fontSize: '24px',
-      color: '#333333'
-    }).setOrigin(0.5)
+      this.add.text(centerX, centerY - 60, '线索', {
+        fontSize: '24px',
+        color: '#333333'
+      }).setOrigin(0.5)
 
-    this.questionText = this.add.text(centerX, centerY, '等待题目...', {
-      fontSize: '32px',
-      color: '#333333',
-      wordWrap: { width: 350 }
-    }).setOrigin(0.5)
+      this.questionText = this.add.text(centerX, centerY, '等待题目...', {
+        fontSize: '32px',
+        color: '#333333',
+        wordWrap: { width: 350 }
+      }).setOrigin(0.5)
+
+      this.questionArea = this.add.container(centerX, centerY)
+      this.questionArea.add([noteBackground, this.questionText])
+    }
   }
 
   createAnswerButtons() {
@@ -109,6 +151,9 @@ export default class GameScene extends Phaser.Scene {
 
     this.setupButton(trueButton, () => this.answerQuestion(true))
     this.setupButton(falseButton, () => this.answerQuestion(false))
+
+    // Create pause button
+    this.createPauseButton()
   }
 
   setupButton(button: Phaser.GameObjects.Container, onClick: () => void) {
@@ -184,6 +229,8 @@ export default class GameScene extends Phaser.Scene {
   }
 
   updateTimer() {
+    if (this.isPaused) return
+
     const config = this.difficultyManager.getCurrentDifficultyConfig()
     const newTime = Math.max(0, parseInt(this.timerText.text) - 1)
     this.timerText.setText(newTime.toString())
@@ -194,7 +241,7 @@ export default class GameScene extends Phaser.Scene {
   }
 
   answerQuestion(userAnswer: boolean) {
-    if (this.isProcessingAnswer || !this.currentQuestion) return
+    if (this.isProcessingAnswer || !this.currentQuestion || this.isPaused) return
 
     this.isProcessingAnswer = true
     this.timerEvent.remove()
@@ -283,9 +330,14 @@ export default class GameScene extends Phaser.Scene {
     this.game.events.on('GAME/ANSWER', (data: { answer: boolean }) => {
       this.answerQuestion(data.answer)
     })
+
+    // Setup keyboard shortcuts
+    this.setupKeyboardShortcuts()
   }
 
   private startNewQuestion() {
+    if (this.isPaused) return
+
     this.isProcessingAnswer = false
     this.generateQuestion()
     this.startTimer()
@@ -344,7 +396,7 @@ export default class GameScene extends Phaser.Scene {
   }
 
   private useTool(toolName: string) {
-    if (!this.currentQuestion) return
+    if (!this.currentQuestion || this.isPaused) return
 
     const toolEffect = this.detectiveToolsManager.useTool(toolName, this.currentQuestion)
 
@@ -368,6 +420,9 @@ export default class GameScene extends Phaser.Scene {
     switch (effect.type) {
       case 'TIME_ADD':
         this.addTime(effect.value || 10)
+        if (effect.message) {
+          this.showTimeMessage(effect.message)
+        }
         break
       case 'SHOW_HINT':
         this.showHint(effect.message || '使用道具获得提示！')
@@ -383,9 +438,46 @@ export default class GameScene extends Phaser.Scene {
     const newTime = currentTime + seconds
     this.timerText.setText(newTime.toString())
 
+    // Visual feedback for timer
+    this.tweens.add({
+      targets: this.timerText,
+      scaleX: 1.2,
+      scaleY: 1.2,
+      duration: 200,
+      yoyo: true,
+      ease: 'Power2'
+    })
+
     this.game.events.emit('TIMER/UPDATED', {
       addedSeconds: seconds,
       newTime
+    })
+  }
+
+  private showTimeMessage(message: string) {
+    const centerX = this.cameras.main.width / 2
+    const centerY = this.cameras.main.height * 0.3
+
+    const timeMessage = this.add.text(centerX, centerY, message, {
+      fontSize: '16px',
+      color: '#00ffff',
+      backgroundColor: '#1a1a2e',
+      padding: { x: 15, y: 8 },
+      wordWrap: { width: 400 }
+    }).setOrigin(0.5)
+
+    // Add clock icon animation
+    this.tweens.add({
+      targets: timeMessage,
+      scaleX: 1.1,
+      scaleY: 1.1,
+      duration: 300,
+      yoyo: true,
+      repeat: 1,
+      ease: 'Power2',
+      onComplete: () => {
+        this.time.delayedCall(3000, () => timeMessage.destroy())
+      }
     })
   }
 
@@ -415,5 +507,195 @@ export default class GameScene extends Phaser.Scene {
     }).setOrigin(0.5)
 
     this.time.delayedCall(4000, () => insightText.destroy())
+  }
+
+  private createPauseButton() {
+    const buttonSize = 40
+    const padding = 20
+
+    this.pauseButton = this.add.container(
+      this.cameras.main.width - buttonSize - padding,
+      buttonSize + padding
+    )
+
+    const buttonBg = this.add.rectangle(0, 0, buttonSize, buttonSize, 0x374151)
+    buttonBg.setStrokeStyle(2, 0x6b7280)
+    buttonBg.setAlpha(0.8)
+
+    const pauseIcon = this.add.text(0, 0, '❚❚', {
+      fontSize: '16px',
+      color: '#ffffff'
+    }).setOrigin(0.5)
+
+    this.pauseButton.add([buttonBg, pauseIcon])
+
+    this.pauseButton.setInteractive(
+      new Phaser.Geom.Rectangle(-buttonSize/2, -buttonSize/2, buttonSize, buttonSize),
+      Phaser.Geom.Rectangle.Contains
+    )
+    .on('pointerover', () => {
+      buttonBg.setAlpha(1)
+      this.input.setDefaultCursor('pointer')
+    })
+    .on('pointerout', () => {
+      buttonBg.setAlpha(0.8)
+      this.input.setDefaultCursor('default')
+    })
+    .on('pointerdown', () => {
+      this.togglePause()
+    })
+  }
+
+  private createPauseMenu() {
+    const centerX = this.cameras.main.width / 2
+    const centerY = this.cameras.main.height / 2
+    const menuWidth = 300
+    const menuHeight = 250
+
+    // Create semi-transparent overlay
+    const overlay = this.add.rectangle(
+      centerX, centerY,
+      this.cameras.main.width,
+      this.cameras.main.height,
+      0x000000
+    )
+    overlay.setAlpha(0.7)
+    overlay.setOrigin(0.5)
+    overlay.setInteractive()
+
+    // Create menu background
+    const menuBg = this.add.rectangle(centerX, centerY, menuWidth, menuHeight, 0x1f2937)
+    menuBg.setStrokeStyle(3, 0x4b5563)
+    menuBg.setOrigin(0.5)
+
+    // Title
+    const title = this.add.text(centerX, centerY - 80, '游戏暂停', {
+      fontSize: '28px',
+      color: '#ffffff',
+      fontStyle: 'bold'
+    }).setOrigin(0.5)
+
+    // Menu buttons
+    const resumeButton = this.createMenuButton(centerX, centerY - 20, '继续游戏', () => this.togglePause())
+    const restartButton = this.createMenuButton(centerX, centerY + 30, '重新开始', () => this.restartGame())
+    const mainMenuButton = this.createMenuButton(centerX, centerY + 80, '主菜单', () => this.goToMainMenu())
+
+    this.pauseMenu = this.add.container(0, 0)
+    this.pauseMenu.add([overlay, menuBg, title, resumeButton, restartButton, mainMenuButton])
+    this.pauseMenu.setVisible(false)
+  }
+
+  private createMenuButton(x: number, y: number, text: string, onClick: () => void): Phaser.GameObjects.Container {
+    const buttonWidth = 200
+    const buttonHeight = 40
+
+    const button = this.add.container(x, y)
+
+    const buttonBg = this.add.rectangle(0, 0, buttonWidth, buttonHeight, 0x3b82f6)
+    buttonBg.setStrokeStyle(2, 0x2563eb)
+
+    const buttonText = this.add.text(0, 0, text, {
+      fontSize: '18px',
+      color: '#ffffff'
+    }).setOrigin(0.5)
+
+    button.add([buttonBg, buttonText])
+
+    button.setInteractive(
+      new Phaser.Geom.Rectangle(-buttonWidth/2, -buttonHeight/2, buttonWidth, buttonHeight),
+      Phaser.Geom.Rectangle.Contains
+    )
+    .on('pointerover', () => {
+      buttonBg.setFillStyle(0x2563eb)
+      this.input.setDefaultCursor('pointer')
+    })
+    .on('pointerout', () => {
+      buttonBg.setFillStyle(0x3b82f6)
+      this.input.setDefaultCursor('default')
+    })
+    .on('pointerdown', onClick)
+
+    return button
+  }
+
+  private togglePause() {
+    this.isPaused = !this.isPaused
+
+    if (this.isPaused) {
+      // Stop the timer
+      if (this.timerEvent) {
+        this.timerEvent.paused = true
+      }
+
+      // Show pause menu
+      if (!this.pauseMenu) {
+        this.createPauseMenu()
+      }
+      this.pauseMenu.setVisible(true)
+
+      // Pause all tweens
+      this.tweens.pauseAll()
+
+      // Emit pause event
+      this.game.events.emit('GAME/PAUSED')
+    } else {
+      // Resume the timer
+      if (this.timerEvent) {
+        this.timerEvent.paused = false
+      }
+
+      // Hide pause menu
+      if (this.pauseMenu) {
+        this.pauseMenu.setVisible(false)
+      }
+
+      // Resume all tweens
+      this.tweens.resumeAll()
+
+      // Emit resume event
+      this.game.events.emit('GAME/RESUMED')
+    }
+  }
+
+  private restartGame() {
+    // Reset game state
+    this.registry.set('game:score', 0)
+    this.registry.set('game:level', 1)
+    this.difficultyManager.reset()
+    this.detectiveToolsManager.resetForNewLevel()
+
+    // Stop current timer
+    if (this.timerEvent) {
+      this.timerEvent.remove()
+    }
+
+    // Reset pause state
+    this.isPaused = false
+    if (this.pauseMenu) {
+      this.pauseMenu.setVisible(false)
+    }
+
+    // Resume tweens
+    this.tweens.resumeAll()
+
+    // Start new question
+    this.isProcessingAnswer = false
+    this.startNewQuestion()
+
+    // Emit restart event
+    this.game.events.emit('GAME/RESTARTED')
+  }
+
+  private goToMainMenu() {
+    // This would transition to a main menu scene
+    // For now, we'll just restart the game
+    this.restartGame()
+  }
+
+  // Add keyboard shortcut for pause
+  private setupKeyboardShortcuts() {
+    this.input.keyboard?.on('keydown-ESC', () => {
+      this.togglePause()
+    })
   }
 }
