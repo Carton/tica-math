@@ -1,5 +1,6 @@
 import { defineConfig } from 'vite'
 import { resolve } from 'path'
+import { VitePWA } from 'vite-plugin-pwa'
 
 export default defineConfig({
   root: 'src',
@@ -29,5 +30,20 @@ export default defineConfig({
   },
   optimizeDeps: {
     include: ['phaser']
-  }
+  },
+  plugins: [
+    VitePWA({
+      registerType: 'autoUpdate',
+      includeAssets: ['favicon.svg', 'robots.txt'],
+      manifest: {
+        name: 'Tica 侦探事务所：数字谜案',
+        short_name: 'Tica谜案',
+        start_url: '.',
+        display: 'standalone',
+        background_color: '#0b1021',
+        theme_color: '#0b1021',
+        icons: []
+      }
+    })
+  ]
 })
