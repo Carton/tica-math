@@ -79,3 +79,70 @@
     *   开发期启用 Vite 分包与缓存；生产构建剔除未用场景与调试代码。
 
 * * *
+
+*   **推荐 GameConfig 配置 (示例):**
+    ```js
+    import Phaser, { AUTO } from 'phaser';
+    import BootScene from './scenes/BootScene';
+    import PreloaderScene from './scenes/PreloaderScene';
+    import MainMenuScene from './scenes/MainMenuScene';
+    import GameScene from './scenes/GameScene';
+    import UIScene from './scenes/UIScene';
+    import LevelEndScene from './scenes/LevelEndScene';
+
+    const config = {
+      type: AUTO,
+      parent: 'game-root',
+      backgroundColor: '#0f1320',
+      width: 1280,
+      height: 720,
+      pixelArt: true,
+      roundPixels: true,
+      scale: {
+        mode: Phaser.Scale.FIT,
+        autoCenter: Phaser.Scale.CENTER_BOTH
+      },
+      scene: [
+        BootScene,
+        PreloaderScene,
+        MainMenuScene,
+        GameScene,
+        UIScene,
+        LevelEndScene
+      ],
+      audio: {
+        disableWebAudio: false
+      },
+      input: {
+        gamepad: true
+      }
+    };
+
+    export default new Phaser.Game(config);
+    ```
+
+*   **事件命名空间约定 (Events Namespace):**
+    *   全局事件走 `this.game.events`；场景内局部事件走 `this.events`。
+    *   命名采用 `域/动作` 的层级式字符串，便于筛选与日志聚合：
+        *   `GAME/START`，`GAME/PAUSE`，`LEVEL/START`，`LEVEL/END`。
+        *   `QUESTION/NEXT`，`QUESTION/ANSWERED`。
+        *   `TIMER/TICK`，`TIMER/ADD_SECONDS`。
+        *   `TOOLS/MAGNIFY`，`TOOLS/SLOW_TIME`，`TOOLS/INSIGHT`。
+        *   `AUDIO/BGM/PLAY`，`AUDIO/SFX/PLAY`。
+    *   参数统一以对象传递：`{ payload, meta }`，其中 `meta` 可包含时间戳、来源场景等。
+
+*   **Registry 键名规范 (Registry Keys):**
+    *   采用 `kebab-case` 或 `namespace:key` 两种之一，项目内保持一致；推荐 `namespace:key`：
+        *   `game:level`（当前关卡）
+        *   `game:score`（累计得分）
+        *   `game:badges`（已解锁徽章数组）
+        *   `audio:volume:music`，`audio:volume:sfx`，`audio:muted`
+        *   `difficulty:score`（难度积分）
+        *   `tools:remaining`（本关剩余道具使用次数，或细分到道具名）
+    *   读写建议：
+        *   批量设值：`this.registry.set({ 'game:level': 1, 'game:score': 0 })`。
+        *   事件融合：写后通过 `this.game.events.emit('REGISTRY/UPDATED', { keys: [...] })` 通知 UI 刷新。
+    *   持久化建议：
+        *   仅持久化长期数据（最高等级、徽章、音量/静音），使用 `localStorage`：
+          - 读：启动时从 `localStorage` 合并到 Registry。
+          - 写：在相应事件（如 `LEVEL/END`、`AUDIO/CHANGED`）上同步。
