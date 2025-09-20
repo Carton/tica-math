@@ -51,7 +51,14 @@ export default class UIScene extends Phaser.Scene {
       color: '#ffffff'
     }).setOrigin(0.5)
 
-    container.add([background, iconText, labelText])
+    // Add count display
+    const countText = this.add.text(25, -20, '3', {
+      fontSize: '14px',
+      color: '#ffd700',
+      fontWeight: 'bold'
+    }).setOrigin(0.5)
+
+    container.add([background, iconText, labelText, countText])
 
     container.setInteractive(new Phaser.Geom.Rectangle(-40, -30, 80, 60), Phaser.Geom.Rectangle.Contains)
       .on('pointerover', () => {
@@ -83,12 +90,28 @@ export default class UIScene extends Phaser.Scene {
     this.game.events.on('TOOLS/UPDATE', (data: { toolName: string; uses: number }) => {
       this.updateToolDisplay(data.toolName, data.uses)
     })
+
+    this.game.events.on('TOOLS/INITIALIZE', (data: { tools: any }) => {
+      if (typeof data.tools === 'object') {
+        Object.entries(data.tools).forEach(([toolName, uses]: [string, any]) => {
+          this.updateToolDisplay(toolName, uses)
+        })
+      }
+    })
+
+    this.game.events.on('GAME/RESET', () => {
+      this.scoreText.setText('得分: 0')
+      this.levelText.setText('第 1 关')
+      this.resetTools()
+    })
   }
 
   updateToolDisplay(toolName: string, remainingUses: number) {
     const toolButton = this.toolButtons.get(toolName)
     if (toolButton) {
       const background = toolButton.list[0] as Phaser.GameObjects.Rectangle
+      const countText = toolButton.list[3] as Phaser.GameObjects.Text
+
       const alpha = remainingUses > 0 ? 1 : 0.4
       background.setAlpha(alpha)
 
@@ -97,6 +120,12 @@ export default class UIScene extends Phaser.Scene {
         background.setStrokeStyle(2, 0x4a5568)
       } else {
         background.setStrokeStyle(2, 0x718096)
+      }
+
+      // Update count display
+      if (countText) {
+        countText.setText(remainingUses.toString())
+        countText.setVisible(remainingUses > 0)
       }
     }
 
@@ -141,7 +170,7 @@ export default class UIScene extends Phaser.Scene {
     })
 
     this.input.keyboard?.on('keydown-RIGHT', () => {
-      this.game.events.emit('TOOLS/USE', { toolName: 'time' })
+      this.game.events.emit('TOOLS/USE', { toolName: 'timeSlow' })
     })
 
     this.input.keyboard?.on('keydown-UP', () => {
@@ -188,7 +217,7 @@ export default class UIScene extends Phaser.Scene {
 
     const tools = [
       { name: 'magnify', icon: '🔍', label: '放大镜' },
-      { name: 'time', icon: '⏰', label: '怀表' },
+      { name: 'timeSlow', icon: '⏰', label: '怀表' },
       { name: 'insight', icon: '💡', label: '闪电' }
     ]
 

@@ -57,6 +57,9 @@ export default class GameScene extends Phaser.Scene {
     this.createTimer()
     this.createProgressBar()
 
+    // Start UI Scene for tools and score display
+    this.scene.launch('UIScene')
+
     // Start background music if audio is available
     try {
       this.assetManager.playBackgroundMusic()
@@ -71,6 +74,11 @@ export default class GameScene extends Phaser.Scene {
     this.game.events.emit('LEVEL/START', {
       level: this.registry.get('game:level'),
       difficulty: this.difficultyManager.getCurrentLevelNumber()
+    })
+
+    // Initialize tool counts in UI
+    this.game.events.emit('TOOLS/INITIALIZE', {
+      tools: this.detectiveToolsManager.getRemainingUses()
     })
 
     this.startNewQuestion()
@@ -252,8 +260,12 @@ export default class GameScene extends Phaser.Scene {
     // Update score and accuracy
     if (isCorrect) {
       const currentScore = this.registry.get('game:score') || 0
-      this.registry.set('game:score', currentScore + 10)
+      const newScore = currentScore + 10
+      this.registry.set('game:score', newScore)
       this.difficultyManager.addScore(10)
+
+      // Emit score update event
+      this.game.events.emit('SCORE/UPDATE', { score: newScore })
     }
 
     // Emit answer event
@@ -412,6 +424,18 @@ export default class GameScene extends Phaser.Scene {
         toolName,
         effect: toolEffect,
         remainingUses: remaining
+      })
+
+      // Update UI with remaining tool uses
+      this.game.events.emit('TOOLS/UPDATE', {
+        toolName,
+        uses: this.detectiveToolsManager.getRemainingUses(toolName as any)
+      })
+
+      // Update total remaining tools count
+      this.game.events.emit('TOOLS/UPDATE', {
+        toolName: 'total',
+        uses: remaining
       })
     }
   }
@@ -678,6 +702,12 @@ export default class GameScene extends Phaser.Scene {
     // Resume tweens
     this.tweens.resumeAll()
 
+    // Reset UI
+    this.game.events.emit('GAME/RESET')
+    this.game.events.emit('TOOLS/INITIALIZE', {
+      tools: this.detectiveToolsManager.getRemainingUses()
+    })
+
     // Start new question
     this.isProcessingAnswer = false
     this.startNewQuestion()
@@ -687,9 +717,9 @@ export default class GameScene extends Phaser.Scene {
   }
 
   private goToMainMenu() {
-    // This would transition to a main menu scene
-    // For now, we'll just restart the game
-    this.restartGame()
+    // Stop current scene and go to main menu
+    this.scene.stop('UIScene')
+    this.scene.start('MainMenuScene')
   }
 
   // Add keyboard shortcut for pause
