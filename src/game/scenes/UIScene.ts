@@ -2,6 +2,9 @@ export default class UIScene extends Phaser.Scene {
   private scoreText!: Phaser.GameObjects.Text
   private levelText!: Phaser.GameObjects.Text
   private toolsContainer!: Phaser.GameObjects.Container
+  private uiBackground!: Phaser.GameObjects.Rectangle
+  private toolButtons: Map<string, Phaser.GameObjects.Container> = new Map()
+  private toolUseCounts: Map<string, number> = new Map()
 
   constructor() {
     super({ key: 'UIScene', active: false })
@@ -15,16 +18,7 @@ export default class UIScene extends Phaser.Scene {
     this.setupEventListeners()
   }
 
-  createUIBackground() {
-    const background = this.add.rectangle(
-      0, 0,
-      this.cameras.main.width,
-      80,
-      0x0f1320,
-      0.8
-    )
-    background.setOrigin(0, 0)
-  }
+  // createUIBackground is defined at the end of the class
 
   createScoreDisplay() {
     this.scoreText = this.add.text(20, 20, '得分: 0', {
@@ -40,24 +34,7 @@ export default class UIScene extends Phaser.Scene {
     }).setOrigin(1, 0)
   }
 
-  createTools() {
-    const startX = this.cameras.main.width / 2 - 150
-    const y = 40
-
-    this.toolsContainer = this.add.container(0, 0)
-
-    const tools = [
-      { name: 'magnify', icon: '🔍', label: '放大镜' },
-      { name: 'time', icon: '⏰', label: '怀表' },
-      { name: 'insight', icon: '💡', label: '闪电' }
-    ]
-
-    tools.forEach((tool, index) => {
-      const x = startX + index * 150
-      const toolButton = this.createToolButton(x, y, tool.icon, tool.label, tool.name)
-      this.toolsContainer.add(toolButton)
-    })
-  }
+  // createTools is defined at the end of the class
 
   createToolButton(x: number, y: number, icon: string, label: string, toolName: string): Phaser.GameObjects.Container {
     const container = this.add.container(x, y)
@@ -108,7 +85,131 @@ export default class UIScene extends Phaser.Scene {
     })
   }
 
-  updateToolDisplay(toolName: string, uses: number) {
-    // Update tool display based on remaining uses
+  updateToolDisplay(toolName: string, remainingUses: number) {
+    const toolButton = this.toolButtons.get(toolName)
+    if (toolButton) {
+      const background = toolButton.list[0] as Phaser.GameObjects.Rectangle
+      const alpha = remainingUses > 0 ? 1 : 0.4
+      background.setAlpha(alpha)
+
+      // Add visual indicator for remaining uses
+      if (remainingUses > 0) {
+        background.setStrokeStyle(2, 0x4a5568)
+      } else {
+        background.setStrokeStyle(2, 0x718096)
+      }
+    }
+
+    this.toolUseCounts.set(toolName, remainingUses)
+  }
+
+  // Resize handling for responsive UI
+  private setupResizeHandler() {
+    this.scale.on('resize', this.handleResize.bind(this))
+    this.handleResize() // Initial layout
+  }
+
+  private handleResize() {
+    const width = this.cameras.main.width
+    const height = this.cameras.main.height
+
+    // Update UI background
+    if (this.uiBackground) {
+      this.uiBackground.setSize(width, 80)
+    }
+
+    // Update level text position
+    if (this.levelText) {
+      this.levelText.setX(width - 20)
+    }
+
+    // Update tools position
+    if (this.toolsContainer) {
+      const startX = width / 2 - 150
+      this.toolsContainer.list.forEach((toolButton, index) => {
+        if (toolButton instanceof Phaser.GameObjects.Container) {
+          toolButton.setX(startX + index * 150)
+        }
+      })
+    }
+  }
+
+  // Keyboard shortcuts for better UX
+  private setupKeyboardShortcuts() {
+    this.input.keyboard?.on('keydown-LEFT', () => {
+      this.game.events.emit('TOOLS/USE', { toolName: 'magnify' })
+    })
+
+    this.input.keyboard?.on('keydown-RIGHT', () => {
+      this.game.events.emit('TOOLS/USE', { toolName: 'time' })
+    })
+
+    this.input.keyboard?.on('keydown-UP', () => {
+      this.game.events.emit('TOOLS/USE', { toolName: 'insight' })
+    })
+
+    this.input.keyboard?.on('keydown-A', () => {
+      this.game.events.emit('GAME/ANSWER', { answer: true })
+    })
+
+    this.input.keyboard?.on('keydown-D', () => {
+      this.game.events.emit('GAME/ANSWER', { answer: false })
+    })
+  }
+
+  // Tool management
+  private resetTools() {
+    this.toolUseCounts.clear()
+    this.toolButtons.forEach((button: Phaser.GameObjects.Container, toolName: string) => {
+      this.updateToolDisplay(toolName, 3) // Reset to 3 uses
+    })
+  }
+
+  // Visual feedback
+  private showAnswerFeedback(isCorrect: boolean) {
+    const centerX = this.cameras.main.width / 2
+    const color = isCorrect ? 0x10b981 : 0xef4444
+
+    // Flash the UI background
+    this.tweens.add({
+      targets: this.uiBackground,
+      alpha: 0.6,
+      duration: 100,
+      yoyo: true,
+      ease: 'Power2'
+    })
+  }
+
+  private createTools() {
+    const startX = this.cameras.main.width / 2 - 150
+    const y = 40
+
+    this.toolsContainer = this.add.container(0, 0)
+
+    const tools = [
+      { name: 'magnify', icon: '🔍', label: '放大镜' },
+      { name: 'time', icon: '⏰', label: '怀表' },
+      { name: 'insight', icon: '💡', label: '闪电' }
+    ]
+
+    tools.forEach((tool, index) => {
+      const x = startX + index * 150
+      const toolButton = this.createToolButton(x, y, tool.icon, tool.label, tool.name)
+      this.toolsContainer.add(toolButton)
+      this.toolButtons.set(tool.name, toolButton)
+      this.toolUseCounts.set(tool.name, 3) // Initialize with 3 uses
+    })
+  }
+
+  private createUIBackground() {
+    this.uiBackground = this.add.rectangle(
+      0, 0,
+      this.cameras.main.width,
+      80,
+      0x0f1320,
+      0.9
+    )
+    this.uiBackground.setOrigin(0, 0)
+    this.uiBackground.setDepth(0)
   }
 }

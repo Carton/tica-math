@@ -85,11 +85,11 @@ jest.mock('phaser', () => ({
 }))
 
 // Setup global test utilities
-global.describe = describe
-global.it = it
-global.test = test
-global.expect = expect
-global.jest = jest
+;(global as any).describe = describe
+;(global as any).it = it
+;(global as any).test = test
+;(global as any).expect = expect
+;(global as any).jest = jest
 
 // Mock window and DOM for testing
 Object.defineProperty(window, 'matchMedia', {
@@ -111,6 +111,8 @@ const localStorageMock = {
   getItem: jest.fn(),
   setItem: jest.fn(),
   removeItem: jest.fn(),
-  clear: jest.fn()
+  clear: jest.fn(),
+  length: 0,
+  key: jest.fn()
 }
 global.localStorage = localStorageMock

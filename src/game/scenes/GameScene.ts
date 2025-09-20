@@ -1,22 +1,55 @@
+import QuestionGenerator, { Question } from '@/game/managers/QuestionGenerator'
+import DifficultyManager from '@/game/managers/DifficultyManager'
+import DetectiveToolsManager from '@/game/managers/DetectiveToolsManager'
+
 export default class GameScene extends Phaser.Scene {
-  private currentQuestion: string = ''
-  private isCurrentQuestionTrue: boolean = false
-  private timeRemaining: number = 30
-  private currentQuestionIndex: number = 0
-  private correctAnswers: number = 0
+  private questionGenerator!: QuestionGenerator
+  private difficultyManager!: DifficultyManager
+  private detectiveToolsManager!: DetectiveToolsManager
+  private currentQuestion: Question | null = null
+  private timerEvent!: Phaser.Time.TimerEvent
+  private questionText!: Phaser.GameObjects.Text
+  private timerText!: Phaser.GameObjects.Text
+  private progressText!: Phaser.GameObjects.Text
+  private progressFill!: Phaser.GameObjects.Rectangle
+  private isProcessingAnswer: boolean = false
+  private questionStartTime: number = 0
 
   constructor() {
-    super('GameScene')
+    super({ key: 'GameScene' })
+  }
+
+  init() {
+    // Initialize managers
+    this.difficultyManager = new DifficultyManager()
+    this.detectiveToolsManager = new DetectiveToolsManager()
+
+    const difficultyConfig = this.difficultyManager.getCurrentDifficultyConfig()
+    this.questionGenerator = new QuestionGenerator(difficultyConfig)
+
+    // Reset level state
+    this.registry.set('game:level', this.registry.get('game:level') || 1)
+    this.registry.set('game:score', 0)
+    this.registry.set('tools:remaining', 3)
+
+    this.isProcessingAnswer = false
   }
 
   create() {
+    this.setupEventListeners()
     this.createBackground()
     this.createQuestionArea()
     this.createAnswerButtons()
     this.createTimer()
     this.createProgressBar()
 
-    this.generateQuestion()
+    // Notify game start
+    this.game.events.emit('LEVEL/START', {
+      level: this.registry.get('game:level'),
+      difficulty: this.difficultyManager.getCurrentLevelNumber()
+    })
+
+    this.startNewQuestion()
   }
 
   createBackground() {
@@ -41,9 +74,10 @@ export default class GameScene extends Phaser.Scene {
       color: '#333333'
     }).setOrigin(0.5)
 
-    this.add.text(centerX, centerY, '等待题目...', {
+    this.questionText = this.add.text(centerX, centerY, '等待题目...', {
       fontSize: '32px',
-      color: '#333333'
+      color: '#333333',
+      wordWrap: { width: 350 }
     }).setOrigin(0.5)
   }
 
@@ -82,12 +116,22 @@ export default class GameScene extends Phaser.Scene {
       .on('pointerover', () => {
         const bg = button.list[0] as Phaser.GameObjects.Rectangle
         bg.setAlpha(0.8)
+        this.input.setDefaultCursor('pointer')
       })
       .on('pointerout', () => {
         const bg = button.list[0] as Phaser.GameObjects.Rectangle
         bg.setAlpha(1)
+        this.input.setDefaultCursor('default')
       })
-      .on('pointerdown', onClick)
+      .on('pointerdown', () => {
+        const bg = button.list[0] as Phaser.GameObjects.Rectangle
+        const originalColor = bg.fillColor
+        bg.setFillStyle(0x3d4758)
+        this.time.delayedCall(100, () => {
+          bg.setFillStyle(originalColor)
+        })
+        onClick()
+      })
   }
 
   createTimer() {
@@ -99,12 +143,164 @@ export default class GameScene extends Phaser.Scene {
       color: '#ffffff'
     })
 
-    this.add.text(centerX + 20, centerY, this.timeRemaining.toString(), {
+    this.timerText = this.add.text(centerX + 20, centerY, '30', {
       fontSize: '20px',
       color: '#ffffff'
     })
 
-    this.time.addEvent({
+    this.startTimer()
+  }
+
+  createProgressBar() {
+    const centerX = this.cameras.main.width / 2
+    const centerY = 50
+
+    this.progressText = this.add.text(centerX - 100, centerY - 20, '线索 1/10', {
+      fontSize: '18px',
+      color: '#ffffff'
+    }).setOrigin(0.5)
+
+    const progressBg = this.add.rectangle(centerX, centerY, 200, 10, 0x333333)
+    this.progressFill = this.add.rectangle(centerX - 100, centerY, 20, 10, 0x10b981)
+    this.progressFill.setOrigin(0, 0.5)
+  }
+
+  generateQuestion() {
+    this.currentQuestion = this.questionGenerator.generate()
+    this.updateQuestionDisplay()
+    this.updateProgressBar()
+
+    // Emit question event
+    this.game.events.emit('QUESTION/NEXT', {
+      question: this.currentQuestion,
+      questionIndex: this.getCurrentQuestionIndex()
+    })
+  }
+
+  updateQuestionDisplay() {
+    if (this.currentQuestion) {
+      this.questionText.setText(this.currentQuestion.questionString)
+    }
+  }
+
+  updateTimer() {
+    const config = this.difficultyManager.getCurrentDifficultyConfig()
+    const newTime = Math.max(0, parseInt(this.timerText.text) - 1)
+    this.timerText.setText(newTime.toString())
+
+    if (newTime <= 0) {
+      this.answerQuestion(false)
+    }
+  }
+
+  answerQuestion(userAnswer: boolean) {
+    if (this.isProcessingAnswer || !this.currentQuestion) return
+
+    this.isProcessingAnswer = true
+    this.timerEvent.remove()
+
+    const isCorrect = userAnswer === this.currentQuestion.isTrue
+    const responseTime = Date.now() - this.questionStartTime
+
+    // Update score and accuracy
+    if (isCorrect) {
+      const currentScore = this.registry.get('game:score') || 0
+      this.registry.set('game:score', currentScore + 10)
+      this.difficultyManager.addScore(10)
+    }
+
+    // Emit answer event
+    this.game.events.emit('QUESTION/ANSWERED', {
+      question: this.currentQuestion,
+      userAnswer,
+      isCorrect,
+      responseTime,
+      questionIndex: this.getCurrentQuestionIndex()
+    })
+
+    // Show feedback
+    this.showAnswerFeedback(isCorrect)
+
+    // Move to next question or end level
+    this.time.delayedCall(1500, () => {
+      if (this.getCurrentQuestionIndex() >= 10) {
+        this.endLevel()
+      } else {
+        this.startNewQuestion()
+      }
+    })
+  }
+
+  endLevel() {
+    const finalScore = this.registry.get('game:score') || 0
+    const accuracy = finalScore / 100 // Max score is 100 (10 questions × 10 points each)
+
+    // Update level progress
+    if (accuracy >= 0.8) {
+      this.difficultyManager.levelUp()
+      const newLevel = this.difficultyManager.getCurrentLevelNumber()
+      this.registry.set('game:level', newLevel)
+    }
+
+    // Store level results
+    this.registry.set('level:score', finalScore)
+    this.registry.set('level:accuracy', accuracy)
+    this.registry.set('level:completed', accuracy >= 0.8)
+
+    // Emit level end event
+    this.game.events.emit('LEVEL/END', {
+      score: finalScore,
+      accuracy,
+      level: this.registry.get('game:level'),
+      success: accuracy >= 0.8
+    })
+
+    // Stop timer
+    if (this.timerEvent) {
+      this.timerEvent.remove()
+    }
+
+    // Transition to end scene
+    this.time.delayedCall(2000, () => {
+      this.scene.stop('UIScene')
+      this.scene.start('LevelEndScene')
+    })
+  }
+
+  // Helper methods
+  private setupEventListeners() {
+    // Listen for tool usage
+    this.game.events.on('TOOLS/USE', (data: { toolName: string }) => {
+      this.useTool(data.toolName)
+    })
+
+    // Listen for timer modifications
+    this.game.events.on('TIMER/ADD_SECONDS', (data: { seconds: number }) => {
+      this.addTime(data.seconds)
+    })
+
+    // Listen for keyboard answer shortcuts
+    this.game.events.on('GAME/ANSWER', (data: { answer: boolean }) => {
+      this.answerQuestion(data.answer)
+    })
+  }
+
+  private startNewQuestion() {
+    this.isProcessingAnswer = false
+    this.generateQuestion()
+    this.startTimer()
+    this.questionStartTime = Date.now()
+  }
+
+  private startTimer() {
+    const config = this.difficultyManager.getCurrentDifficultyConfig()
+    this.timerText.setText(config.timeLimit.toString())
+
+    if (this.timerEvent) {
+      this.timerEvent.remove()
+    }
+
+    this.timerEvent = this.time.addEvent({
       delay: 1000,
       callback: this.updateTimer,
       callbackScope: this,
@@ -112,94 +308,112 @@ export default class GameScene extends Phaser.Scene {
     })
   }
 
-  createProgressBar() {
-    const centerX = this.cameras.main.width / 2
-    const centerY = 50
+  private getCurrentQuestionIndex(): number {
+    return Math.floor((this.registry.get('game:score') || 0) / 10)
+  }
 
-    this.add.text(centerX - 100, centerY - 20, `线索 ${this.currentQuestionIndex + 1}/10`, {
+  private updateProgressBar() {
+    const currentIndex = this.getCurrentQuestionIndex()
+    this.progressText.setText(`线索 ${currentIndex + 1}/10`)
+
+    const progress = (currentIndex + 1) / 10
+    this.progressFill.width = 200 * progress
+  }
+
+  private showAnswerFeedback(isCorrect: boolean) {
+    const centerX = this.cameras.main.width / 2
+    const centerY = this.cameras.main.height / 2
+
+    const feedback = isCorrect ? '证据确凿！' : '这是伪证！'
+    const color = isCorrect ? 0x10b981 : 0xef4444
+
+    const feedbackText = this.add.text(centerX, centerY, feedback, {
+      fontSize: '36px',
+      color: `#${color.toString(16).padStart(6, '0')}`
+    }).setOrigin(0.5)
+
+    // Animate feedback
+    this.tweens.add({
+      targets: feedbackText,
+      scaleX: 1.2,
+      scaleY: 1.2,
+      duration: 200,
+      yoyo: true,
+      onComplete: () => feedbackText.destroy()
+    })
+  }
+
+  private useTool(toolName: string) {
+    if (!this.currentQuestion) return
+
+    const toolEffect = this.detectiveToolsManager.useTool(toolName, this.currentQuestion)
+
+    if (toolEffect) {
+      this.applyToolEffect(toolEffect)
+
+      // Update tool usage in registry
+      const remaining = this.detectiveToolsManager.getTotalRemainingUses()
+      this.registry.set('tools:remaining', remaining)
+
+      // Emit tool usage event
+      this.game.events.emit('TOOLS/USED', {
+        toolName,
+        effect: toolEffect,
+        remainingUses: remaining
+      })
+    }
+  }
+
+  private applyToolEffect(effect: any) {
+    switch (effect.type) {
+      case 'TIME_ADD':
+        this.addTime(effect.value || 10)
+        break
+      case 'SHOW_HINT':
+        this.showHint(effect.message || '使用道具获得提示！')
+        break
+      case 'SHOW_INSIGHT':
+        this.showInsight(effect.message || 'Tica有了一个想法！')
+        break
+    }
+  }
+
+  private addTime(seconds: number) {
+    const currentTime = parseInt(this.timerText.text)
+    const newTime = currentTime + seconds
+    this.timerText.setText(newTime.toString())
+
+    this.game.events.emit('TIMER/UPDATED', {
+      addedSeconds: seconds,
+      newTime
+    })
+  }
+
+  private showHint(message: string) {
+    const centerX = this.cameras.main.width / 2
+    const centerY = this.cameras.main.height * 0.4
+
+    const hintText = this.add.text(centerX, centerY, message, {
       fontSize: '18px',
-      color: '#ffffff'
+      color: '#ffd700',
+      backgroundColor: '#333333',
+      padding: { x: 20, y: 10 }
     }).setOrigin(0.5)
 
-    const progressBg = this.add.rectangle(centerX, centerY, 200, 10, 0x333333)
-    const progressFill = this.add.rectangle(centerX - 100, centerY, 20, 10, 0x10b981)
-    progressFill.setOrigin(0, 0.5)
+    this.time.delayedCall(3000, () => hintText.destroy())
   }
 
-  generateQuestion() {
-    const num1 = Math.floor(Math.random() * 100) + 1
-    const num2 = Math.floor(Math.random() * 100) + 1
-    const operation = Math.random() > 0.5 ? '+' : '-'
-
-    let answer: number
-    if (operation === '+') {
-      answer = num1 + num2
-    } else {
-      answer = num1 - num2
-    }
-
-    const isCorrect = Math.random() > 0.5
-    const displayAnswer = isCorrect ? answer : answer + (Math.random() > 0.5 ? 1 : -1)
-
-    this.currentQuestion = `${num1} ${operation} ${num2} = ${displayAnswer}`
-    this.isCurrentQuestionTrue = isCorrect
-
-    this.updateQuestionDisplay()
-  }
-
-  updateQuestionDisplay() {
+  private showInsight(message: string) {
     const centerX = this.cameras.main.width / 2
-    const centerY = this.cameras.main.height / 3
+    const centerY = this.cameras.main.height * 0.4
 
-    this.children.list.forEach(child => {
-      if (child instanceof Phaser.GameObjects.Text && child.text.includes('等待题目') || child.text.includes('=')) {
-        child.destroy()
-      }
-    })
-
-    this.add.text(centerX, centerY, this.currentQuestion, {
-      fontSize: '32px',
-      color: '#333333'
+    const insightText = this.add.text(centerX, centerY, message, {
+      fontSize: '16px',
+      color: '#00ffff',
+      backgroundColor: '#1a1a2e',
+      padding: { x: 15, y: 8 }
     }).setOrigin(0.5)
-  }
 
-  updateTimer() {
-    this.timeRemaining--
-
-    if (this.timeRemaining <= 0) {
-      this.answerQuestion(false)
-    }
-  }
-
-  answerQuestion(answer: boolean) {
-    const isCorrect = answer === this.isCurrentQuestionTrue
-
-    if (isCorrect) {
-      this.correctAnswers++
-    }
-
-    this.currentQuestionIndex++
-    this.timeRemaining = 30
-
-    if (this.currentQuestionIndex >= 10) {
-      this.endLevel()
-    } else {
-      this.generateQuestion()
-    }
-  }
-
-  endLevel() {
-    const accuracy = this.correctAnswers / 10
-
-    this.registry.set('levelScore', this.correctAnswers)
-    this.registry.set('levelAccuracy', accuracy)
-
-    this.game.events.emit('LEVEL/END', {
-      score: this.correctAnswers,
-      accuracy: accuracy
-    })
-
-    this.scene.stop('UIScene')
-    this.scene.start('LevelEndScene')
+    this.time.delayedCall(4000, () => insightText.destroy())
   }
 }

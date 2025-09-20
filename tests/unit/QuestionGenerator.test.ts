@@ -5,8 +5,8 @@ describe('QuestionGenerator', () => {
 
   beforeEach(() => {
     const simpleConfig = {
-      numberRange: [1, 10],
-      operations: ['+', '-'],
+      numberRange: [1, 10] as [number, number],
+      operations: ['+', '-'] as ('+' | '-' | '*' | '/')[],
       complexity: 'simple' as const,
       timeLimit: 30,
       allowThreeNumbers: false
@@ -85,8 +85,8 @@ describe('QuestionGenerator', () => {
   describe('updateDifficulty', () => {
     it('should update difficulty configuration', () => {
       const newConfig = {
-        numberRange: [50, 100],
-        operations: ['*', '/'],
+        numberRange: [50, 100] as [number, number],
+        operations: ['*', '/'] as ('+' | '-' | '*' | '/')[],
         complexity: 'mixed' as const,
         timeLimit: 20,
         allowThreeNumbers: true

@@ -30,8 +30,7 @@ export default class MainMenuScene extends Phaser.Scene {
 
     this.add.text(centerX, centerY - 100, 'Tica侦探事务所', {
       fontSize: '48px',
-      color: '#ffd700',
-      fontWeight: 'bold'
+      color: '#ffd700'
     }).setOrigin(0.5)
 
     this.add.text(centerX, centerY - 50, '数字谜案', {

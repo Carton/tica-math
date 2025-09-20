@@ -1,14 +1,28 @@
 export default class LevelEndScene extends Phaser.Scene {
   private score: number = 0
   private accuracy: number = 0
+  private level: number = 1
+  private isSuccess: boolean = false
+  private earnedBadge: boolean = false
 
   constructor() {
     super('LevelEndScene')
   }
 
   init() {
-    this.score = this.registry.get('levelScore') || 0
-    this.accuracy = this.registry.get('levelAccuracy') || 0
+    // Load level results from registry using correct key format
+    this.score = this.registry.get('level:score') || 0
+    this.accuracy = this.registry.get('level:accuracy') || 0
+    this.level = this.registry.get('game:level') || 1
+    this.isSuccess = this.registry.get('level:completed') || false
+
+    // Award badge if successful
+    if (this.isSuccess) {
+      this.awardBadge()
+    }
+
+    // Save game progress
+    this.saveGameProgress()
   }
 
   create() {
@@ -32,35 +46,51 @@ export default class LevelEndScene extends Phaser.Scene {
     const centerX = this.cameras.main.width / 2
     const centerY = this.cameras.main.height / 3
 
-    const isSuccess = this.accuracy >= 0.8
-    const resultText = isSuccess ? '案件告破！' : '让教授逃跑了！'
-    const resultColor = isSuccess ? '#10b981' : '#ef4444'
+    const resultText = this.isSuccess ? '案件告破！' : '让教授逃跑了！'
+    const resultColor = this.isSuccess ? '#10b981' : '#ef4444'
 
-    this.add.text(centerX, centerY - 100, resultText, {
+    this.add.text(centerX, centerY - 120, `第 ${this.level} 关`, {
+      fontSize: '24px',
+      color: '#888888'
+    }).setOrigin(0.5)
+
+    this.add.text(centerX, centerY - 60, resultText, {
       fontSize: '48px',
-      color: resultColor,
-      fontWeight: 'bold'
+      color: resultColor
     }).setOrigin(0.5)
 
-    this.add.text(centerX, centerY - 30, `正确答案: ${this.score}/10`, {
+    this.add.text(centerX, centerY, `正确答案: ${this.score}/10`, {
       fontSize: '24px',
       color: '#ffffff'
     }).setOrigin(0.5)
 
-    this.add.text(centerX, centerY + 20, `准确率: ${Math.round(this.accuracy * 100)}%`, {
+    this.add.text(centerX, centerY + 40, `准确率: ${Math.round(this.accuracy * 100)}%`, {
       fontSize: '24px',
       color: '#ffffff'
     }).setOrigin(0.5)
 
-    if (isSuccess) {
-      this.add.text(centerX, centerY + 70, '恭喜获得侦探徽章！', {
+    if (this.isSuccess) {
+      this.add.text(centerX, centerY + 90, '恭喜获得侦探徽章！', {
         fontSize: '20px',
         color: '#ffd700'
       }).setOrigin(0.5)
+
+      if (this.earnedBadge) {
+        this.add.text(centerX, centerY + 120, '新徽章已解锁！', {
+          fontSize: '16px',
+          color: '#ffd700'
+        }).setOrigin(0.5)
+      }
     } else {
-      this.add.text(centerX, centerY + 70, 'Tica侦探，整理线索，我们再来一次！', {
+      this.add.text(centerX, centerY + 90, 'Tica侦探，整理线索，我们再来一次！', {
         fontSize: '18px',
         color: '#ffffff'
+      }).setOrigin(0.5)
+
+      const requiredScore = Math.ceil(10 * 0.8) // 80% of 10 questions
+      this.add.text(centerX, centerY + 120, `需要 ${requiredScore} 个正确答案才能破案`, {
+        fontSize: '14px',
+        color: '#888888'
       }).setOrigin(0.5)
     }
   }
@@ -140,10 +170,42 @@ export default class LevelEndScene extends Phaser.Scene {
   }
 
   nextLevel() {
-    const currentLevel = this.registry.get('game:level') || 1
-    this.registry.set('game:level', currentLevel + 1)
-
+    // Level is already incremented in GameScene, just proceed
     this.scene.start('GameScene')
     this.scene.launch('UIScene')
+  }
+
+  private awardBadge() {
+    const badges = this.registry.get('game:badges') || []
+    const badgeName = `Level ${this.level} Badge`
+
+    // Check if badge already earned
+    if (!badges.includes(badgeName)) {
+      badges.push(badgeName)
+      this.registry.set('game:badges', badges)
+      this.earnedBadge = true
+    }
+  }
+
+  private saveGameProgress() {
+    try {
+      // Save level progress
+      localStorage.setItem('math-game:level', this.level.toString())
+
+      // Save badges
+      const badges = this.registry.get('game:badges') || []
+      localStorage.setItem('math-game:badges', JSON.stringify(badges))
+
+      // Save audio settings
+      const volumeSettings = {
+        music: this.registry.get('audio:volume:music') || 0.7,
+        sfx: this.registry.get('audio:volume:sfx') || 0.8,
+        muted: this.registry.get('audio:muted') || false
+      }
+      localStorage.setItem('math-game:volume', JSON.stringify(volumeSettings))
+
+    } catch (error) {
+      console.warn('Failed to save game progress:', error)
+    }
   }
 }
