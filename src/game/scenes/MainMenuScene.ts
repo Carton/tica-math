@@ -1,5 +1,6 @@
 import Phaser from 'phaser'
 import { SaveManager } from '@/game/managers/SaveManager'
+import { ToolManager } from '@/game/managers/ToolManager'
 
 export default class MainMenuScene extends Phaser.Scene {
   constructor() {
@@ -36,6 +37,7 @@ export default class MainMenuScene extends Phaser.Scene {
 
     start.on('pointerup', () => {
       const level = user.bestLevel || 1
+      ToolManager.resetToDefault()
       this.scene.start('GameScene', { level })
       this.scene.launch('UIScene', { level })
     })

@@ -20,7 +20,7 @@ export default class PreloadScene extends Phaser.Scene {
     const lang = this.cache.json.get('strings')
     if (lang) Strings.init(lang)
 
-    ToolManager.reset(3)
+    ToolManager.resetToDefault()
 
     this.scene.start('MainMenuScene')
   }

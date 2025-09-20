@@ -25,7 +25,6 @@ export class SaveManager {
       const raw = localStorage.getItem(KEY)
       if (!raw) return { currentUserId: 'default', users: { default: defaultUser() } }
       const parsed = JSON.parse(raw)
-      // 兼容旧结构
       if (parsed && !parsed.users) {
         const legacy: SaveData = parsed
         return { currentUserId: 'default', users: { default: { ...defaultUser(), ...legacy, toolCounts: legacy.toolCounts ?? { magnify: 3, watch: 3, flash: 3 } } } }
@@ -76,6 +75,17 @@ export class SaveManager {
     user.exp += Math.round(result.accuracy * 100)
     data.users[data.currentUserId] = user
     this.saveRaw(data)
+  }
+
+  static setToolCounts(counts: { magnify: number; watch: number; flash: number }) {
+    const data = this.loadRaw()
+    const user = data.users[data.currentUserId] ?? (data.users[data.currentUserId] = defaultUser())
+    user.toolCounts = { ...counts }
+    this.saveRaw(data)
+  }
+
+  static resetToolCountsToDefault() {
+    this.setToolCounts({ magnify: 3, watch: 3, flash: 3 })
   }
 
   static consumeTool(type: 'magnify'|'watch'|'flash'): boolean {

@@ -30,26 +30,23 @@ export default class ResultScene extends Phaser.Scene {
     }).setOrigin(0.5).setInteractive({ useHandCursor: true })
 
     back.on('pointerup', () => {
-      // 返回事务所：仅切换到菜单，由菜单决定如何开启新局
-      this.scene.stop('GameScene')
       this.scene.stop('UIScene')
+      this.scene.stop('GameScene')
       this.scene.start('MainMenuScene')
     })
 
     primary.on('pointerup', () => {
       this.scene.stop('ResultScene')
       if (sum?.pass && data.nextLevel) {
-        // 下一局：带 level 参数启动
-        this.scene.start('GameScene', { level: data.nextLevel })
-        this.scene.launch('UIScene')
+        const level = data.nextLevel
+        this.scene.start('GameScene', { level })
+        this.scene.launch('UIScene', { level })
       } else {
-        // 再来一局：同关重试
         const level = sum?.level ?? 1
-        // 确保先关闭残留
         if (this.scene.isActive('GameScene')) this.scene.stop('GameScene')
         if (this.scene.isActive('UIScene')) this.scene.stop('UIScene')
         this.scene.start('GameScene', { level })
-        this.scene.launch('UIScene')
+        this.scene.launch('UIScene', { level })
       }
     })
 

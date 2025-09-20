@@ -8,8 +8,9 @@ export type ToolType = 'magnify' | 'watch' | 'flash'
 export class ToolManager {
   private static current?: Question
 
-  static reset() {
-    // 每用户库存保存在存档，无需清零
+  static resetToDefault() {
+    SaveManager.resetToolCountsToDefault()
+    emit('tool:update', this.getCounts() as any)
   }
 
   static setQuestion(q: Question | undefined) {
