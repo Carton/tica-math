@@ -6,6 +6,7 @@ import type { Question, ResultSummary } from '@/game/utils/types'
 import { ToolManager } from '@/game/managers/ToolManager'
 import { gradeByAccuracy } from '@/game/utils/scoring'
 import { SaveManager } from '@/game/managers/SaveManager'
+import { isPass, nextLevel } from '@/game/utils/gameFlow'
 
 export default class GameScene extends Phaser.Scene {
   private questionIndex = 0
@@ -25,6 +26,15 @@ export default class GameScene extends Phaser.Scene {
 
   constructor() {
     super('GameScene')
+  }
+
+  init(data: { level?: number } = {}) {
+    if (data.level) this.level = data.level
+    this.questionIndex = 0
+    this.correctCount = 0
+    this.totalTimeMs = 0
+    this.combo = 0
+    this.comboMax = 0
   }
 
   create() {
@@ -89,9 +99,10 @@ export default class GameScene extends Phaser.Scene {
 
   private finish() {
     const toolsCounts = ToolManager.getCounts()
-    const toolsUsed = (3 - toolsCounts.magnify) + (3 - toolsCounts.watch) + (3 - toolsCounts.flash) // 近似统计
+    const toolsUsed = (3 - toolsCounts.magnify) + (3 - toolsCounts.watch) + (3 - toolsCounts.flash)
     const accuracy = this.total > 0 ? this.correctCount / this.total : 0
     const grade = gradeByAccuracy(accuracy, toolsUsed)
+    const pass = isPass(accuracy)
     const summary: ResultSummary = {
       correctCount: this.correctCount,
       totalCount: this.total,
@@ -101,10 +112,12 @@ export default class GameScene extends Phaser.Scene {
       toolsUsed,
       accuracy,
       grade,
+      pass,
+      level: this.level,
     }
     SaveManager.updateWithResult(this.level, summary)
 
     this.scene.stop('UIScene')
-    this.scene.start('ResultScene', { summary })
+    this.scene.start('ResultScene', { summary, nextLevel: nextLevel(this.level, pass) })
   }
 }

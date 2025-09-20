@@ -38,4 +38,6 @@ export interface ResultSummary {
   toolsUsed: number
   accuracy: number
   grade: 'S' | 'A' | 'B' | 'C'
+  pass: boolean
+  level: number
 }
