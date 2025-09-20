@@ -28,3 +28,14 @@ export interface DifficultyParams {
   minTimeMs: number
   questionCount: number
 }
+
+export interface ResultSummary {
+  correctCount: number
+  totalCount: number
+  totalTimeMs: number
+  averageTimeMs: number
+  comboMax: number
+  toolsUsed: number
+  accuracy: number
+  grade: 'S' | 'A' | 'B' | 'C'
+}

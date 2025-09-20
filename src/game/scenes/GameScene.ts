@@ -2,14 +2,22 @@ import Phaser from 'phaser'
 import { emit, on, off } from '@/game/managers/EventBus'
 import { DifficultyManager } from '@/game/managers/DifficultyManager'
 import { QuestionGenerator } from '@/game/managers/QuestionGenerator'
-import type { Question } from '@/game/utils/types'
+import type { Question, ResultSummary } from '@/game/utils/types'
 import { ToolManager } from '@/game/managers/ToolManager'
+import { gradeByAccuracy } from '@/game/utils/scoring'
+import { SaveManager } from '@/game/managers/SaveManager'
 
 export default class GameScene extends Phaser.Scene {
   private questionIndex = 0
   private total = 10
   private level = 1
   private current?: Question
+
+  private correctCount = 0
+  private totalTimeMs = 0
+  private combo = 0
+  private comboMax = 0
+  private toolsStart = 3
 
   constructor() {
     super('GameScene')
@@ -19,6 +27,8 @@ export default class GameScene extends Phaser.Scene {
     this.cameras.main.setBackgroundColor('#0b1021')
     const params = DifficultyManager.getParams(this.level)
     this.total = params.questionCount
+
+    this.toolsStart = ToolManager.remaining()
 
     on('ui:choice', ({ choice }) => this.handleChoice(choice))
     on('question:timeout', () => this.handleTimeout())
@@ -30,8 +40,7 @@ export default class GameScene extends Phaser.Scene {
     if (this.questionIndex >= this.total) {
       off('ui:choice', ({ choice }) => this.handleChoice(choice))
       off('question:timeout', () => this.handleTimeout())
-      this.scene.stop('UIScene')
-      this.scene.start('ResultScene')
+      this.finish()
       return
     }
 
@@ -52,13 +61,43 @@ export default class GameScene extends Phaser.Scene {
     const isCorrect = choice === this.current.isTrue
     emit('ui:feedback', { type: isCorrect ? 'correct' : 'wrong' })
     this.cameras.main.flash(100, isCorrect ? 0 : 255, isCorrect ? 255 : 0, 0)
+
+    if (isCorrect) {
+      this.correctCount += 1
+      this.combo += 1
+      this.comboMax = Math.max(this.comboMax, this.combo)
+    } else {
+      this.combo = 0
+    }
+
     this.questionIndex += 1
-    this.time.delayedCall(150, () => this.nextQuestion())
+    this.time.delayedCall(120, () => this.nextQuestion())
   }
 
   private handleTimeout() {
     emit('ui:feedback', { type: 'timeout' })
+    this.combo = 0
     this.questionIndex += 1
-    this.time.delayedCall(150, () => this.nextQuestion())
+    this.time.delayedCall(120, () => this.nextQuestion())
+  }
+
+  private finish() {
+    const toolsUsed = Math.max(0, this.toolsStart - ToolManager.remaining())
+    const accuracy = this.total > 0 ? this.correctCount / this.total : 0
+    const grade = gradeByAccuracy(accuracy, toolsUsed)
+    const summary: ResultSummary = {
+      correctCount: this.correctCount,
+      totalCount: this.total,
+      totalTimeMs: this.totalTimeMs,
+      averageTimeMs: this.total > 0 ? Math.round(this.totalTimeMs / this.total) : 0,
+      comboMax: this.comboMax,
+      toolsUsed,
+      accuracy,
+      grade,
+    }
+    SaveManager.updateWithResult(this.level, summary)
+
+    this.scene.stop('UIScene')
+    this.scene.start('ResultScene', { summary })
   }
 }
