@@ -17,7 +17,11 @@ export default class GameScene extends Phaser.Scene {
   private totalTimeMs = 0
   private combo = 0
   private comboMax = 0
-  private toolsStart = 3
+
+  private choiceHandler = ({ choice }: { choice: boolean }) => this.handleChoice(choice)
+  private timeoutHandler = () => this.handleTimeout()
+
+  private questionContainer?: Phaser.GameObjects.Container
 
   constructor() {
     super('GameScene')
@@ -28,28 +32,30 @@ export default class GameScene extends Phaser.Scene {
     const params = DifficultyManager.getParams(this.level)
     this.total = params.questionCount
 
-    this.toolsStart = ToolManager.remaining()
+    on('ui:choice', this.choiceHandler)
+    on('question:timeout', this.timeoutHandler)
 
-    on('ui:choice', ({ choice }) => this.handleChoice(choice))
-    on('question:timeout', () => this.handleTimeout())
+    this.questionContainer = this.add.container(0, 0)
 
     this.nextQuestion()
   }
 
   private nextQuestion() {
     if (this.questionIndex >= this.total) {
-      off('ui:choice', ({ choice }) => this.handleChoice(choice))
-      off('question:timeout', () => this.handleTimeout())
+      off('ui:choice', this.choiceHandler)
+      off('question:timeout', this.timeoutHandler)
       this.finish()
       return
     }
 
-    this.children.removeAll()
+    this.questionContainer?.removeAll(true)
+
     const params = DifficultyManager.getParams(this.level)
     this.current = QuestionGenerator.createQuestion(params)
     ToolManager.setQuestion(this.current)
 
-    this.add.text(640, 360, this.current.questionString, { fontFamily: 'monospace', fontSize: '48px', color: '#ffffff' }).setOrigin(0.5)
+    const text = this.add.text(640, 360, this.current.questionString, { fontFamily: 'monospace', fontSize: '48px', color: '#ffffff' }).setOrigin(0.5)
+    this.questionContainer?.add(text)
 
     emit('progress:update', { index: this.questionIndex + 1, total: this.total })
     emit('question:new', { question: this.current })
@@ -82,7 +88,8 @@ export default class GameScene extends Phaser.Scene {
   }
 
   private finish() {
-    const toolsUsed = Math.max(0, this.toolsStart - ToolManager.remaining())
+    const toolsCounts = ToolManager.getCounts()
+    const toolsUsed = (3 - toolsCounts.magnify) + (3 - toolsCounts.watch) + (3 - toolsCounts.flash) // 近似统计
     const accuracy = this.total > 0 ? this.correctCount / this.total : 0
     const grade = gradeByAccuracy(accuracy, toolsUsed)
     const summary: ResultSummary = {

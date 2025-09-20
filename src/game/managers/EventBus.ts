@@ -1,8 +1,31 @@
-import Phaser from 'phaser'
+type Handler = (payload: any) => void
 
-class GlobalEventBus extends Phaser.Events.EventEmitter {}
+class SimpleEventBus {
+  private map = new Map<string, Set<Handler>>()
 
-export const EventBus = new GlobalEventBus()
+  emit(event: string, payload: any) {
+    const set = this.map.get(event)
+    if (!set) return
+    for (const fn of Array.from(set)) {
+      try { fn(payload) } catch { /* noop */ }
+    }
+  }
+
+  on(event: string, handler: Handler) {
+    let set = this.map.get(event)
+    if (!set) { set = new Set(); this.map.set(event, set) }
+    set.add(handler)
+  }
+
+  off(event: string, handler: Handler) {
+    const set = this.map.get(event)
+    if (!set) return
+    set.delete(handler)
+    if (set.size === 0) this.map.delete(event)
+  }
+}
+
+export const EventBus = new SimpleEventBus()
 
 export type EventPayloads = {
   'boot:ready': void
@@ -27,10 +50,10 @@ export function emit<K extends keyof EventPayloads>(key: K, payload: EventPayloa
   EventBus.emit(key as string, payload as any)
 }
 
-export function on<K extends keyof EventPayloads>(key: K, cb: (payload: EventPayloads[K]) => void, ctx?: any) {
-  EventBus.on(key as string, cb as any, ctx)
+export function on<K extends keyof EventPayloads>(key: K, cb: (payload: EventPayloads[K]) => void, _ctx?: any) {
+  EventBus.on(key as string, cb as any)
 }
 
-export function off<K extends keyof EventPayloads>(key: K, cb: (payload: EventPayloads[K]) => void, ctx?: any) {
-  EventBus.off(key as string, cb as any, ctx)
+export function off<K extends keyof EventPayloads>(key: K, cb: (payload: EventPayloads[K]) => void, _ctx?: any) {
+  EventBus.off(key as string, cb as any)
 }

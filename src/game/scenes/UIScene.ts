@@ -45,20 +45,20 @@ export default class UIScene extends Phaser.Scene {
     this.input.keyboard?.on('keydown-F', () => emit('ui:choice', { choice: false }))
     this.input.keyboard?.on('keydown-LEFT', () => emit('ui:choice', { choice: false }))
 
-    // 道具按钮与库存
+    // 道具：每类一个图标 + 文本 xN
     const toolsY = height - 140
-    const b1 = this.add.text(width - 260, toolsY, '🔍', { fontSize: '28px' }).setInteractive({ useHandCursor: true })
-    const b2 = this.add.text(width - 200, toolsY, '⏱️', { fontSize: '28px' }).setInteractive({ useHandCursor: true })
-    const b3 = this.add.text(width - 140, toolsY, '⚡', { fontSize: '28px' }).setInteractive({ useHandCursor: true })
+    const t1 = this.add.text(width - 260, toolsY, '🔍', { fontSize: '28px' }).setInteractive({ useHandCursor: true })
+    const t2 = this.add.text(width - 200, toolsY, '⏱️', { fontSize: '28px' }).setInteractive({ useHandCursor: true })
+    const t3 = this.add.text(width - 140, toolsY, '⚡', { fontSize: '28px' }).setInteractive({ useHandCursor: true })
 
-    b1.on('pointerup', () => ToolManager.use('magnify'))
-    b2.on('pointerup', () => ToolManager.use('watch'))
-    b3.on('pointerup', () => ToolManager.use('flash'))
+    t1.on('pointerup', () => ToolManager.use('magnify'))
+    t2.on('pointerup', () => ToolManager.use('watch'))
+    t3.on('pointerup', () => ToolManager.use('flash'))
 
     this.toolText = this.add.text(width - 260, toolsY + 30, '', { fontFamily: 'monospace', fontSize: '16px', color: '#a9ffea' })
     const syncTools = () => {
       const c = ToolManager.getCounts()
-      this.toolText?.setText(`🔍x${c.magnify} ⏱️x${c.watch} ⚡x${c.flash}`)
+      this.toolText?.setText(`🔍x${c.magnify}  ⏱️x${c.watch}  ⚡x${c.flash}`)
     }
     syncTools()
 
