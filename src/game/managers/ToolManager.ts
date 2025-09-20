@@ -1,26 +1,25 @@
 import { emit } from '@/game/managers/EventBus'
 import type { Question, SkillTag } from '@/game/utils/types'
 import { Strings } from '@/game/managers/Strings'
+import { SaveManager } from '@/game/managers/SaveManager'
 
 export type ToolType = 'magnify' | 'watch' | 'flash'
 
 export class ToolManager {
-  private static uses = 3
   private static current?: Question
 
-  static reset(uses = 3) {
-    this.uses = uses
+  static reset() {
+    // 每用户库存保存在存档，无需清零
   }
 
   static setQuestion(q: Question | undefined) {
     this.current = q
   }
 
-  static remaining() { return this.uses }
+  static getCounts() { return SaveManager.getToolCounts() }
 
   static use(type: ToolType) {
-    if (this.uses <= 0) return
-    this.uses -= 1
+    if (!SaveManager.consumeTool(type)) return
     emit('tool:use', { type })
     switch (type) {
       case 'magnify':
@@ -33,6 +32,7 @@ export class ToolManager {
         this.useFlash()
         break
     }
+    emit('tool:update', this.getCounts() as any)
   }
 
   private static useMagnify() {

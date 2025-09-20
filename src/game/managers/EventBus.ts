@@ -17,6 +17,7 @@ export type EventPayloads = {
   'ui:feedback': { type: 'correct' | 'wrong' | 'timeout' | 'combo' | 'speed' }
   'ui:choice': { choice: boolean }
   'tool:use': { type: 'magnify' | 'watch' | 'flash' }
+  'tool:update': { magnify: number; watch: number; flash: number }
   'tool:hints': { targetSkills: string[]; hint: string }
   'progress:update': { index: number; total: number }
   'audio:play': { key: string }

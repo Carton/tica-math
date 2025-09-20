@@ -21,11 +21,23 @@ export default class MainMenuScene extends Phaser.Scene {
       padding: { x: 16, y: 10 },
     }).setOrigin(0.5).setInteractive({ useHandCursor: true })
 
+    const honor = this.add.text(width / 2 - 120, start.y + 60, '荣誉墙', {
+      fontFamily: 'sans-serif', fontSize: '20px', color: '#0b1021', backgroundColor: '#a9ffea', padding: { x: 12, y: 6 }
+    }).setOrigin(0.5).setInteractive({ useHandCursor: true })
+
+    const manual = this.add.text(width / 2 + 120, start.y + 60, '侦探手册', {
+      fontFamily: 'sans-serif', fontSize: '20px', color: '#0b1021', backgroundColor: '#a9ffea', padding: { x: 12, y: 6 }
+    }).setOrigin(0.5).setInteractive({ useHandCursor: true })
+
     start.on('pointerup', () => {
       this.scene.start('GameScene')
       this.scene.launch('UIScene')
     })
 
+    honor.on('pointerup', () => this.scene.start('HonorScene'))
+    manual.on('pointerup', () => this.scene.start('ManualScene'))
+
+    this.input.keyboard?.on('keydown-ESC', () => this.scene.start('HonorScene'))
     this.input.keyboard?.once('keydown-ENTER', () => start.emit('pointerup'))
   }
 }

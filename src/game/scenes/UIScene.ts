@@ -6,6 +6,7 @@ export default class UIScene extends Phaser.Scene {
   private progressText?: Phaser.GameObjects.Text
   private countdownText?: Phaser.GameObjects.Text
   private hintText?: Phaser.GameObjects.Text
+  private toolText?: Phaser.GameObjects.Text
   private remainingMs = 0
   private timer?: Phaser.Time.TimerEvent
 
@@ -44,7 +45,7 @@ export default class UIScene extends Phaser.Scene {
     this.input.keyboard?.on('keydown-F', () => emit('ui:choice', { choice: false }))
     this.input.keyboard?.on('keydown-LEFT', () => emit('ui:choice', { choice: false }))
 
-    // 道具按钮
+    // 道具按钮与库存
     const toolsY = height - 140
     const b1 = this.add.text(width - 260, toolsY, '🔍', { fontSize: '28px' }).setInteractive({ useHandCursor: true })
     const b2 = this.add.text(width - 200, toolsY, '⏱️', { fontSize: '28px' }).setInteractive({ useHandCursor: true })
@@ -53,6 +54,15 @@ export default class UIScene extends Phaser.Scene {
     b1.on('pointerup', () => ToolManager.use('magnify'))
     b2.on('pointerup', () => ToolManager.use('watch'))
     b3.on('pointerup', () => ToolManager.use('flash'))
+
+    this.toolText = this.add.text(width - 260, toolsY + 30, '', { fontFamily: 'monospace', fontSize: '16px', color: '#a9ffea' })
+    const syncTools = () => {
+      const c = ToolManager.getCounts()
+      this.toolText?.setText(`🔍x${c.magnify} ⏱️x${c.watch} ⚡x${c.flash}`)
+    }
+    syncTools()
+
+    on('tool:update', () => syncTools())
 
     this.hintText = this.add.text(20, height - 140, '', { fontFamily: 'sans-serif', fontSize: '18px', color: '#ffffff', wordWrap: { width: width - 300 } })
 
@@ -69,6 +79,7 @@ export default class UIScene extends Phaser.Scene {
       off('ui:countdown:start', () => {})
       off('ui:countdown:extend', () => {})
       off('tool:hints', () => {})
+      off('tool:update', () => {})
       this.timer?.remove()
     })
   }

@@ -35,6 +35,10 @@ export default class ResultScene extends Phaser.Scene {
 
     again.on('pointerup', () => {
       this.scene.stop('ResultScene')
+      // 先停止可能残留的场景
+      if (this.scene.isActive('GameScene')) this.scene.stop('GameScene')
+      if (this.scene.isActive('UIScene')) this.scene.stop('UIScene')
+      // 重新启动
       this.scene.start('GameScene')
       this.scene.launch('UIScene')
     })
