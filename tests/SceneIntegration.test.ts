@@ -173,8 +173,8 @@ describe('Scene Integration Tests', () => {
       expect(nextLevel(5, false)).toBe(5)
 
       // 测试结果标签
-      expect(resultPrimaryActionLabel(true)).toBe('下一局')
-      expect(resultPrimaryActionLabel(false)).toBe('再来一局')
+      expect(resultPrimaryActionLabel(true)).toBe('下个案件')
+      expect(resultPrimaryActionLabel(false)).toBe('重新分析此案件')
     })
 
     test('应该正确集成评分系统', () => {
