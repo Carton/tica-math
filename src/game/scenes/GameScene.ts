@@ -101,7 +101,6 @@ export default class GameScene extends Phaser.Scene {
 
   private handleTimeout() {
     emit('ui:feedback', { type: 'timeout' })
-    emit('audio:play', { key: 'sfx_wrong' })
     this.cameras.main.flash(100, 255, 0, 0)
     this.combo = 0
     this.questionIndex += 1

@@ -3,6 +3,7 @@ import { DifficultyManager } from '@/game/managers/DifficultyManager'
 import { Strings } from '@/game/managers/Strings'
 import { ToolManager } from '@/game/managers/ToolManager'
 import { AudioManager } from '@/game/managers/AudioManager'
+import { on } from '@/game/managers/EventBus'
 
 export default class PreloadScene extends Phaser.Scene {
   constructor() {
@@ -38,6 +39,15 @@ export default class PreloadScene extends Phaser.Scene {
 
     // 初始化音频管理器（即使资源未就绪也不会报错）
     AudioManager.init(this)
+
+    // 统一音频事件映射（不同事件使用不同音效键）
+    on('ui:feedback', ({ type }) => {
+      if (type === 'correct') AudioManager.playSfx('sfx_success')
+      else if (type === 'wrong' || type === 'timeout') AudioManager.playSfx('sfx_wrong')
+      else if (type === 'combo') AudioManager.playSfx('sfx_combo')
+    })
+    on('ui:choice', () => AudioManager.playSfx('sfx_stamp'))
+    on('tool:use', () => AudioManager.playSfx('sfx_click'))
 
     this.scene.start('MainMenuScene')
   }
