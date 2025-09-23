@@ -7,5 +7,5 @@ export function nextLevel(currentLevel: number, pass: boolean): number {
 }
 
 export function resultPrimaryActionLabel(pass: boolean): string {
-  return pass ? '下一局' : '再来一局'
+  return pass ? '下个案件' : '重新分析此案件'
 }
