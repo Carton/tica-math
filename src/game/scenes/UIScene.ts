@@ -60,21 +60,31 @@ export default class UIScene extends Phaser.Scene {
     this.input.keyboard?.on('keydown-F', () => this.emitChoice(false))
     this.input.keyboard?.on('keydown-LEFT', () => this.emitChoice(false))
 
-    // 道具：每类一个图标 + 文本 xN
+    // 道具显示：图标xN格式
     const toolsY = height - 140
-    const t1 = this.add.text(width - 260, toolsY, '🔍', { fontSize: '28px' }).setInteractive({ useHandCursor: true })
-    const t2 = this.add.text(width - 200, toolsY, '⏱️', { fontSize: '28px' }).setInteractive({ useHandCursor: true })
-    const t3 = this.add.text(width - 140, toolsY, '⚡', { fontSize: '28px' }).setInteractive({ useHandCursor: true })
-
-    t1.on('pointerup', () => !this.isPaused && ToolManager.use('magnify'))
-    t2.on('pointerup', () => !this.isPaused && ToolManager.use('watch'))
-    t3.on('pointerup', () => !this.isPaused && ToolManager.use('flash'))
-
-    this.toolText = this.add.text(width - 260, toolsY + 30, '', { fontFamily: 'monospace', fontSize: '16px', color: '#a9ffea' })
+    this.toolText = this.add.text(width - 260, toolsY, '', { fontFamily: 'monospace', fontSize: '20px', color: '#a9ffea' }).setInteractive({ useHandCursor: true })
     const syncTools = () => {
       const c = ToolManager.getCounts()
       this.toolText?.setText(`🔍x${c.magnify}  ⏱️x${c.watch}  ⚡x${c.flash}`)
     }
+
+    // 为道具文本添加点击区域检测
+    this.toolText.on('pointerup', (pointer: Phaser.Input.Pointer) => {
+      if (this.isPaused) return
+
+      const text = this.toolText?.text || ''
+      const x = pointer.x - this.toolText!.x
+      const y = pointer.y - this.toolText!.y
+
+      // 根据点击位置判断使用哪个道具
+      if (x < 60) {
+        ToolManager.use('magnify')
+      } else if (x < 120) {
+        ToolManager.use('watch')
+      } else {
+        ToolManager.use('flash')
+      }
+    })
     syncTools()
 
     on('tool:update', () => syncTools())

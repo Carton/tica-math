@@ -58,7 +58,7 @@ describe('EventBus', () => {
 
   test('发射不存在的事件应该安全处理', () => {
     expect(() => {
-      emit('nonexistent:event', {} as any)
+      emit('nonexistent:event' as any, {} as any)
     }).not.toThrow()
   })
 
@@ -66,7 +66,7 @@ describe('EventBus', () => {
     const handler = jest.fn()
 
     expect(() => {
-      off('nonexistent:event', handler)
+      off('nonexistent:event' as any, handler)
     }).not.toThrow()
   })
 

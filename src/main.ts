@@ -8,10 +8,11 @@ import UIScene from './game/scenes/UIScene'
 import ResultScene from './game/scenes/ResultScene'
 import HonorScene from './game/scenes/HonorScene'
 import ManualScene from './game/scenes/ManualScene'
+import UserScene from './game/scenes/UserScene'
 
 const config: Phaser.Types.Core.GameConfig = getGameConfig({
   parent: 'game',
-  scenes: [BootScene, PreloadScene, MainMenuScene, GameScene, UIScene, ResultScene, HonorScene, ManualScene],
+  scenes: [BootScene, PreloadScene, MainMenuScene, GameScene, UIScene, ResultScene, HonorScene, ManualScene, UserScene],
 })
 
 // eslint-disable-next-line no-new

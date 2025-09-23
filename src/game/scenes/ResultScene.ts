@@ -39,14 +39,14 @@ export default class ResultScene extends Phaser.Scene {
       this.scene.stop('ResultScene')
       if (sum?.pass && data.nextLevel) {
         const level = data.nextLevel
-        this.scene.start('GameScene', { level })
         this.scene.launch('UIScene', { level })
+        this.scene.start('GameScene', { level })
       } else {
         const level = sum?.level ?? 1
         if (this.scene.isActive('GameScene')) this.scene.stop('GameScene')
         if (this.scene.isActive('UIScene')) this.scene.stop('UIScene')
-        this.scene.start('GameScene', { level })
         this.scene.launch('UIScene', { level })
+        this.scene.start('GameScene', { level })
       }
     })
 
