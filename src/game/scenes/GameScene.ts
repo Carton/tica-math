@@ -23,6 +23,7 @@ export default class GameScene extends Phaser.Scene {
   private timeoutHandler = () => this.handleTimeout()
 
   private questionContainer?: Phaser.GameObjects.Container
+  private notePaper?: Phaser.GameObjects.Image
 
   constructor() {
     super('GameScene')
@@ -46,6 +47,11 @@ export default class GameScene extends Phaser.Scene {
     on('question:timeout', this.timeoutHandler)
 
     this.questionContainer = this.add.container(0, 0)
+    // 题目便签纸背景（如果资源存在）
+    if (this.textures.exists('paper_note')) {
+      this.notePaper = this.add.image(640, 320, 'paper_note').setOrigin(0.5)
+      this.questionContainer.add(this.notePaper)
+    }
 
     this.nextQuestion()
   }
@@ -59,12 +65,15 @@ export default class GameScene extends Phaser.Scene {
     }
 
     this.questionContainer?.removeAll(true)
+    if (this.notePaper && this.notePaper.texture) {
+      this.questionContainer?.add(this.notePaper)
+    }
 
     const params = DifficultyManager.getParams(this.level)
     this.current = QuestionGenerator.createQuestion(params)
     ToolManager.setQuestion(this.current)
 
-    const text = this.add.text(640, 360, this.current.questionString, { fontFamily: 'monospace', fontSize: '48px', color: '#ffffff' }).setOrigin(0.5)
+    const text = this.add.text(640, 360, this.current.questionString, { fontFamily: 'monospace', fontSize: '48px', color: '#0b1021' }).setOrigin(0.5)
     this.questionContainer?.add(text)
 
     emit('progress:update', { index: this.questionIndex + 1, total: this.total })

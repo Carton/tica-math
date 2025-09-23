@@ -44,16 +44,27 @@ export default class UIScene extends Phaser.Scene {
       color: '#ffd166',
     }).setOrigin(1, 0)
 
-    const btnTrue = this.add.text(width / 2 - 120, height - 80, '✅ 真相 (T/→)', {
-      fontFamily: 'sans-serif', fontSize: '24px', color: '#0b1021', backgroundColor: '#2de1c2', padding: { x: 14, y: 8 }
-    }).setOrigin(0.5).setInteractive({ useHandCursor: true })
+    // 使用印章精灵（若资源存在），否则使用文字按钮
+    let btnTrue: Phaser.GameObjects.GameObject
+    let btnFalse: Phaser.GameObjects.GameObject
+    if (this.textures.exists('stamp_true') && this.textures.exists('stamp_false')) {
+      const sTrue = this.add.image(width / 2 - 120, height - 80, 'stamp_true').setOrigin(0.5).setInteractive({ useHandCursor: true })
+      const sFalse = this.add.image(width / 2 + 120, height - 80, 'stamp_false').setOrigin(0.5).setInteractive({ useHandCursor: true })
+      btnTrue = sTrue
+      btnFalse = sFalse
+    } else {
+      const tTrue = this.add.text(width / 2 - 120, height - 80, '✅ 真相 (T/→)', {
+        fontFamily: 'sans-serif', fontSize: '24px', color: '#0b1021', backgroundColor: '#2de1c2', padding: { x: 14, y: 8 }
+      }).setOrigin(0.5).setInteractive({ useHandCursor: true })
+      const tFalse = this.add.text(width / 2 + 120, height - 80, '❌ 伪证 (F/←)', {
+        fontFamily: 'sans-serif', fontSize: '24px', color: '#0b1021', backgroundColor: '#ff6b6b', padding: { x: 14, y: 8 }
+      }).setOrigin(0.5).setInteractive({ useHandCursor: true })
+      btnTrue = tTrue
+      btnFalse = tFalse
+    }
 
-    const btnFalse = this.add.text(width / 2 + 120, height - 80, '❌ 伪证 (F/←)', {
-      fontFamily: 'sans-serif', fontSize: '24px', color: '#0b1021', backgroundColor: '#ff6b6b', padding: { x: 14, y: 8 }
-    }).setOrigin(0.5).setInteractive({ useHandCursor: true })
-
-    btnTrue.on('pointerup', () => this.emitChoice(true))
-    btnFalse.on('pointerup', () => this.emitChoice(false))
+    ;(btnTrue as any).on('pointerup', () => this.emitChoice(true))
+    ;(btnFalse as any).on('pointerup', () => this.emitChoice(false))
 
     this.input.keyboard?.on('keydown-T', () => this.emitChoice(true))
     this.input.keyboard?.on('keydown-RIGHT', () => this.emitChoice(true))
@@ -62,32 +73,40 @@ export default class UIScene extends Phaser.Scene {
 
     // 道具显示：图标xN格式
     const toolsY = height - 140
-    this.toolText = this.add.text(width - 260, toolsY, '', { fontFamily: 'monospace', fontSize: '20px', color: '#a9ffea' }).setInteractive({ useHandCursor: true })
-    const syncTools = () => {
-      const c = ToolManager.getCounts()
-      this.toolText?.setText(`🔍x${c.magnify}  ⏱️x${c.watch}  ⚡x${c.flash}`)
-    }
-
-    // 为道具文本添加点击区域检测
-    this.toolText.on('pointerup', (pointer: Phaser.Input.Pointer) => {
-      if (this.isPaused) return
-
-      const text = this.toolText?.text || ''
-      const x = pointer.x - this.toolText!.x
-      const y = pointer.y - this.toolText!.y
-
-      // 根据点击位置判断使用哪个道具
-      if (x < 60) {
-        ToolManager.use('magnify')
-      } else if (x < 120) {
-        ToolManager.use('watch')
-      } else {
-        ToolManager.use('flash')
+    const useIcons = this.textures.exists('icon_magnify') && this.textures.exists('icon_watch') && this.textures.exists('icon_flash')
+    if (useIcons) {
+      const gap = 56
+      const startX = width - 260
+      const iconMag = this.add.image(startX, toolsY, 'icon_magnify').setInteractive({ useHandCursor: true })
+      const iconWat = this.add.image(startX + gap, toolsY, 'icon_watch').setInteractive({ useHandCursor: true })
+      const iconFla = this.add.image(startX + gap * 2, toolsY, 'icon_flash').setInteractive({ useHandCursor: true })
+      iconMag.on('pointerup', () => !this.isPaused && ToolManager.use('magnify'))
+      iconWat.on('pointerup', () => !this.isPaused && ToolManager.use('watch'))
+      iconFla.on('pointerup', () => !this.isPaused && ToolManager.use('flash'))
+      const syncIcons = () => {
+        const c = ToolManager.getCounts()
+        iconMag.setAlpha(c.magnify > 0 ? 1 : 0.3)
+        iconWat.setAlpha(c.watch > 0 ? 1 : 0.3)
+        iconFla.setAlpha(c.flash > 0 ? 1 : 0.3)
       }
-    })
-    syncTools()
-
-    on('tool:update', () => syncTools())
+      syncIcons()
+      on('tool:update', () => syncIcons())
+    } else {
+      this.toolText = this.add.text(width - 260, toolsY, '', { fontFamily: 'monospace', fontSize: '20px', color: '#a9ffea' }).setInteractive({ useHandCursor: true })
+      const syncTools = () => {
+        const c = ToolManager.getCounts()
+        this.toolText?.setText(`🔍x${c.magnify}  ⏱️x${c.watch}  ⚡x${c.flash}`)
+      }
+      this.toolText.on('pointerup', (pointer: Phaser.Input.Pointer) => {
+        if (this.isPaused) return
+        const x = pointer.x - this.toolText!.x
+        if (x < 60) ToolManager.use('magnify')
+        else if (x < 120) ToolManager.use('watch')
+        else ToolManager.use('flash')
+      })
+      syncTools()
+      on('tool:update', () => syncTools())
+    }
 
     this.hintText = this.add.text(20, height - 140, '', { fontFamily: 'sans-serif', fontSize: '18px', color: '#ffffff', wordWrap: { width: width - 300 } })
 
