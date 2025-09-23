@@ -2,9 +2,25 @@ import Phaser from 'phaser'
 import { SaveManager } from '@/game/managers/SaveManager'
 
 export default class UserScene extends Phaser.Scene {
+  // 输入相关
   private inputField: Phaser.GameObjects.Text | null = null
   private inputText: string = ''
   private errorMessage: Phaser.GameObjects.Text | null = null
+
+  // 列表/分页
+  private users: { id: string; data: any }[] = []
+  private currentUserId: string = ''
+  private pageIndex: number = 0
+  private readonly pageSize: number = 8
+  private listItemContainers: Phaser.GameObjects.Container[] = []
+  private pagePrevBtn: Phaser.GameObjects.Text | null = null
+  private pageNextBtn: Phaser.GameObjects.Text | null = null
+  private pageIndicator: Phaser.GameObjects.Text | null = null
+
+  // 弹窗
+  private modalContainer: Phaser.GameObjects.Container | null = null
+  private isModalOpen: boolean = false
+  private keyHandler: ((e: KeyboardEvent) => void) | null = null
 
   constructor() {
     super('UserScene')
@@ -13,115 +29,28 @@ export default class UserScene extends Phaser.Scene {
   create() {
     const { width, height } = this.scale
 
-    // 标题
+    // 数据
+    this.users = SaveManager.getAllUsers()
+    this.currentUserId = SaveManager.getCurrentUserId()
+
+    // 标题与“新建用户”按钮
     this.add.text(width / 2, 60, '选择用户', { fontFamily: 'sans-serif', fontSize: '32px', color: '#ffffff' }).setOrigin(0.5)
+    const createBtnTop = this.add.text(width - 120, 20, '新建用户', { fontFamily: 'sans-serif', fontSize: '16px', color: '#0b1021', backgroundColor: '#ffd166', padding: { x: 12, y: 6 } }).setInteractive({ useHandCursor: true })
+    createBtnTop.on('pointerup', () => this.openCreateDialog())
 
-    // 显示现有用户
-    const users = SaveManager.getAllUsers()
-    const cur = SaveManager.getCurrentUserId()
+    // 用户列表（分页）
+    this.renderUserList()
 
-    let y = 120
-    users.forEach(({ id, data }) => {
-      const userBg = this.add.rectangle(width / 2, y, width - 160, 40, 0x1a2332)
-        .setStrokeStyle(2, id === cur ? 0x2de1c2 : 0x3a4a5c)
-
-      const userText = this.add.text(width / 2, y, `${id}  Lv.${data.bestLevel}  徽章:${data.badges.length}  EXP:${data.exp}`, {
-        fontFamily: 'monospace',
-        fontSize: '18px',
-        color: id === cur ? '#2de1c2' : '#a9ffea'
-      }).setOrigin(0.5)
-
-      const userContainer = this.add.container(width / 2, y, [userBg, userText])
-        .setSize(width - 160, 40)
-        .setInteractive({ useHandCursor: true })
-
-      userContainer.on('pointerup', () => {
-        SaveManager.setCurrentUser(id)
-        this.scene.start('MainMenuScene')
-      })
-
-      // 悬停效果
-      userContainer.on('pointerover', () => {
-        userBg.setFillStyle(0x2a3a4a)
-      })
-      userContainer.on('pointerout', () => {
-        userBg.setFillStyle(0x1a2332)
-      })
-
-      y += 50
-    })
-
-    // 新建用户区域
-    const createY = y + 20
-    this.add.text(width / 2, createY, '新建用户', { fontFamily: 'sans-serif', fontSize: '24px', color: '#ffffff' }).setOrigin(0.5)
-
-    // 输入框背景
-    const inputBg = this.add.rectangle(width / 2, createY + 40, 300, 40, 0x1a2332)
-      .setStrokeStyle(2, 0x3a4a5c)
-
-    // 输入框
-    this.inputField = this.add.text(width / 2, createY + 40, '', {
-      fontFamily: 'monospace',
-      fontSize: '18px',
-      color: '#ffffff'
-    }).setOrigin(0.5)
-
-    // 输入提示
-    this.add.text(width / 2, createY + 65, '输入用户ID (字母数字下划线)', {
-      fontFamily: 'sans-serif',
-      fontSize: '14px',
-      color: '#666666'
-    }).setOrigin(0.5)
-
-    // 错误信息显示
-    this.errorMessage = this.add.text(width / 2, createY + 85, '', {
-      fontFamily: 'sans-serif',
-      fontSize: '14px',
-      color: '#ff4444'
-    }).setOrigin(0.5)
-
-    // 创建按钮
-    const createBtn = this.add.text(width / 2, createY + 110, '创建用户', {
-      fontFamily: 'sans-serif',
-      fontSize: '18px',
-      color: '#0b1021',
-      backgroundColor: '#2de1c2',
-      padding: { x: 20, y: 10 }
-    }).setOrigin(0.5).setInteractive({ useHandCursor: true })
-
-    createBtn.on('pointerup', () => this.createUser())
-
-    // 取消按钮（只有在有用户时才显示）
-    if (users.length > 0) {
-      const cancelBtn = this.add.text(width / 2, createY + 150, '取消', {
-        fontFamily: 'sans-serif',
-        fontSize: '16px',
-        color: '#0b1021',
-        backgroundColor: '#666666',
-        padding: { x: 16, y: 8 }
+    // 返回按钮（仅当已有用户时）
+    if (this.users.length > 0) {
+      const backBtn = this.add.text(width / 2, height - 40, '返回', {
+        fontFamily: 'sans-serif', fontSize: '16px', color: '#0b1021', backgroundColor: '#a9ffea', padding: { x: 16, y: 8 }
       }).setOrigin(0.5).setInteractive({ useHandCursor: true })
-
-      cancelBtn.on('pointerup', () => {
-        this.scene.start('MainMenuScene')
-      })
+      backBtn.on('pointerup', () => this.scene.start('MainMenuScene'))
     }
-
-    // 键盘输入处理
-    this.input.keyboard?.on('keydown', (event: KeyboardEvent) => {
-      if (event.key === 'Enter') {
-        this.createUser()
-      } else if (event.key === 'Escape' && users.length > 0) {
-        this.scene.start('MainMenuScene')
-      } else if (event.key === 'Backspace') {
-        this.inputText = this.inputText.slice(0, -1)
-        this.updateInputDisplay()
-      } else if (event.key.length === 1 && this.inputText.length < 20) {
-        // 只允许字母数字和下划线
-        if (/[a-zA-Z0-9_]/.test(event.key)) {
-          this.inputText += event.key
-          this.updateInputDisplay()
-        }
-      }
+    // ESC 返回
+    this.input.keyboard?.on('keydown-ESC', () => {
+      if (!this.isModalOpen && this.users.length > 0) this.scene.start('MainMenuScene')
     })
   }
 
@@ -144,6 +73,135 @@ export default class UserScene extends Phaser.Scene {
     }
   }
 
+  private renderUserList() {
+    const { width } = this.scale
+
+    // 清理旧项
+    this.listItemContainers.forEach(c => c.destroy())
+    this.listItemContainers = []
+    this.pagePrevBtn?.destroy()
+    this.pageNextBtn?.destroy()
+    this.pageIndicator?.destroy()
+
+    const listLeft = 60
+    const listRight = width - 60
+    const rowWidth = listRight - listLeft
+    const rowHeight = 44
+    const startY = 120
+
+    const start = this.pageIndex * this.pageSize
+    const end = Math.min(start + this.pageSize, this.users.length)
+    const slice = this.users.slice(start, end)
+
+    let y = startY
+    slice.forEach(({ id, data }) => {
+      const bg = this.add.rectangle(listLeft + rowWidth / 2, y, rowWidth, rowHeight, 0x1a2332)
+        .setStrokeStyle(2, id === this.currentUserId ? 0x2de1c2 : 0x3a4a5c)
+
+      const text = this.add.text(listLeft + 12, y, `${id}  Lv.${data.bestLevel}  徽章:${data.badges.length}  EXP:${data.exp}`, {
+        fontFamily: 'monospace', fontSize: '18px', color: id === this.currentUserId ? '#2de1c2' : '#a9ffea'
+      }).setOrigin(0, 0.5)
+
+      const row = this.add.container(0, 0, [bg, text]).setSize(rowWidth, rowHeight).setInteractive(new Phaser.Geom.Rectangle(listLeft, y - rowHeight / 2, rowWidth, rowHeight), Phaser.Geom.Rectangle.Contains)
+
+      row.on('pointerup', () => {
+        SaveManager.setCurrentUser(id)
+        this.scene.start('MainMenuScene')
+      })
+
+      row.on('pointerover', () => {
+        bg.setFillStyle(0x2a3a4a)
+      })
+      row.on('pointerout', () => {
+        bg.setFillStyle(0x1a2332)
+      })
+
+      this.listItemContainers.push(row)
+      y += rowHeight + 8
+    })
+
+    // 分页控件
+    const totalPages = Math.max(1, Math.ceil(this.users.length / this.pageSize))
+    const pagerY = y + 10
+    this.pagePrevBtn = this.add.text(listLeft + 20, pagerY, '◀ 上一页', { fontFamily: 'sans-serif', fontSize: '14px', color: '#a9ffea', backgroundColor: '#132235', padding: { x: 10, y: 6 } })
+      .setInteractive({ useHandCursor: totalPages > 1 })
+      .on('pointerup', () => {
+        if (this.pageIndex > 0) {
+          this.pageIndex -= 1
+          this.renderUserList()
+        }
+      })
+
+    this.pageIndicator = this.add.text(listLeft + rowWidth / 2, pagerY, `${this.pageIndex + 1} / ${totalPages}`, { fontFamily: 'monospace', fontSize: '14px', color: '#a9ffea' }).setOrigin(0.5)
+
+    this.pageNextBtn = this.add.text(listLeft + rowWidth - 90, pagerY, '下一页 ▶', { fontFamily: 'sans-serif', fontSize: '14px', color: '#a9ffea', backgroundColor: '#132235', padding: { x: 10, y: 6 } })
+      .setInteractive({ useHandCursor: totalPages > 1 })
+      .on('pointerup', () => {
+        if (this.pageIndex < totalPages - 1) {
+          this.pageIndex += 1
+          this.renderUserList()
+        }
+      })
+  }
+
+  private openCreateDialog() {
+    if (this.isModalOpen) return
+    this.isModalOpen = true
+    const { width, height } = this.scale
+
+    this.inputText = ''
+    const overlay = this.add.rectangle(width / 2, height / 2, width, height, 0x000000, 0.5).setInteractive()
+    const panelW = 480
+    const panelH = 220
+    const cx = width / 2
+    const cy = height / 2
+    const panel = this.add.rectangle(cx, cy, panelW, panelH, 0x1a2332).setStrokeStyle(2, 0x3a4a5c)
+    const title = this.add.text(cx, cy - panelH / 2 + 16, '新建用户', { fontFamily: 'sans-serif', fontSize: '18px', color: '#ffffff' }).setOrigin(0.5, 0)
+
+    const inputBg = this.add.rectangle(cx, cy - 10, panelW - 80, 44, 0x0f1724).setStrokeStyle(1, 0x3a4a5c)
+    this.inputField = this.add.text(cx, cy - 10, '_', { fontFamily: 'monospace', fontSize: '18px', color: '#ffffff' }).setOrigin(0.5)
+    const hint = this.add.text(cx, cy + 20, '输入用户ID (字母数字下划线)', { fontFamily: 'sans-serif', fontSize: '14px', color: '#666666' }).setOrigin(0.5)
+    this.errorMessage = this.add.text(cx, cy + 44, '', { fontFamily: 'sans-serif', fontSize: '14px', color: '#ff4444' }).setOrigin(0.5)
+
+    const ok = this.add.text(cx - 60, cy + 80, '创建', { fontFamily: 'sans-serif', fontSize: '16px', color: '#0b1021', backgroundColor: '#2de1c2', padding: { x: 16, y: 8 } }).setOrigin(0.5).setInteractive({ useHandCursor: true })
+    const cancel = this.add.text(cx + 60, cy + 80, '取消', { fontFamily: 'sans-serif', fontSize: '16px', color: '#0b1021', backgroundColor: '#666666', padding: { x: 16, y: 8 } }).setOrigin(0.5).setInteractive({ useHandCursor: true })
+
+    ok.on('pointerup', () => this.createUser())
+    cancel.on('pointerup', () => this.closeCreateDialog())
+
+    this.modalContainer = this.add.container(0, 0, [overlay, panel, title, inputBg, this.inputField, hint, this.errorMessage, ok, cancel])
+
+    // 键盘处理（仅弹窗期间）
+    this.keyHandler = (event: KeyboardEvent) => {
+      if (event.key === 'Enter') {
+        this.createUser()
+      } else if (event.key === 'Escape') {
+        this.closeCreateDialog()
+      } else if (event.key === 'Backspace') {
+        this.inputText = this.inputText.slice(0, -1)
+        this.updateInputDisplay()
+      } else if (event.key.length === 1 && this.inputText.length < 20) {
+        if (/[a-zA-Z0-9_]/.test(event.key)) {
+          this.inputText += event.key
+          this.updateInputDisplay()
+        }
+      }
+    }
+    this.input.keyboard?.on('keydown', this.keyHandler)
+  }
+
+  private closeCreateDialog() {
+    if (!this.isModalOpen) return
+    this.isModalOpen = false
+    if (this.keyHandler) this.input.keyboard?.off('keydown', this.keyHandler)
+    this.keyHandler = null
+    this.modalContainer?.destroy()
+    this.modalContainer = null
+    this.inputField = null
+    this.errorMessage = null
+    this.inputText = ''
+  }
+
   private createUser() {
     const id = this.inputText.trim()
 
@@ -163,7 +221,9 @@ export default class UserScene extends Phaser.Scene {
     }
 
     SaveManager.createUser(id)
-    SaveManager.setCurrentUser(id)
-    this.scene.start('MainMenuScene')
+    // 刷新数据与界面，保持在此场景，不自动切换
+    this.users = SaveManager.getAllUsers()
+    this.renderUserList()
+    this.closeCreateDialog()
   }
 }
