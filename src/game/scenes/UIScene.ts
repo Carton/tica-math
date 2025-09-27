@@ -5,9 +5,11 @@ import { SaveManager } from '@/game/managers/SaveManager'
 
 export default class UIScene extends Phaser.Scene {
   private headerLeftText?: Phaser.GameObjects.Text
-  private headerHintText?: Phaser.GameObjects.Text
+  private headerToolText?: Phaser.GameObjects.Text
   private countdownText?: Phaser.GameObjects.Text
-  private toolText?: Phaser.GameObjects.Text
+  private footerToolText?: Phaser.GameObjects.Text
+  private hintText?: Phaser.GameObjects.Text
+  private footerHintText?: Phaser.GameObjects.Text
   private toolUpdateHandler?: () => void
   private remainingMs = 0
   private timer?: Phaser.Time.TimerEvent
@@ -62,14 +64,29 @@ export default class UIScene extends Phaser.Scene {
       color: '#ffd166',
     }).setOrigin(1, 0.5)
 
-    this.toolText = this.add.text(width * 0.83, headerY, '', {
+    const hintAreaWidth = width * 0.36
+    this.hintText = this.add.text(width / 2, headerY, '', {
+      fontFamily: 'sans-serif',
+      fontSize: '20px',
+      color: '#a9ffea',
+      align: 'center',
+      wordWrap: { width: hintAreaWidth },
+    }).setOrigin(0.5, 0.5)
+
+    this.headerToolText = this.add.text(width * 0.82, headerY, '', {
       fontFamily: 'sans-serif',
       fontSize: '20px',
       color: '#a9ffea',
       align: 'center',
     }).setOrigin(0.5, 0.5)
 
-    this.headerHintText = this.add.text(40, height - 140, '', {
+    this.footerToolText = this.add.text(width - 260, height - 140, '', {
+      fontFamily: 'sans-serif',
+      fontSize: '18px',
+      color: '#a9ffea',
+    }).setOrigin(0, 0.5)
+
+    this.footerHintText = this.add.text(40, height - 140, '', {
       fontFamily: 'sans-serif',
       fontSize: '18px',
       color: '#ffffff',
@@ -111,7 +128,11 @@ export default class UIScene extends Phaser.Scene {
     // 道具显示：图标xN格式
     const updateToolHeader = () => {
       const counts = ToolManager.getCounts()
-      this.toolText?.setText(`🔍x${counts.magnify}  ⏱️x${counts.watch}  ⚡x${counts.flash}`)
+      const text = `🔍x${counts.magnify}  ⏱️x${counts.watch}  ⚡x${counts.flash}`
+      this.headerToolText?.setText(text)
+      this.footerToolText?.setText(text)
+      const useIcons = this.textures.exists('icon_magnify') && this.textures.exists('icon_watch') && this.textures.exists('icon_flash')
+      this.footerToolText?.setVisible(!useIcons)
     }
     updateToolHeader()
     this.toolUpdateHandler = () => updateToolHeader()
@@ -225,7 +246,8 @@ export default class UIScene extends Phaser.Scene {
   }
 
   private showHint(hint: string) {
-    this.headerHintText?.setText(hint)
+    this.hintText?.setText(hint)
+    this.footerHintText?.setText(hint)
   }
 
   private updateHeaderLeftText() {
