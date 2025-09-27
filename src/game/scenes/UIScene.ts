@@ -16,6 +16,20 @@ export default class UIScene extends Phaser.Scene {
   private isPaused = false
   private currentLevel = 1
 
+  private progressHandler = ({ index, total }: { index: number; total: number }) => {
+    this.progressText?.setText(`线索 ${index}/${total}`)
+  }
+  private countdownStartHandler = ({ totalMs }: { totalMs: number }) => this.startCountdown(totalMs)
+  private countdownExtendHandler = ({ deltaMs }: { deltaMs: number }) => this.extendCountdown(deltaMs)
+  private hintHandler = ({ hint }: { hint: string }) => this.showHint(hint)
+  private toolUpdateHandler?: ({ magnify, watch, flash }: { magnify: number; watch: number; flash: number }) => void
+
+  private handleEscKey = () => this.togglePauseDialog()
+  private handleTrueKey = () => this.emitChoice(true)
+  private handleRightKey = () => this.emitChoice(true)
+  private handleFalseKey = () => this.emitChoice(false)
+  private handleLeftKey = () => this.emitChoice(false)
+
   constructor() {
     super('UIScene')
   }
@@ -66,10 +80,10 @@ export default class UIScene extends Phaser.Scene {
     ;(btnTrue as any).on('pointerup', () => this.emitChoice(true))
     ;(btnFalse as any).on('pointerup', () => this.emitChoice(false))
 
-    this.input.keyboard?.on('keydown-T', () => this.emitChoice(true))
-    this.input.keyboard?.on('keydown-RIGHT', () => this.emitChoice(true))
-    this.input.keyboard?.on('keydown-F', () => this.emitChoice(false))
-    this.input.keyboard?.on('keydown-LEFT', () => this.emitChoice(false))
+    this.input.keyboard?.on('keydown-T', this.handleTrueKey)
+    this.input.keyboard?.on('keydown-RIGHT', this.handleRightKey)
+    this.input.keyboard?.on('keydown-F', this.handleFalseKey)
+    this.input.keyboard?.on('keydown-LEFT', this.handleLeftKey)
 
     // 道具显示：图标xN格式
     const toolsY = height - 140
@@ -90,7 +104,8 @@ export default class UIScene extends Phaser.Scene {
         iconFla.setAlpha(c.flash > 0 ? 1 : 0.3)
       }
       syncIcons()
-      on('tool:update', () => syncIcons())
+      this.toolUpdateHandler = () => syncIcons()
+      on('tool:update', this.toolUpdateHandler)
     } else {
       this.toolText = this.add.text(width - 260, toolsY, '', { fontFamily: 'monospace', fontSize: '20px', color: '#a9ffea' }).setInteractive({ useHandCursor: true })
       const syncTools = () => {
@@ -105,29 +120,39 @@ export default class UIScene extends Phaser.Scene {
         else ToolManager.use('flash')
       })
       syncTools()
-      on('tool:update', () => syncTools())
+      this.toolUpdateHandler = () => syncTools()
+      on('tool:update', this.toolUpdateHandler)
     }
 
     this.hintText = this.add.text(20, height - 140, '', { fontFamily: 'sans-serif', fontSize: '18px', color: '#ffffff', wordWrap: { width: width - 300 } })
 
-    on('progress:update', ({ index, total }) => {
-      this.progressText?.setText(`线索 ${index}/${total}`)
-    })
+    on('progress:update', this.progressHandler)
 
-    on('ui:countdown:start', ({ totalMs }) => this.startCountdown(totalMs))
-    on('ui:countdown:extend', ({ deltaMs }) => this.extendCountdown(deltaMs))
-    on('tool:hints', ({ hint }) => this.showHint(hint))
+    on('ui:countdown:start', this.countdownStartHandler)
+    on('ui:countdown:extend', this.countdownExtendHandler)
+    on('tool:hints', this.hintHandler)
 
     // ESC 暂停弹窗
-    this.input.keyboard?.on('keydown-ESC', () => this.togglePauseDialog())
+    this.input.keyboard?.on('keydown-ESC', this.handleEscKey)
 
     this.events.on(Phaser.Scenes.Events.SHUTDOWN, () => {
-      off('progress:update', () => {})
-      off('ui:countdown:start', () => {})
-      off('ui:countdown:extend', () => {})
-      off('tool:hints', () => {})
-      off('tool:update', () => {})
+      off('progress:update', this.progressHandler)
+      off('ui:countdown:start', this.countdownStartHandler)
+      off('ui:countdown:extend', this.countdownExtendHandler)
+      off('tool:hints', this.hintHandler)
+      if (this.toolUpdateHandler) {
+        off('tool:update', this.toolUpdateHandler)
+        this.toolUpdateHandler = undefined
+      }
+      const keyboard = this.input.keyboard
+      keyboard?.off('keydown-ESC', this.handleEscKey)
+      keyboard?.off('keydown-T', this.handleTrueKey)
+      keyboard?.off('keydown-RIGHT', this.handleRightKey)
+      keyboard?.off('keydown-F', this.handleFalseKey)
+      keyboard?.off('keydown-LEFT', this.handleLeftKey)
+      this.closePauseDialog(false)
       this.timer?.remove()
+      this.timer = undefined
     })
   }
 
@@ -136,13 +161,20 @@ export default class UIScene extends Phaser.Scene {
     emit('ui:choice', { choice })
   }
 
+  private closePauseDialog(emitResume: boolean) {
+    if (!this.isPaused) return
+    this.isPaused = false
+    this.pausedOverlay?.destroy()
+    this.pausedOverlay = undefined
+    this.pausedDialog?.destroy()
+    this.pausedDialog = undefined
+    if (emitResume) emit('ui:resume', undefined as any)
+  }
+
   private togglePauseDialog() {
     if (this.isPaused) {
       // 恢复
-      this.isPaused = false
-      this.pausedOverlay?.destroy()
-      this.pausedDialog?.destroy()
-      emit('ui:resume', undefined as any)
+      this.closePauseDialog(true)
       return
     }
     // 暂停
@@ -159,6 +191,7 @@ export default class UIScene extends Phaser.Scene {
     const btnResume = this.add.text(80, 40, '继续', { fontFamily: 'sans-serif', fontSize: '18px', color: '#0b1021', backgroundColor: '#2de1c2', padding: { x: 12, y: 6 } }).setOrigin(0.5).setInteractive({ useHandCursor: true })
 
     btnBack.on('pointerup', () => {
+      this.closePauseDialog(false)
       this.scene.stop('UIScene')
       this.scene.stop('GameScene')
       this.scene.start('MainMenuScene')
