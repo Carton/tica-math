@@ -25,6 +25,7 @@ export default class MainMenuScene extends Phaser.Scene {
       if (hasBg) {
         const bg = this.add.image(width / 2, height / 2, 'bg_office')
         bg.setOrigin(0.5).setDepth(-10)
+        bg.setDisplaySize(1280, 720)
         // 沉浸式：隐藏显式按钮，使用热区
         titleY = 80
       }
