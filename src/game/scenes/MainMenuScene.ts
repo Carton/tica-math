@@ -108,8 +108,6 @@ export default class MainMenuScene extends Phaser.Scene {
     honor.on('pointerup', () => this.scene.start('HonorScene'))
     manual.on('pointerup', () => this.scene.start('ManualScene'))
     manage.on('pointerup', () => this.scene.start('UserScene'))
-
-    this.input.keyboard?.on('keydown-ESC', () => this.scene.start('HonorScene'))
     if (start instanceof Phaser.GameObjects.Text) {
       this.input.keyboard?.once('keydown-ENTER', () => start.emit('pointerup'))
     }
