@@ -16,8 +16,8 @@ export default class PreloadScene extends Phaser.Scene {
     // 音频与图片占位符可在此处预加载（文件到位后放开注释）
     this.load.image('bg_office', 'images/bg_office.png')
     this.load.image('paper_note', 'images/paper_note.webp')
-    // this.load.image('stamp_true', 'images/stamp_true.png')
-    // this.load.image('stamp_false', 'images/stamp_false.png')
+    this.load.image('stamp_true', 'images/stamp_true.webp')
+    this.load.image('stamp_false', 'images/stamp_false.webp')
     // this.load.image('icon_magnify', 'images/icons_magnify.png')
     // this.load.image('icon_watch', 'images/icons_watch.png')
     // this.load.image('icon_flash', 'images/icons_flash.png')
