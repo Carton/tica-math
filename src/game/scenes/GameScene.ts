@@ -23,6 +23,7 @@ export default class GameScene extends Phaser.Scene {
   private timeoutHandler = () => this.handleTimeout()
 
   private questionContainer?: Phaser.GameObjects.Container
+  private notePaper?: Phaser.GameObjects.Image
 
   constructor() {
     super('GameScene')
@@ -47,6 +48,16 @@ export default class GameScene extends Phaser.Scene {
 
     this.questionContainer = this.add.container(0, 0)
 
+    // 创建便签纸背景（如果资源存在）
+    if (this.textures.exists('paper_note')) {
+      try {
+        this.notePaper = this.add.image(640, 320, 'paper_note').setOrigin(0.5)
+        this.questionContainer.add(this.notePaper)
+      } catch (error) {
+        console.warn('Failed to create paper_note:', error)
+      }
+    }
+
     this.nextQuestion()
   }
 
@@ -58,17 +69,13 @@ export default class GameScene extends Phaser.Scene {
       return
     }
 
-    this.questionContainer?.removeAll(true)
-
-    // 添加便签纸背景（如果资源存在）
-    if (this.textures.exists('paper_note')) {
-      try {
-        const notePaper = this.add.image(640, 320, 'paper_note').setOrigin(0.5)
-        this.questionContainer?.add(notePaper)
-      } catch (error) {
-        console.warn('Failed to create paper_note:', error)
+    // 清除之前的题目文字（保留便签纸背景）
+    const children = this.questionContainer?.getAll()
+    children?.forEach(child => {
+      if (child !== this.notePaper) {
+        this.questionContainer?.remove(child, true)
       }
-    }
+    })
 
     const params = DifficultyManager.getParams(this.level)
     this.current = QuestionGenerator.createQuestion(params)
