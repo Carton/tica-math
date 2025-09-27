@@ -48,7 +48,9 @@ export default class MainMenuScene extends Phaser.Scene {
         yRatio: number,
         widthRatio: number,
         heightRatio: number,
-        onPointerUp: () => void
+        labelText: string,
+        onPointerUp: () => void,
+        labelYOffsetRatio = 0
       ) => {
         const rect = this.add.rectangle(
           width * xRatio,
@@ -61,12 +63,35 @@ export default class MainMenuScene extends Phaser.Scene {
           .setOrigin(0.5)
           .setInteractive({ useHandCursor: true })
 
+        const label = this.add.text(rect.x, rect.y + height * labelYOffsetRatio, labelText, {
+          fontFamily: 'serif',
+          fontSize: '24px',
+          color: '#f8f0c8'
+        })
+          .setOrigin(0.5)
+          .setAlpha(0)
+          .setDepth(10)
+
+        label.setStroke('#382b18', 2).setShadow(0, 2, '#050608', 6, false, true)
+
+        const fadeLabel = (alpha: number, duration: number) => {
+          this.tweens.killTweensOf(label)
+          this.tweens.add({
+            targets: label,
+            alpha,
+            duration,
+            ease: 'Sine.easeOut'
+          })
+        }
+
         rect.on('pointerover', () => {
           rect.setFillStyle(0xffffff, 0.3)
+          fadeLabel(1, 120)
         })
 
         rect.on('pointerout', () => {
           rect.setFillStyle(0x0, 0)
+          fadeLabel(0, 160)
         })
 
         rect.on('pointerup', onPointerUp)
@@ -74,18 +99,18 @@ export default class MainMenuScene extends Phaser.Scene {
         return rect
       }
 
-      createHotspot(0.41, 0.68, 0.35, 0.12, () => {
+      createHotspot(0.41, 0.68, 0.35, 0.12, '开始破案', () => {
         const level = user.bestLevel || 1
         ToolManager.resetToDefault()
         this.scene.launch('UIScene', { level })
         this.scene.start('GameScene', { level })
       })
 
-      createHotspot(0.255, 0.37, 0.05, 0.12, () => this.scene.start('UserScene'))
+      createHotspot(0.255, 0.37, 0.05, 0.12, '切换用户', () => this.scene.start('UserScene'))
 
-      createHotspot(0.81, 0.48, 0.17, 0.37, () => this.scene.start('ManualScene'))
+      createHotspot(0.81, 0.48, 0.17, 0.37, '侦探手册', () => this.scene.start('ManualScene'))
 
-      createHotspot(0.71, 0.01, 0.38, 0.55, () => this.scene.start('HonorScene'))
+      createHotspot(0.71, 0.01, 0.38, 0.55, '荣誉墙', () => this.scene.start('HonorScene'), 0.1)
     } else {
       // 按钮模式 - 只有在背景无法加载时显示
       const buttonStyle = {
