@@ -41,20 +41,18 @@ export default class MainMenuScene extends Phaser.Scene {
     const user = SaveManager.getCurrent()
     this.add.text(width / 2, title.y + 40, `当前用户: ${userId}  最高关: ${user.bestLevel}  徽章:${user.badges.length}`, { fontFamily: 'monospace', fontSize: '14px', color: '#a9ffea' }).setOrigin(0.5)
 
-    // 如果有背景图，则创建沉浸式热区；否则保留文字按钮
-    let start: Phaser.GameObjects.Text | Phaser.GameObjects.Rectangle
+    // 如果有背景图，则创建沉浸式热区；否则显示文字按钮
     if (this.textures.exists('bg_office')) {
-      // 模拟：桌面热区（开始游戏）、公告板（手册）、书架（荣誉墙）、门（切换用户）
+      // 沉浸式热区模式
       const deskHotspot = this.add.rectangle(width * 0.41, height * 0.68, width * 0.35, height * 0.12, 0x00ff00, 0)
         .setInteractive({ useHandCursor: true })
         .on('pointerover', () => {
           deskHotspot.setFillStyle(0xffffff, 0.3)
-          // 添加发光效果
           const glowFx = deskHotspot.preFX?.addGlow(0xffffff, 0.3, 0, false)
         })
         .on('pointerout', () => {
-          deskHotspot.setFillStyle(0x0, 0)  // 恢复原始颜色
-          deskHotspot.preFX?.clear()     // 清除所有FX效果
+          deskHotspot.setFillStyle(0x0, 0)
+          deskHotspot.preFX?.clear()
         })
         .on('pointerup', () => {
           const level = user.bestLevel || 1
@@ -62,18 +60,16 @@ export default class MainMenuScene extends Phaser.Scene {
           this.scene.launch('UIScene', { level })
           this.scene.start('GameScene', { level })
         })
-      start = deskHotspot
 
       const nameHotspot = this.add.rectangle(width * 0.255, height * 0.37, width * 0.05, height * 0.12, 0xff0000, 0)
         .setInteractive({ useHandCursor: true })
         .on('pointerover', () => {
           nameHotspot.setFillStyle(0xffffff, 0.3)
-          // 添加发光效果
           const glowFx = nameHotspot.preFX?.addGlow(0xffffff, 0.3, 0, false)
         })
         .on('pointerout', () => {
-          nameHotspot.setFillStyle(0x0, 0)  // 恢复原始颜色
-          nameHotspot.preFX?.clear()     // 清除所有FX效果
+          nameHotspot.setFillStyle(0x0, 0)
+          nameHotspot.preFX?.clear()
         })
         .on('pointerup', () => this.scene.start('UserScene'))
 
@@ -81,12 +77,11 @@ export default class MainMenuScene extends Phaser.Scene {
         .setInteractive({ useHandCursor: true })
         .on('pointerover', () => {
           manualHotspot.setFillStyle(0xffffff, 0.3)
-          // 添加发光效果
           const glowFx = manualHotspot.preFX?.addGlow(0xffffff, 0.3, 0, false)
         })
         .on('pointerout', () => {
-          manualHotspot.setFillStyle(0x0, 0)  // 恢复原始颜色
-          manualHotspot.preFX?.clear()     // 清除所有FX效果
+          manualHotspot.setFillStyle(0x0, 0)
+          manualHotspot.preFX?.clear()
         })
         .on('pointerup', () => this.scene.start('ManualScene'))
 
@@ -94,50 +89,58 @@ export default class MainMenuScene extends Phaser.Scene {
         .setInteractive({ useHandCursor: true })
         .on('pointerover', () => {
           honorHotspot.setFillStyle(0xffffff, 0.3)
-          // 添加发光效果
           const glowFx = honorHotspot.preFX?.addGlow(0xffffff, 0.3, 0, false)
         })
         .on('pointerout', () => {
-          honorHotspot.setFillStyle(0xffffff, 0)  // 恢复原始颜色
-          honorHotspot.preFX?.clear()     // 清除所有FX效果
+          honorHotspot.setFillStyle(0xffffff, 0)
+          honorHotspot.preFX?.clear()
         })
         .on('pointerup', () => this.scene.start('HonorScene'))
     } else {
-      start = this.add.text(width / 2, title.y + 100, '开始破案 ▶', {
+      // 按钮模式 - 只有在背景无法加载时显示
+      const buttonStyle = {
         fontFamily: 'sans-serif',
-        fontSize: '28px',
-        color: '#00e18c',
-        backgroundColor: '#132235',
-        padding: { x: 16, y: 10 },
-      }).setOrigin(0.5).setInteractive({ useHandCursor: true })
-    }
+        fontSize: '20px',
+        color: '#0b1021',
+        backgroundColor: '#2de1c2',
+        padding: { x: 16, y: 10 }
+      }
 
-    const honor = this.add.text(width / 2 - 120, (start instanceof Phaser.GameObjects.Text ? start.y : title.y + 140), '荣誉墙', {
-      fontFamily: 'sans-serif', fontSize: '20px', color: '#0b1021', backgroundColor: '#a9ffea', padding: { x: 12, y: 6 }
-    }).setOrigin(0.5).setInteractive({ useHandCursor: true })
+      const startY = title.y + 120
+      const spacing = 60
+      const buttonWidth = 110  // 统一按钮宽度
 
-    const manual = this.add.text(width / 2 + 120, (start instanceof Phaser.GameObjects.Text ? start.y : title.y + 140), '侦探手册', {
-      fontFamily: 'sans-serif', fontSize: '20px', color: '#0b1021', backgroundColor: '#a9ffea', padding: { x: 12, y: 6 }
-    }).setOrigin(0.5).setInteractive({ useHandCursor: true })
+      const startBtn = this.add.text(width / 2, startY, '开始破案', buttonStyle)
+        .setOrigin(0.5).setInteractive({ useHandCursor: true })
 
-    const manage = this.add.text(width / 2, (start instanceof Phaser.GameObjects.Text ? start.y + 110 : title.y + 200), '切换用户', {
-      fontFamily: 'sans-serif', fontSize: '16px', color: '#0b1021', backgroundColor: '#ffd166', padding: { x: 12, y: 6 }
-    }).setOrigin(0.5).setInteractive({ useHandCursor: true })
+      const manualBtn = this.add.text(width / 2, startY + spacing, '侦探手册', buttonStyle)
+        .setOrigin(0.5).setInteractive({ useHandCursor: true })
 
-    if (start instanceof Phaser.GameObjects.Text) {
-      start.on('pointerup', () => {
+      const honorBtn = this.add.text(width / 2, startY + spacing * 2, '荣誉墙', buttonStyle)
+        .setOrigin(0.5).setInteractive({ useHandCursor: true })
+
+      const manageBtn = this.add.text(width / 2, startY + spacing * 3, '切换用户', buttonStyle)
+        .setOrigin(0.5).setInteractive({ useHandCursor: true })
+
+      // 设置所有按钮为统一宽度
+      startBtn.setFixedSize(buttonWidth, 0)
+      manualBtn.setFixedSize(buttonWidth, 0)
+      honorBtn.setFixedSize(buttonWidth, 0)
+      manageBtn.setFixedSize(buttonWidth, 0)
+
+      // 按钮事件处理
+      startBtn.on('pointerup', () => {
         const level = user.bestLevel || 1
         ToolManager.resetToDefault()
         this.scene.launch('UIScene', { level })
         this.scene.start('GameScene', { level })
       })
-    }
 
-    honor.on('pointerup', () => this.scene.start('HonorScene'))
-    manual.on('pointerup', () => this.scene.start('ManualScene'))
-    manage.on('pointerup', () => this.scene.start('UserScene'))
-    if (start instanceof Phaser.GameObjects.Text) {
-      this.input.keyboard?.once('keydown-ENTER', () => start.emit('pointerup'))
+      manualBtn.on('pointerup', () => this.scene.start('ManualScene'))
+      honorBtn.on('pointerup', () => this.scene.start('HonorScene'))
+      manageBtn.on('pointerup', () => this.scene.start('UserScene'))
+
+      this.input.keyboard?.once('keydown-ENTER', () => startBtn.emit('pointerup'))
     }
 
     // 进入时尝试播放主菜单BGM（如果资源就绪）
