@@ -43,59 +43,49 @@ export default class MainMenuScene extends Phaser.Scene {
 
     // 如果有背景图，则创建沉浸式热区；否则显示文字按钮
     if (this.textures.exists('bg_office')) {
-      // 沉浸式热区模式
-      const deskHotspot = this.add.rectangle(width * 0.41, height * 0.68, width * 0.35, height * 0.12, 0x00ff00, 0)
-        .setInteractive({ useHandCursor: true })
-        .on('pointerover', () => {
-          deskHotspot.setFillStyle(0xffffff, 0.3)
-          const glowFx = deskHotspot.preFX?.addGlow(0xffffff, 0.3, 0, false)
-        })
-        .on('pointerout', () => {
-          deskHotspot.setFillStyle(0x0, 0)
-          deskHotspot.preFX?.clear()
-        })
-        .on('pointerup', () => {
-          const level = user.bestLevel || 1
-          ToolManager.resetToDefault()
-          this.scene.launch('UIScene', { level })
-          this.scene.start('GameScene', { level })
+      const createHotspot = (
+        xRatio: number,
+        yRatio: number,
+        widthRatio: number,
+        heightRatio: number,
+        onPointerUp: () => void
+      ) => {
+        const rect = this.add.rectangle(
+          width * xRatio,
+          height * yRatio,
+          width * widthRatio,
+          height * heightRatio,
+          0xffffff,
+          0
+        )
+          .setOrigin(0.5)
+          .setInteractive({ useHandCursor: true })
+
+        rect.on('pointerover', () => {
+          rect.setFillStyle(0xffffff, 0.3)
         })
 
-      const nameHotspot = this.add.rectangle(width * 0.255, height * 0.37, width * 0.05, height * 0.12, 0xff0000, 0)
-        .setInteractive({ useHandCursor: true })
-        .on('pointerover', () => {
-          nameHotspot.setFillStyle(0xffffff, 0.3)
-          const glowFx = nameHotspot.preFX?.addGlow(0xffffff, 0.3, 0, false)
+        rect.on('pointerout', () => {
+          rect.setFillStyle(0x0, 0)
         })
-        .on('pointerout', () => {
-          nameHotspot.setFillStyle(0x0, 0)
-          nameHotspot.preFX?.clear()
-        })
-        .on('pointerup', () => this.scene.start('UserScene'))
 
-      const manualHotspot = this.add.rectangle(width * 0.81, height * 0.48, width * 0.17, height * 0.37, 0x0000ff, 0)
-        .setInteractive({ useHandCursor: true })
-        .on('pointerover', () => {
-          manualHotspot.setFillStyle(0xffffff, 0.3)
-          const glowFx = manualHotspot.preFX?.addGlow(0xffffff, 0.3, 0, false)
-        })
-        .on('pointerout', () => {
-          manualHotspot.setFillStyle(0x0, 0)
-          manualHotspot.preFX?.clear()
-        })
-        .on('pointerup', () => this.scene.start('ManualScene'))
+        rect.on('pointerup', onPointerUp)
 
-      const honorHotspot = this.add.rectangle(width * 0.71, height * 0.01, width * 0.38, height * 0.55, 0xffffff, 0)
-        .setInteractive({ useHandCursor: true })
-        .on('pointerover', () => {
-          honorHotspot.setFillStyle(0xffffff, 0.3)
-          const glowFx = honorHotspot.preFX?.addGlow(0xffffff, 0.3, 0, false)
-        })
-        .on('pointerout', () => {
-          honorHotspot.setFillStyle(0xffffff, 0)
-          honorHotspot.preFX?.clear()
-        })
-        .on('pointerup', () => this.scene.start('HonorScene'))
+        return rect
+      }
+
+      createHotspot(0.41, 0.68, 0.35, 0.12, () => {
+        const level = user.bestLevel || 1
+        ToolManager.resetToDefault()
+        this.scene.launch('UIScene', { level })
+        this.scene.start('GameScene', { level })
+      })
+
+      createHotspot(0.255, 0.37, 0.05, 0.12, () => this.scene.start('UserScene'))
+
+      createHotspot(0.81, 0.48, 0.17, 0.37, () => this.scene.start('ManualScene'))
+
+      createHotspot(0.71, 0.01, 0.38, 0.55, () => this.scene.start('HonorScene'))
     } else {
       // 按钮模式 - 只有在背景无法加载时显示
       const buttonStyle = {
