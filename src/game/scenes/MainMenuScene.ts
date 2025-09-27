@@ -45,10 +45,17 @@ export default class MainMenuScene extends Phaser.Scene {
     let start: Phaser.GameObjects.Text | Phaser.GameObjects.Rectangle
     if (this.textures.exists('bg_office')) {
       // 模拟：桌面热区（开始游戏）、公告板（手册）、书架（荣誉墙）、门（切换用户）
-      const deskHotspot = this.add.rectangle(width * 0.5, height * 0.7, width * 0.35, height * 0.2, 0x00ff00, 0)
+      const deskHotspot = this.add.rectangle(width * 0.41, height * 0.68, width * 0.35, height * 0.12, 0x00ff00, 0)
         .setInteractive({ useHandCursor: true })
-        .on('pointerover', () => deskHotspot.setStrokeStyle(2, 0x2de1c2))
-        .on('pointerout', () => deskHotspot.setStrokeStyle())
+        .on('pointerover', () => {
+          deskHotspot.setFillStyle(0xffffff, 0.3)
+          // 添加发光效果
+          const glowFx = deskHotspot.preFX?.addGlow(0xffffff, 0.3, 0, false)
+        })
+        .on('pointerout', () => {
+          deskHotspot.setFillStyle(0x0, 0)  // 恢复原始颜色
+          deskHotspot.preFX?.clear()     // 清除所有FX效果
+        })
         .on('pointerup', () => {
           const level = user.bestLevel || 1
           ToolManager.resetToDefault()
@@ -59,20 +66,41 @@ export default class MainMenuScene extends Phaser.Scene {
 
       const boardHotspot = this.add.rectangle(width * 0.18, height * 0.35, width * 0.25, height * 0.25, 0xff0000, 0)
         .setInteractive({ useHandCursor: true })
-        .on('pointerover', () => boardHotspot.setStrokeStyle(2, 0xffd166))
-        .on('pointerout', () => boardHotspot.setStrokeStyle())
+        .on('pointerover', () => {
+          boardHotspot.setFillStyle(0xffffff, 0.3)
+          // 添加发光效果
+          const glowFx = boardHotspot.preFX?.addGlow(0xffffff, 0.3, 0, false)
+        })
+        .on('pointerout', () => {
+          boardHotspot.setFillStyle(0x0, 0)  // 恢复原始颜色
+          boardHotspot.preFX?.clear()     // 清除所有FX效果
+        })
         .on('pointerup', () => this.scene.start('ManualScene'))
 
       const shelfHotspot = this.add.rectangle(width * 0.85, height * 0.45, width * 0.2, height * 0.5, 0x0000ff, 0)
         .setInteractive({ useHandCursor: true })
-        .on('pointerover', () => shelfHotspot.setStrokeStyle(2, 0xa9ffea))
-        .on('pointerout', () => shelfHotspot.setStrokeStyle())
+        .on('pointerover', () => {
+          shelfHotspot.setFillStyle(0xffffff, 0.3)
+          // 添加发光效果
+          const glowFx = shelfHotspot.preFX?.addGlow(0xffffff, 0.3, 0, false)
+        })
+        .on('pointerout', () => {
+          shelfHotspot.setFillStyle(0x0, 0)  // 恢复原始颜色
+          shelfHotspot.preFX?.clear()     // 清除所有FX效果
+        })
         .on('pointerup', () => this.scene.start('HonorScene'))
 
       const doorHotspot = this.add.rectangle(width * 0.05, height * 0.85, width * 0.1, height * 0.25, 0xffffff, 0)
         .setInteractive({ useHandCursor: true })
-        .on('pointerover', () => doorHotspot.setStrokeStyle(2, 0xffffff))
-        .on('pointerout', () => doorHotspot.setStrokeStyle())
+        .on('pointerover', () => {
+          doorHotspot.setFillStyle(0xffffff, 0.3)
+          // 添加发光效果
+          const glowFx = doorHotspot.preFX?.addGlow(0xffffff, 0.3, 0, false)
+        })
+        .on('pointerout', () => {
+          doorHotspot.setFillStyle(0xffffff, 0)  // 恢复原始颜色
+          doorHotspot.preFX?.clear()     // 清除所有FX效果
+        })
         .on('pointerup', () => this.scene.start('UserScene'))
     } else {
       start = this.add.text(width / 2, title.y + 100, '开始破案 ▶', {
