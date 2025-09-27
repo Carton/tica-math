@@ -25,6 +25,7 @@ export default class GameScene extends Phaser.Scene {
   private questionContainer?: Phaser.GameObjects.Container
   private notePaper?: Phaser.GameObjects.Image
   private deskBackground?: Phaser.GameObjects.Image
+  private currentQuestionText?: Phaser.GameObjects.Text
 
   constructor() {
     super('GameScene')
@@ -48,22 +49,26 @@ export default class GameScene extends Phaser.Scene {
     on('question:timeout', this.timeoutHandler)
 
     this.questionContainer = this.add.container(0, 0)
+    this.questionContainer.setDepth(15)  // 确保container的层级正确
 
     // 创建桌面背景（如果资源存在）
     if (this.textures.exists('bg_desk')) {
       try {
         this.deskBackground = this.add.image(640, 360, 'bg_desk').setOrigin(0.5)
         this.deskBackground.setDisplaySize(1280, 720)
+        this.deskBackground.setDepth(0)  // 背景在最底层
       } catch (error) {
         console.warn('Failed to create bg_desk:', error)
       }
     }
 
-    // 创建便签纸背景（如果资源存在）
+    // 创建便签纸背景（如果资源存在）- 直接添加到scene，设置更高层级
     if (this.textures.exists('paper_note')) {
       try {
         this.notePaper = this.add.image(640, 360, 'paper_note').setOrigin(0.5)
-        this.questionContainer.add(this.notePaper)
+        this.notePaper.setDepth(10)  // 便签纸在背景之上
+        // 调整便签纸大小，使用更适合的比例
+        this.notePaper.setDisplaySize(1024, 800)
       } catch (error) {
         console.warn('Failed to create paper_note:', error)
       }
@@ -80,20 +85,28 @@ export default class GameScene extends Phaser.Scene {
       return
     }
 
-    // 清除之前的题目文字（保留便签纸背景）
-    const children = this.questionContainer?.getAll()
-    children?.forEach(child => {
-      if (child !== this.notePaper) {
-        this.questionContainer?.remove(child, true)
-      }
-    })
+    // 清除之前的题目文字
+    if (this.currentQuestionText) {
+      this.currentQuestionText.destroy()
+      this.currentQuestionText = undefined
+    }
 
     const params = DifficultyManager.getParams(this.level)
     this.current = QuestionGenerator.createQuestion(params)
     ToolManager.setQuestion(this.current)
 
-    const text = this.add.text(640, 360, this.current.questionString, { fontFamily: 'monospace', fontSize: '48px', color: '#0b1021' }).setOrigin(0.5)
-    this.questionContainer?.add(text)
+    // 创建题目文字
+    const text = this.add.text(640, 360, this.current.questionString, {
+      fontFamily: 'monospace',
+      fontSize: '42px',
+      color: '#0b1021',  // 回到原来的深色
+      wordWrap: { width: 700 },  // 添加文字换行
+      align: 'center'
+    }).setOrigin(0.5)
+    text.setDepth(30)  // 题目文字在便签纸之上
+
+    // 不添加到container，直接添加到scene，但保存引用
+    this.currentQuestionText = text
 
     emit('progress:update', { index: this.questionIndex + 1, total: this.total })
     emit('question:new', { question: this.current })
