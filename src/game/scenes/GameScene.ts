@@ -24,6 +24,7 @@ export default class GameScene extends Phaser.Scene {
 
   private questionContainer?: Phaser.GameObjects.Container
   private notePaper?: Phaser.GameObjects.Image
+  private deskBackground?: Phaser.GameObjects.Image
 
   constructor() {
     super('GameScene')
@@ -48,10 +49,20 @@ export default class GameScene extends Phaser.Scene {
 
     this.questionContainer = this.add.container(0, 0)
 
+    // 创建桌面背景（如果资源存在）
+    if (this.textures.exists('bg_desk')) {
+      try {
+        this.deskBackground = this.add.image(640, 360, 'bg_desk').setOrigin(0.5)
+        this.deskBackground.setDisplaySize(1280, 720)
+      } catch (error) {
+        console.warn('Failed to create bg_desk:', error)
+      }
+    }
+
     // 创建便签纸背景（如果资源存在）
     if (this.textures.exists('paper_note')) {
       try {
-        this.notePaper = this.add.image(640, 320, 'paper_note').setOrigin(0.5)
+        this.notePaper = this.add.image(640, 360, 'paper_note').setOrigin(0.5)
         this.questionContainer.add(this.notePaper)
       } catch (error) {
         console.warn('Failed to create paper_note:', error)

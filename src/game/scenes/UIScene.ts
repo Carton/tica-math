@@ -64,6 +64,11 @@ export default class UIScene extends Phaser.Scene {
     if (this.textures.exists('stamp_true') && this.textures.exists('stamp_false')) {
       const sTrue = this.add.image(width / 2 - 120, height - 80, 'stamp_true').setOrigin(0.5).setInteractive({ useHandCursor: true })
       const sFalse = this.add.image(width / 2 + 120, height - 80, 'stamp_false').setOrigin(0.5).setInteractive({ useHandCursor: true })
+
+      // 缩放印章到160x160像素
+      sTrue.setDisplaySize(160, 160)
+      sFalse.setDisplaySize(160, 160)
+
       btnTrue = sTrue
       btnFalse = sFalse
     } else {
