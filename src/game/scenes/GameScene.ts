@@ -23,7 +23,6 @@ export default class GameScene extends Phaser.Scene {
   private timeoutHandler = () => this.handleTimeout()
 
   private questionContainer?: Phaser.GameObjects.Container
-  private notePaper?: Phaser.GameObjects.Image
 
   constructor() {
     super('GameScene')
@@ -47,11 +46,6 @@ export default class GameScene extends Phaser.Scene {
     on('question:timeout', this.timeoutHandler)
 
     this.questionContainer = this.add.container(0, 0)
-    // 题目便签纸背景（如果资源存在）
-    if (this.textures.exists('paper_note')) {
-      this.notePaper = this.add.image(640, 320, 'paper_note').setOrigin(0.5)
-      this.questionContainer.add(this.notePaper)
-    }
 
     this.nextQuestion()
   }
@@ -65,8 +59,15 @@ export default class GameScene extends Phaser.Scene {
     }
 
     this.questionContainer?.removeAll(true)
-    if (this.notePaper && this.notePaper.texture) {
-      this.questionContainer?.add(this.notePaper)
+
+    // 添加便签纸背景（如果资源存在）
+    if (this.textures.exists('paper_note')) {
+      try {
+        const notePaper = this.add.image(640, 320, 'paper_note').setOrigin(0.5)
+        this.questionContainer?.add(notePaper)
+      } catch (error) {
+        console.warn('Failed to create paper_note:', error)
+      }
     }
 
     const params = DifficultyManager.getParams(this.level)
