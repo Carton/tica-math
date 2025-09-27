@@ -4,25 +4,29 @@ import { ToolManager } from '@/game/managers/ToolManager'
 import { SaveManager } from '@/game/managers/SaveManager'
 
 export default class UIScene extends Phaser.Scene {
-  private progressText?: Phaser.GameObjects.Text
+  private headerLeftText?: Phaser.GameObjects.Text
+  private headerHintText?: Phaser.GameObjects.Text
   private countdownText?: Phaser.GameObjects.Text
-  private hintText?: Phaser.GameObjects.Text
   private toolText?: Phaser.GameObjects.Text
-  private statusText?: Phaser.GameObjects.Text
+  private toolUpdateHandler?: () => void
   private remainingMs = 0
   private timer?: Phaser.Time.TimerEvent
   private pausedOverlay?: Phaser.GameObjects.Rectangle
   private pausedDialog?: Phaser.GameObjects.Container
   private isPaused = false
   private currentLevel = 1
+  private userId = ''
+  private clueIndex = 0
+  private clueTotal = 0
 
   private progressHandler = ({ index, total }: { index: number; total: number }) => {
-    this.progressText?.setText(`线索 ${index}/${total}`)
+    this.clueIndex = index
+    this.clueTotal = total
+    this.updateHeaderLeftText()
   }
   private countdownStartHandler = ({ totalMs }: { totalMs: number }) => this.startCountdown(totalMs)
   private countdownExtendHandler = ({ deltaMs }: { deltaMs: number }) => this.extendCountdown(deltaMs)
   private hintHandler = ({ hint }: { hint: string }) => this.showHint(hint)
-  private toolUpdateHandler?: ({ magnify, watch, flash }: { magnify: number; watch: number; flash: number }) => void
 
   private handleEscKey = () => this.togglePauseDialog()
   private handleTrueKey = () => this.emitChoice(true)
@@ -40,23 +44,37 @@ export default class UIScene extends Phaser.Scene {
 
   create() {
     const { width, height } = this.scale
+    const headerY = 34
 
-    const userId = SaveManager.getCurrentUserId()
-    this.statusText = this.add.text(20, 50, `用户: ${userId}  关卡: ${this.currentLevel}`, {
-      fontFamily: 'monospace', fontSize: '16px', color: '#ffffff'
-    })
+    this.userId = SaveManager.getCurrentUserId() || ''
+    this.clueIndex = 0
+    this.clueTotal = 10
+    this.headerLeftText = this.add.text(40, headerY, '', {
+      fontFamily: 'sans-serif',
+      fontSize: '20px',
+      color: '#ffffff',
+    }).setOrigin(0, 0.5)
+    this.updateHeaderLeftText()
 
-    this.progressText = this.add.text(20, 20, '线索 0/10', {
+    this.countdownText = this.add.text(width - 40, headerY, '00:00', {
+      fontFamily: 'sans-serif',
+      fontSize: '20px',
+      color: '#ffd166',
+    }).setOrigin(1, 0.5)
+
+    this.toolText = this.add.text(width * 0.83, headerY, '', {
       fontFamily: 'sans-serif',
       fontSize: '20px',
       color: '#a9ffea',
-    }).setDepth(10)
+      align: 'center',
+    }).setOrigin(0.5, 0.5)
 
-    this.countdownText = this.add.text(width - 20, 20, '00:00', {
-      fontFamily: 'monospace',
-      fontSize: '20px',
-      color: '#ffd166',
-    }).setOrigin(1, 0)
+    this.headerHintText = this.add.text(40, height - 140, '', {
+      fontFamily: 'sans-serif',
+      fontSize: '18px',
+      color: '#ffffff',
+      wordWrap: { width: width - 300 },
+    })
 
     // 使用印章精灵（若资源存在），否则使用文字按钮
     let btnTrue: Phaser.GameObjects.GameObject
@@ -91,45 +109,13 @@ export default class UIScene extends Phaser.Scene {
     this.input.keyboard?.on('keydown-LEFT', this.handleLeftKey)
 
     // 道具显示：图标xN格式
-    const toolsY = height - 140
-    const useIcons = this.textures.exists('icon_magnify') && this.textures.exists('icon_watch') && this.textures.exists('icon_flash')
-    if (useIcons) {
-      const gap = 56
-      const startX = width - 260
-      const iconMag = this.add.image(startX, toolsY, 'icon_magnify').setInteractive({ useHandCursor: true })
-      const iconWat = this.add.image(startX + gap, toolsY, 'icon_watch').setInteractive({ useHandCursor: true })
-      const iconFla = this.add.image(startX + gap * 2, toolsY, 'icon_flash').setInteractive({ useHandCursor: true })
-      iconMag.on('pointerup', () => !this.isPaused && ToolManager.use('magnify'))
-      iconWat.on('pointerup', () => !this.isPaused && ToolManager.use('watch'))
-      iconFla.on('pointerup', () => !this.isPaused && ToolManager.use('flash'))
-      const syncIcons = () => {
-        const c = ToolManager.getCounts()
-        iconMag.setAlpha(c.magnify > 0 ? 1 : 0.3)
-        iconWat.setAlpha(c.watch > 0 ? 1 : 0.3)
-        iconFla.setAlpha(c.flash > 0 ? 1 : 0.3)
-      }
-      syncIcons()
-      this.toolUpdateHandler = () => syncIcons()
-      on('tool:update', this.toolUpdateHandler)
-    } else {
-      this.toolText = this.add.text(width - 260, toolsY, '', { fontFamily: 'monospace', fontSize: '20px', color: '#a9ffea' }).setInteractive({ useHandCursor: true })
-      const syncTools = () => {
-        const c = ToolManager.getCounts()
-        this.toolText?.setText(`🔍x${c.magnify}  ⏱️x${c.watch}  ⚡x${c.flash}`)
-      }
-      this.toolText.on('pointerup', (pointer: Phaser.Input.Pointer) => {
-        if (this.isPaused) return
-        const x = pointer.x - this.toolText!.x
-        if (x < 60) ToolManager.use('magnify')
-        else if (x < 120) ToolManager.use('watch')
-        else ToolManager.use('flash')
-      })
-      syncTools()
-      this.toolUpdateHandler = () => syncTools()
-      on('tool:update', this.toolUpdateHandler)
+    const updateToolHeader = () => {
+      const counts = ToolManager.getCounts()
+      this.toolText?.setText(`🔍x${counts.magnify}  ⏱️x${counts.watch}  ⚡x${counts.flash}`)
     }
-
-    this.hintText = this.add.text(20, height - 140, '', { fontFamily: 'sans-serif', fontSize: '18px', color: '#ffffff', wordWrap: { width: width - 300 } })
+    updateToolHeader()
+    this.toolUpdateHandler = () => updateToolHeader()
+    on('tool:update', this.toolUpdateHandler)
 
     on('progress:update', this.progressHandler)
 
@@ -239,6 +225,14 @@ export default class UIScene extends Phaser.Scene {
   }
 
   private showHint(hint: string) {
-    this.hintText?.setText(hint)
+    this.headerHintText?.setText(hint)
+  }
+
+  private updateHeaderLeftText() {
+    if (!this.headerLeftText) return
+    const total = this.clueTotal > 0 ? this.clueTotal : 0
+    const index = Math.max(0, this.clueIndex)
+    const user = this.userId || '未知'
+    this.headerLeftText.setText(`用户: ${user}  关卡: ${this.currentLevel}  线索 ${index}/${total}`)
   }
 }
