@@ -242,7 +242,7 @@ assets/
   - `bg_office.png` 侦探事务所/调查桌面背景（可用纯色/噪声纹理占位）
   - `paper_note.png` 题目便签纸
   - `stamp_true.png` / `stamp_false.png`（可先用 Emoji ✅/❌ 文本渲染代替）
-  - `icons_magnify.png`/`icons_watch.png`/`icons_flash.png`（先用 🔍/⏱️/⚡）
+  - `icons_magnify.png`/`icons_watch.png`/`icons_light.png`（先用 🔍/⏱️/⚡）
 - audio/
   - `bgm_loop.mp3` 低音量循环 BGM（卡通）
   - `sfx_click.mp3`, `sfx_stamp.mp3`, `sfx_wrong.mp3`, `sfx_success.mp3`, `sfx_combo.mp3`

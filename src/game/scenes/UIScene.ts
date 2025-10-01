@@ -255,13 +255,13 @@ export default class UIScene extends Phaser.Scene {
 
   private createToolIcons() {
     const { width, height } = this.scale
-    const useIcons = this.textures.exists('icons_magnify') && this.textures.exists('icons_watch') && this.textures.exists('icons_flash')
+    const useIcons = this.textures.exists('icons_magnify') && this.textures.exists('icons_watch') && this.textures.exists('icons_light')
 
     // 创建道具图标容器 - 位置在右下角
-    this.toolsContainer = this.add.container(width - 380, height - 140)
+    this.toolsContainer = this.add.container(width - 300, height - 90)
 
     const iconSpacing = 20
-    const iconSize = 96
+    const iconSize = 72
 
     if (useIcons) {
       // 使用PNG图标
@@ -273,7 +273,7 @@ export default class UIScene extends Phaser.Scene {
         .setDisplaySize(iconSize, iconSize)
         .setInteractive({ useHandCursor: true })
 
-      this.toolIcons.flash = this.add.image((iconSize + iconSpacing) * 2, 0, 'icons_flash')
+      this.toolIcons.flash = this.add.image((iconSize + iconSpacing) * 2, 0, 'icons_light')
         .setDisplaySize(iconSize, iconSize)
         .setInteractive({ useHandCursor: true })
     } else {

@@ -22,10 +22,10 @@ export class AudioManager {
     // 为避免 404，在资源到位之前不强制预加载。此方法保留给未来启用。
     // 示例（放开即可启用）：
     // scene.load.audio('bgm_main', ['assets/audio/bgm_main_loop.mp3'])
-    // scene.load.audio('sfx_click', ['assets/audio/sfx_click.mp3'])
-    // scene.load.audio('sfx_correct', ['assets/audio/sfx_correct.mp3'])
-    // scene.load.audio('sfx_wrong', ['assets/audio/sfx_wrong.mp3'])
-    // scene.load.audio('sfx_stamp', ['assets/audio/sfx_stamp.mp3'])
+    scene.load.audio('sfx_click', ['assets/audio/sfx_click.mp3'])
+    scene.load.audio('sfx_correct', ['assets/audio/sfx_correct.mp3'])
+    scene.load.audio('sfx_wrong', ['assets/audio/sfx_wrong.mp3'])
+    scene.load.audio('sfx_stamp', ['assets/audio/sfx_stamp.mp3'])
   }
 
   static tryStartBgm(key: string, config: Phaser.Types.Sound.SoundConfig = { loop: true, volume: 0.25 }) {
