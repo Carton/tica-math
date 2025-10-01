@@ -34,8 +34,8 @@
 - 2–4 帧轻动画：左手拿放大镜，右手翻卷宗或点头思考；循环帧数少，Q 版可爱。
 - 尺寸：单帧建议 96×96，整图横排合图，并配 `images/detective_girl_idle.json`（可选）或在代码内用帧宽切割。
 
-5) 道具图标 `images/icons_magnify.png` `images/icons_watch.png` `images/icons_flash.png`
-- 图标：放大镜、怀表/计时器、闪电道具；像素卡通，线条干净。
+5) 道具图标 `images/icons_magnify.png` `images/icons_watch.png` `images/icons_light.png`
+- 图标：放大镜、怀表/计时器、灯泡道具；像素卡通，线条干净。
 - 尺寸：64×64 或 96×96，PNG 透明。
 - 视觉：与便签纸和主色系协调，悬停/禁用可通过透明度实现。
 
