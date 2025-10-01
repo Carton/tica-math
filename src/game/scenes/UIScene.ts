@@ -1,6 +1,6 @@
 import Phaser from 'phaser'
 import { on, off, emit } from '@/game/managers/EventBus'
-import { ToolManager } from '@/game/managers/ToolManager'
+import { ToolManager, type ToolType } from '@/game/managers/ToolManager'
 import { SaveManager } from '@/game/managers/SaveManager'
 
 export default class UIScene extends Phaser.Scene {
@@ -20,6 +20,14 @@ export default class UIScene extends Phaser.Scene {
   private userId = ''
   private clueIndex = 0
   private clueTotal = 0
+
+  // 道具图标相关
+  private toolsContainer?: Phaser.GameObjects.Container
+  private toolIcons: {
+    magnify?: Phaser.GameObjects.Image | Phaser.GameObjects.Text
+    watch?: Phaser.GameObjects.Image | Phaser.GameObjects.Text
+    flash?: Phaser.GameObjects.Image | Phaser.GameObjects.Text
+  } = {}
 
   private progressHandler = ({ index, total }: { index: number; total: number }) => {
     this.clueIndex = index
@@ -125,17 +133,12 @@ export default class UIScene extends Phaser.Scene {
     this.input.keyboard?.on('keydown-F', this.handleFalseKey)
     this.input.keyboard?.on('keydown-LEFT', this.handleLeftKey)
 
-    // 道具显示：图标xN格式
-    const updateToolHeader = () => {
-      const counts = ToolManager.getCounts()
-      const text = `🔍x${counts.magnify}  ⏱️x${counts.watch}  ⚡x${counts.flash}`
-      this.headerToolText?.setText(text)
-      this.footerToolText?.setText(text)
-      const useIcons = this.textures.exists('icon_magnify') && this.textures.exists('icon_watch') && this.textures.exists('icon_flash')
-      this.footerToolText?.setVisible(!useIcons)
-    }
-    updateToolHeader()
-    this.toolUpdateHandler = () => updateToolHeader()
+    // 创建道具图标容器
+    this.createToolIcons()
+
+    // 更新道具显示
+    this.updateToolDisplay()
+    this.toolUpdateHandler = () => this.updateToolDisplay()
     on('tool:update', this.toolUpdateHandler)
 
     on('progress:update', this.progressHandler)
@@ -248,6 +251,106 @@ export default class UIScene extends Phaser.Scene {
   private showHint(hint: string) {
     this.hintText?.setText(hint)
     this.footerHintText?.setText(hint)
+  }
+
+  private createToolIcons() {
+    const { width, height } = this.scale
+    const useIcons = this.textures.exists('icons_magnify') && this.textures.exists('icons_watch') && this.textures.exists('icons_flash')
+
+    // 创建道具图标容器 - 位置在右下角
+    this.toolsContainer = this.add.container(width - 380, height - 140)
+
+    const iconSpacing = 20
+    const iconSize = 96
+
+    if (useIcons) {
+      // 使用PNG图标
+      this.toolIcons.magnify = this.add.image(0, 0, 'icons_magnify')
+        .setDisplaySize(iconSize, iconSize)
+        .setInteractive({ useHandCursor: true })
+
+      this.toolIcons.watch = this.add.image(iconSize + iconSpacing, 0, 'icons_watch')
+        .setDisplaySize(iconSize, iconSize)
+        .setInteractive({ useHandCursor: true })
+
+      this.toolIcons.flash = this.add.image((iconSize + iconSpacing) * 2, 0, 'icons_flash')
+        .setDisplaySize(iconSize, iconSize)
+        .setInteractive({ useHandCursor: true })
+    } else {
+      // 使用表情符号作为降级方案
+      this.toolIcons.magnify = this.add.text(0, 0, '🔍', {
+        fontFamily: 'sans-serif',
+        fontSize: '64px',
+      }).setOrigin(0.5).setInteractive({ useHandCursor: true })
+
+      this.toolIcons.watch = this.add.text(iconSize + iconSpacing, 0, '⏱️', {
+        fontFamily: 'sans-serif',
+        fontSize: '64px',
+      }).setOrigin(0.5).setInteractive({ useHandCursor: true })
+
+      this.toolIcons.flash = this.add.text((iconSize + iconSpacing) * 2, 0, '⚡', {
+        fontFamily: 'sans-serif',
+        fontSize: '64px',
+      }).setOrigin(0.5).setInteractive({ useHandCursor: true })
+    }
+
+    // 添加点击事件
+    this.toolIcons.magnify.on('pointerup', () => this.useTool('magnify'))
+    this.toolIcons.watch.on('pointerup', () => this.useTool('watch'))
+    this.toolIcons.flash.on('pointerup', () => this.useTool('flash'))
+
+    // 添加悬停效果
+    Object.values(this.toolIcons).forEach(icon => {
+      icon.on('pointerover', () => {
+        icon.setAlpha(0.8)
+      })
+      icon.on('pointerout', () => {
+        icon.setAlpha(1)
+      })
+    })
+
+    this.toolsContainer.add([
+      this.toolIcons.magnify,
+      this.toolIcons.watch,
+      this.toolIcons.flash
+    ])
+  }
+
+  private useTool(type: ToolType) {
+    if (this.isPaused) return
+    ToolManager.use(type)
+  }
+
+  private updateToolDisplay() {
+    const counts = ToolManager.getCounts()
+    const headerText = `🔍x${counts.magnify}  ⏱️x${counts.watch}  ⚡x${counts.flash}`
+
+    // 更新头部文本显示
+    this.headerToolText?.setText(headerText)
+    this.footerToolText?.setText(headerText)
+
+    // 更新图标状态
+    this.updateIconState('magnify', counts.magnify)
+    this.updateIconState('watch', counts.watch)
+    this.updateIconState('flash', counts.flash)
+
+    // 隐藏底部文本（因为现在用图标显示）
+    this.footerToolText?.setVisible(false)
+  }
+
+  private updateIconState(type: ToolType, count: number) {
+    const icon = this.toolIcons[type]
+    if (!icon) return
+
+    if (count <= 0) {
+      // 禁用状态
+      icon.setAlpha(0.3)
+      icon.disableInteractive()
+    } else {
+      // 可用状态
+      icon.setAlpha(1)
+      icon.setInteractive({ useHandCursor: true })
+    }
   }
 
   private updateHeaderLeftText() {
