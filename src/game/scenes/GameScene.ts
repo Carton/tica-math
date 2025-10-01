@@ -122,8 +122,8 @@ export default class GameScene extends Phaser.Scene {
       this.correctCount += 1
       this.combo += 1
       this.comboMax = Math.max(this.comboMax, this.combo)
-      // 添加正确答案的stamp动画效果
-      this.showCorrectStamp()
+      // 添加正确答案的stamp动画效果，显示用户选择的对错
+      this.showCorrectStamp(choice)
     } else {
       this.combo = 0
     }
@@ -140,7 +140,7 @@ export default class GameScene extends Phaser.Scene {
     this.time.delayedCall(120, () => this.nextQuestion())
   }
 
-  private showCorrectStamp() {
+  private showCorrectStamp(userChoice: boolean) {
     if (!this.notePaper) return
 
     // 计算paper note右上角的位置
@@ -150,11 +150,14 @@ export default class GameScene extends Phaser.Scene {
     const noteY = 360
 
     // stamp在右上角的偏移位置
-    const stampX = noteX + noteWidth * 0.35  // 右上角区域
-    const stampY = noteY - noteHeight * 0.35  // 右上角区域
+    const stampX = noteX + noteWidth * 0.3  // 右上角区域
+    const stampY = noteY - noteHeight * 0.2  // 右上角区域
+
+    // 根据用户选择显示相应的印章
+    const stampKey = userChoice ? 'stamp_true' : 'stamp_false'
 
     // 创建stamp图像
-    const stamp = this.add.image(stampX, stampY, 'stamp_true')
+    const stamp = this.add.image(stampX, stampY, stampKey)
       .setOrigin(0.5)
       .setDepth(40)  // 确保在便签纸和题目文字之上
       .setAlpha(0)   // 初始透明
@@ -164,14 +167,14 @@ export default class GameScene extends Phaser.Scene {
     this.tweens.add({
       targets: stamp,
       alpha: 1,
-      scaleX: 1,
-      scaleY: 1,
+      scaleX: 0.25,  // 从1改为0.6，减小最终尺寸
+      scaleY: 0.25,  // 从1改为0.6，减小最终尺寸
       angle: 5, // 轻微旋转角度，模拟真实盖章效果
       duration: 300,
       ease: 'Back.out', // 弹性效果
       onComplete: () => {
         // 保持显示一段时间后淡出
-        this.time.delayedCall(800, () => {
+        this.time.delayedCall(600, () => {
           this.tweens.add({
             targets: stamp,
             alpha: 0,
