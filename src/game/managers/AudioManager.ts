@@ -53,7 +53,7 @@ export class AudioManager {
     this._sfxEnabled = enabled
     // 如果关闭音效，立即停止正在播放的音效，但不影响BGM
     if (!enabled) {
-      Object.values(this.sounds).forEach((snd, key) => {
+      Object.entries(this.sounds).forEach(([key, snd]) => {
         // 只停止非BGM的声音（音效）
         if (snd?.isPlaying && key !== this.currentBgmKey) {
           snd.stop()

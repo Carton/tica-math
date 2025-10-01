@@ -2,6 +2,7 @@ import Phaser from 'phaser'
 import type { ResultSummary } from '@/game/utils/types'
 import { resultPrimaryActionLabel } from '@/game/utils/gameFlow'
 import { AudioManager } from '@/game/managers/AudioManager'
+import { ToolManager } from '@/game/managers/ToolManager'
 
 export default class ResultScene extends Phaser.Scene {
   constructor() {
@@ -45,6 +46,9 @@ export default class ResultScene extends Phaser.Scene {
 
     primary.on('pointerup', () => {
       this.scene.stop('ResultScene')
+      // 重置道具数量到默认值
+      ToolManager.resetToDefault()
+
       if (sum?.pass && data.nextLevel) {
         const level = data.nextLevel
         this.scene.launch('UIScene', { level })

@@ -126,6 +126,8 @@ export default class GameScene extends Phaser.Scene {
       this.showCorrectStamp(choice)
     } else {
       this.combo = 0
+      // 在答案错误时添加背景闪烁红色效果（特别是在音效关闭时提供视觉反馈）
+      this.showWrongFeedback()
     }
 
     this.questionIndex += 1
@@ -134,10 +136,29 @@ export default class GameScene extends Phaser.Scene {
 
   private handleTimeout() {
     emit('ui:feedback', { type: 'timeout' })
-    // 移除背景闪烁效果，因为现在有音效反馈了
+    // 超时也添加错误反馈效果
+    this.showWrongFeedback()
     this.combo = 0
     this.questionIndex += 1
     this.time.delayedCall(120, () => this.nextQuestion())
+  }
+
+  private showWrongFeedback() {
+    // 创建红色闪烁背景作为错误反馈
+    const flashOverlay = this.add.rectangle(0, 0, this.scale.width, this.scale.height, 0xff0000, 0.3)
+      .setOrigin(0, 0)
+      .setDepth(50)  // 确保在最上层
+
+    // 闪烁动画：快速显示然后淡出
+    this.tweens.add({
+      targets: flashOverlay,
+      alpha: 0,
+      duration: 300,
+      ease: 'Power2.easeOut',
+      onComplete: () => {
+        flashOverlay.destroy()
+      }
+    })
   }
 
   private showCorrectStamp(userChoice: boolean) {
