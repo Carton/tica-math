@@ -7,6 +7,16 @@ export default class UIScene extends Phaser.Scene {
   private headerLeftText?: Phaser.GameObjects.Text
   private headerToolText?: Phaser.GameObjects.Text
   private headerToolsContainer?: Phaser.GameObjects.Container
+  private headerToolIcons: {
+    magnify?: Phaser.GameObjects.Image
+    watch?: Phaser.GameObjects.Image
+    light?: Phaser.GameObjects.Image
+  } = {}
+  private headerToolTexts: {
+    magnify?: Phaser.GameObjects.Text
+    watch?: Phaser.GameObjects.Text
+    light?: Phaser.GameObjects.Text
+  } = {}
   private countdownText?: Phaser.GameObjects.Text
   private footerToolText?: Phaser.GameObjects.Text
   private hintText?: Phaser.GameObjects.Text
@@ -251,13 +261,68 @@ export default class UIScene extends Phaser.Scene {
   }
 
   private createHeaderToolDisplay(x: number, y: number) {
-    // 创建右上角道具显示文本
-    this.headerToolText = this.add.text(x, y, '', {
-      fontFamily: 'sans-serif',
-      fontSize: '18px',
-      color: '#a9ffea',
-      align: 'center',
-    }).setOrigin(0.5, 0.5)
+    const useIcons = this.textures.exists('icons_magnify') && this.textures.exists('icons_watch') && this.textures.exists('icons_light')
+
+    if (useIcons) {
+      // 使用小图标创建道具显示
+      this.headerToolsContainer = this.add.container(x, y)
+
+      const smallIconSize = 16
+      const spacing = 25
+
+      // 创建三个道具的图标和文本
+      this.headerToolIcons.magnify = this.add.image(0, 0, 'icons_magnify')
+        .setDisplaySize(smallIconSize, smallIconSize)
+        .setOrigin(0.5, 0.5)
+
+      this.headerToolTexts.magnify = this.add.text(smallIconSize/2 + 5, 0, 'x0', {
+        fontFamily: 'sans-serif',
+        fontSize: '14px',
+        color: '#a9ffea'
+      }).setOrigin(0, 0.5)
+
+      this.headerToolIcons.watch = this.add.image(spacing, 0, 'icons_watch')
+        .setDisplaySize(smallIconSize, smallIconSize)
+        .setOrigin(0.5, 0.5)
+
+      this.headerToolTexts.watch = this.add.text(spacing + smallIconSize/2 + 5, 0, 'x0', {
+        fontFamily: 'sans-serif',
+        fontSize: '14px',
+        color: '#a9ffea'
+      }).setOrigin(0, 0.5)
+
+      this.headerToolIcons.light = this.add.image(spacing * 2, 0, 'icons_light')
+        .setDisplaySize(smallIconSize, smallIconSize)
+        .setOrigin(0.5, 0.5)
+
+      this.headerToolTexts.light = this.add.text(spacing * 2 + smallIconSize/2 + 5, 0, 'x0', {
+        fontFamily: 'sans-serif',
+        fontSize: '14px',
+        color: '#a9ffea'
+      }).setOrigin(0, 0.5)
+
+      this.headerToolsContainer.add([
+        this.headerToolIcons.magnify, this.headerToolTexts.magnify,
+        this.headerToolIcons.watch, this.headerToolTexts.watch,
+        this.headerToolIcons.light, this.headerToolTexts.light
+      ])
+
+      // 降级文本（备用）
+      this.headerToolText = this.add.text(x, y, '', {
+        fontFamily: 'sans-serif',
+        fontSize: '18px',
+        color: '#a9ffea',
+        align: 'center',
+      }).setOrigin(0.5, 0.5).setVisible(false)
+    } else {
+      // 使用emoji显示
+      this.headerToolText = this.add.text(x, y, '', {
+        fontFamily: 'sans-serif',
+        fontSize: '18px',
+        color: '#a9ffea',
+        align: 'center',
+      }).setOrigin(0.5, 0.5)
+    }
   }
 
   private createToolIcons() {
@@ -330,12 +395,24 @@ export default class UIScene extends Phaser.Scene {
 
   private updateToolDisplay() {
     const counts = ToolManager.getCounts()
+    const useIcons = this.textures.exists('icons_magnify') && this.textures.exists('icons_watch') && this.textures.exists('icons_light')
 
-    // 右上角显示简洁格式：图标+数量
-    const headerText = `🔍${counts.magnify}  ⏱️${counts.watch}  💡${counts.light}`
-    this.headerToolText?.setText(headerText)
+    if (useIcons && this.headerToolsContainer) {
+      // 使用小图标和文本显示
+      this.headerToolTexts.magnify?.setText(`x${counts.magnify}`)
+      this.headerToolTexts.watch?.setText(`x${counts.watch}`)
+      this.headerToolTexts.light?.setText(`x${counts.light}`)
 
-    // 更新图标状态
+      // 隐藏降级文本
+      this.headerToolText?.setVisible(false)
+    } else {
+      // 使用emoji格式
+      const headerText = `🔍x${counts.magnify}  ⏱️x${counts.watch}  💡x${counts.light}`
+      this.headerToolText?.setText(headerText)
+      this.headerToolText?.setVisible(true)
+    }
+
+    // 更新右下角图标状态
     this.updateIconState('magnify', counts.magnify)
     this.updateIconState('watch', counts.watch)
     this.updateIconState('light', counts.light)

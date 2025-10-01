@@ -22,12 +22,13 @@ export default class PreloadScene extends Phaser.Scene {
     this.load.image('icons_magnify', 'images/icons_magnify.png')
     this.load.image('icons_watch', 'images/icons_watch.png')
     this.load.image('icons_light', 'images/icons_light.png')
-    // this.load.audio('bgm_main', ['audio/bgm_loop.mp3'])
+    this.load.audio('bgm_main', ['audio/bgm_loop.ogg'])
     this.load.audio('sfx_click', ['audio/sfx_click.mp3'])
     this.load.audio('sfx_stamp', ['audio/sfx_stamp.mp3'])
     this.load.audio('sfx_wrong', ['audio/sfx_wrong.mp3'])
     this.load.audio('sfx_success', ['audio/sfx_success.mp3'])
     this.load.audio('sfx_lose_game', ['audio/sfx_lose_game.mp3'])
+    this.load.audio('sfx_win_level', ['audio/sfx_win_level.mp3'])
   }
 
   create() {
@@ -44,11 +45,11 @@ export default class PreloadScene extends Phaser.Scene {
 
     // 统一音频事件映射（不同事件使用不同音效键）
     on('ui:feedback', ({ type }) => {
-      if (type === 'correct') AudioManager.playSfx('sfx_success')
+      if (type === 'correct') AudioManager.playSfx('sfx_stamp') // 答题正确使用印章音效
       else if (type === 'wrong' || type === 'timeout') AudioManager.playSfx('sfx_wrong')
       else if (type === 'combo') AudioManager.playSfx('sfx_combo')
     })
-    on('ui:choice', () => AudioManager.playSfx('sfx_stamp'))
+    on('ui:choice', () => AudioManager.playSfx('sfx_click')) // 选择答案使用普通点击音效
     on('tool:use', () => AudioManager.playSfx('sfx_click'))
 
     this.scene.start('MainMenuScene')
