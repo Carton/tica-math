@@ -117,12 +117,13 @@ export default class GameScene extends Phaser.Scene {
     if (!this.current) return
     const isCorrect = choice === this.current.isTrue
     emit('ui:feedback', { type: isCorrect ? 'correct' : 'wrong' })
-    // 移除背景闪烁效果，因为现在有音效反馈了
 
     if (isCorrect) {
       this.correctCount += 1
       this.combo += 1
       this.comboMax = Math.max(this.comboMax, this.combo)
+      // 添加正确答案的stamp动画效果
+      this.showCorrectStamp()
     } else {
       this.combo = 0
     }
@@ -137,6 +138,51 @@ export default class GameScene extends Phaser.Scene {
     this.combo = 0
     this.questionIndex += 1
     this.time.delayedCall(120, () => this.nextQuestion())
+  }
+
+  private showCorrectStamp() {
+    if (!this.notePaper) return
+
+    // 计算paper note右上角的位置
+    const noteWidth = 1024
+    const noteHeight = 800
+    const noteX = 640
+    const noteY = 360
+
+    // stamp在右上角的偏移位置
+    const stampX = noteX + noteWidth * 0.35  // 右上角区域
+    const stampY = noteY - noteHeight * 0.35  // 右上角区域
+
+    // 创建stamp图像
+    const stamp = this.add.image(stampX, stampY, 'stamp_true')
+      .setOrigin(0.5)
+      .setDepth(40)  // 确保在便签纸和题目文字之上
+      .setAlpha(0)   // 初始透明
+      .setScale(0.5) // 初始较小尺寸
+
+    // 动画效果：缩放 + 淡入 + 轻微旋转
+    this.tweens.add({
+      targets: stamp,
+      alpha: 1,
+      scaleX: 1,
+      scaleY: 1,
+      angle: 5, // 轻微旋转角度，模拟真实盖章效果
+      duration: 300,
+      ease: 'Back.out', // 弹性效果
+      onComplete: () => {
+        // 保持显示一段时间后淡出
+        this.time.delayedCall(800, () => {
+          this.tweens.add({
+            targets: stamp,
+            alpha: 0,
+            duration: 200,
+            onComplete: () => {
+              stamp.destroy()
+            }
+          })
+        })
+      }
+    })
   }
 
   private finish() {

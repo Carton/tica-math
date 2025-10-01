@@ -7,6 +7,9 @@ export class AudioManager {
   private static scene: Phaser.Scene | null = null
   private static sounds: SoundCache = {}
   private static currentBgmKey: string | null = null
+  private static _sfxEnabled = true
+  private static _bgmEnabled = true
+  private static defaultBgmKey = 'bgm_main' // 记录默认BGM
 
   static init(scene: Phaser.Scene) {
     this.scene = scene
@@ -25,7 +28,7 @@ export class AudioManager {
   }
 
   static tryStartBgm(key: string, config: Phaser.Types.Sound.SoundConfig = { loop: true, volume: 0.25 }) {
-    if (!this.scene) return
+    if (!this.scene || !this._bgmEnabled) return
     const snd = this.getOrCreateSound(key)
     if (!snd) return
     if (this.currentBgmKey === key && snd.isPlaying) return
@@ -41,11 +44,51 @@ export class AudioManager {
     if (!this.scene || !this.currentBgmKey) return
     const snd = this.sounds[this.currentBgmKey]
     if (snd?.isPlaying) snd.stop()
-    this.currentBgmKey = null
+    // 不清除currentBgmKey，这样重新开启时可以继续播放相同的BGM
+  }
+
+  // 音效开关
+  static get sfxEnabled() { return this._sfxEnabled }
+  static setSfxEnabled(enabled: boolean) {
+    this._sfxEnabled = enabled
+    // 如果关闭音效，立即停止正在播放的音效
+    if (!enabled) {
+      Object.values(this.sounds).forEach(snd => {
+        if (snd?.isPlaying) {
+          snd.stop()
+        }
+      })
+    }
+  }
+
+  // 背景音乐开关
+  static get bgmEnabled() { return this._bgmEnabled }
+  static setBgmEnabled(enabled: boolean) {
+    this._bgmEnabled = enabled
+    if (enabled) {
+      // 如果开启BGM，使用当前BGM或默认BGM
+      const bgmKey = this.currentBgmKey || this.defaultBgmKey
+      this.tryStartBgm(bgmKey)
+    } else {
+      // 如果关闭BGM，停止当前播放
+      this.stopBgm()
+    }
+  }
+
+  // 切换音效开关
+  static toggleSfx() {
+    this.setSfxEnabled(!this._sfxEnabled)
+    return this._sfxEnabled
+  }
+
+  // 切换BGM开关
+  static toggleBgm() {
+    this.setBgmEnabled(!this._bgmEnabled)
+    return this._bgmEnabled
   }
 
   static playSfx(key: string, config: Phaser.Types.Sound.SoundConfig = { volume: 0.6 }) {
-    if (!this.scene) return
+    if (!this.scene || !this._sfxEnabled) return
     const snd = this.getOrCreateSound(key)
     if (!snd) return
     // 快速音效并行播放

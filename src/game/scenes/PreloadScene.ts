@@ -49,7 +49,7 @@ export default class PreloadScene extends Phaser.Scene {
       else if (type === 'wrong' || type === 'timeout') AudioManager.playSfx('sfx_wrong')
       else if (type === 'combo') AudioManager.playSfx('sfx_combo')
     })
-    on('ui:choice', () => AudioManager.playSfx('sfx_click')) // 选择答案使用普通点击音效
+    // 移除 ui:choice 事件的音效，因为答题音效已经由 ui:feedback 处理
     on('tool:use', () => AudioManager.playSfx('sfx_click'))
 
     this.scene.start('MainMenuScene')

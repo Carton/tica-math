@@ -2,6 +2,7 @@ import Phaser from 'phaser'
 import { on, off, emit } from '@/game/managers/EventBus'
 import { ToolManager, type ToolType } from '@/game/managers/ToolManager'
 import { SaveManager } from '@/game/managers/SaveManager'
+import { AudioManager } from '@/game/managers/AudioManager'
 
 export default class UIScene extends Phaser.Scene {
   private headerLeftText?: Phaser.GameObjects.Text
@@ -207,10 +208,60 @@ export default class UIScene extends Phaser.Scene {
     this.pausedOverlay = this.add.rectangle(0, 0, width, height, 0x000000, 0.5).setOrigin(0)
     this.pausedDialog = this.add.container(width / 2, height / 2)
 
-    const bg = this.add.rectangle(0, 0, 420, 200, 0x1e2746, 0.95).setOrigin(0.5)
-    const txt = this.add.text(0, -40, '暂停', { fontFamily: 'sans-serif', fontSize: '26px', color: '#ffffff' }).setOrigin(0.5)
-    const btnBack = this.add.text(-80, 40, '返回事务所', { fontFamily: 'sans-serif', fontSize: '18px', color: '#0b1021', backgroundColor: '#a9ffea', padding: { x: 12, y: 6 } }).setOrigin(0.5).setInteractive({ useHandCursor: true })
-    const btnResume = this.add.text(80, 40, '继续', { fontFamily: 'sans-serif', fontSize: '18px', color: '#0b1021', backgroundColor: '#2de1c2', padding: { x: 12, y: 6 } }).setOrigin(0.5).setInteractive({ useHandCursor: true })
+    const bg = this.add.rectangle(0, 0, 420, 280, 0x1e2746, 0.95).setOrigin(0.5)
+    const txt = this.add.text(0, -80, '暂停', { fontFamily: 'sans-serif', fontSize: '26px', color: '#ffffff' }).setOrigin(0.5)
+
+    // 音效开关按钮
+    const btnSfx = this.add.text(-80, -30, '音效: 开', {
+      fontFamily: 'sans-serif', fontSize: '16px', color: '#0b1021',
+      backgroundColor: '#a9ffea', padding: { x: 12, y: 6 }
+    }).setOrigin(0.5).setInteractive({ useHandCursor: true })
+
+    // BGM开关按钮
+    const btnBgm = this.add.text(80, -30, '音乐: 开', {
+      fontFamily: 'sans-serif', fontSize: '16px', color: '#0b1021',
+      backgroundColor: '#a9ffea', padding: { x: 12, y: 6 }
+    }).setOrigin(0.5).setInteractive({ useHandCursor: true })
+
+    // 主按钮 - 继续游戏
+    const btnResume = this.add.text(0, 30, '继续游戏', {
+      fontFamily: 'sans-serif', fontSize: '20px', color: '#0b1021',
+      backgroundColor: '#2de1c2', padding: { x: 16, y: 8 }
+    }).setOrigin(0.5).setInteractive({ useHandCursor: true })
+
+    // 主按钮 - 返回事务所
+    const btnBack = this.add.text(0, 80, '返回事务所', {
+      fontFamily: 'sans-serif', fontSize: '18px', color: '#0b1021',
+      backgroundColor: '#a9ffea', padding: { x: 16, y: 8 }
+    }).setOrigin(0.5).setInteractive({ useHandCursor: true })
+
+    // 更新开关按钮文本
+    const updateButtonTexts = () => {
+      const sfxEnabled = AudioManager.sfxEnabled
+      const bgmEnabled = AudioManager.bgmEnabled
+      btnSfx.setText(`音效: ${sfxEnabled ? '开' : '关'}`)
+      btnBgm.setText(`音乐: ${bgmEnabled ? '开' : '关'}`)
+
+      // 更新按钮颜色
+      btnSfx.setBackgroundColor(sfxEnabled ? '#a9ffea' : '#ff6b6b')
+      btnBgm.setBackgroundColor(bgmEnabled ? '#a9ffea' : '#ff6b6b')
+    }
+
+    // 初始更新
+    updateButtonTexts()
+
+    // 事件处理
+    btnSfx.on('pointerup', () => {
+      AudioManager.toggleSfx()
+      updateButtonTexts()
+    })
+
+    btnBgm.on('pointerup', () => {
+      AudioManager.toggleBgm()
+      updateButtonTexts()
+    })
+
+    btnResume.on('pointerup', () => this.togglePauseDialog())
 
     btnBack.on('pointerup', () => {
       this.closePauseDialog(false)
@@ -218,9 +269,8 @@ export default class UIScene extends Phaser.Scene {
       this.scene.stop('GameScene')
       this.scene.start('MainMenuScene')
     })
-    btnResume.on('pointerup', () => this.togglePauseDialog())
 
-    this.pausedDialog.add([bg, txt, btnBack, btnResume])
+    this.pausedDialog.add([bg, txt, btnSfx, btnBgm, btnResume, btnBack])
   }
 
   private startCountdown(totalMs: number) {
@@ -267,15 +317,15 @@ export default class UIScene extends Phaser.Scene {
       // 使用小图标创建道具显示
       this.headerToolsContainer = this.add.container(x, y)
 
-      const smallIconSize = 16
-      const spacing = 25
+      const smallIconSize = 20
+      const spacing = 45
 
       // 创建三个道具的图标和文本
       this.headerToolIcons.magnify = this.add.image(0, 0, 'icons_magnify')
         .setDisplaySize(smallIconSize, smallIconSize)
         .setOrigin(0.5, 0.5)
 
-      this.headerToolTexts.magnify = this.add.text(smallIconSize/2 + 5, 0, 'x0', {
+      this.headerToolTexts.magnify = this.add.text(smallIconSize/2, 0, 'x0', {
         fontFamily: 'sans-serif',
         fontSize: '14px',
         color: '#a9ffea'
@@ -285,7 +335,7 @@ export default class UIScene extends Phaser.Scene {
         .setDisplaySize(smallIconSize, smallIconSize)
         .setOrigin(0.5, 0.5)
 
-      this.headerToolTexts.watch = this.add.text(spacing + smallIconSize/2 + 5, 0, 'x0', {
+      this.headerToolTexts.watch = this.add.text(spacing + smallIconSize/2, 0, 'x0', {
         fontFamily: 'sans-serif',
         fontSize: '14px',
         color: '#a9ffea'
@@ -295,7 +345,7 @@ export default class UIScene extends Phaser.Scene {
         .setDisplaySize(smallIconSize, smallIconSize)
         .setOrigin(0.5, 0.5)
 
-      this.headerToolTexts.light = this.add.text(spacing * 2 + smallIconSize/2 + 5, 0, 'x0', {
+      this.headerToolTexts.light = this.add.text(spacing * 2 + smallIconSize/2, 0, 'x0', {
         fontFamily: 'sans-serif',
         fontSize: '14px',
         color: '#a9ffea'
