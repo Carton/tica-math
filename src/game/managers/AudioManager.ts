@@ -18,14 +18,10 @@ export class AudioManager {
   }
 
   static preloadAssets(scene: Phaser.Scene) {
-    // 注意：仅当资源已放入 publicDir (`src/assets`) 后才会成功加载
-    // 为避免 404，在资源到位之前不强制预加载。此方法保留给未来启用。
+    // 注意：音效实际在PreloadScene中加载，这里保留用于未来可能的BGM预加载
+    // 为避免重复加载和路径冲突，此方法暂时只处理BGM
     // 示例（放开即可启用）：
-    // scene.load.audio('bgm_main', ['assets/audio/bgm_main_loop.mp3'])
-    scene.load.audio('sfx_click', ['assets/audio/sfx_click.mp3'])
-    scene.load.audio('sfx_correct', ['assets/audio/sfx_correct.mp3'])
-    scene.load.audio('sfx_wrong', ['assets/audio/sfx_wrong.mp3'])
-    scene.load.audio('sfx_stamp', ['assets/audio/sfx_stamp.mp3'])
+    // scene.load.audio('bgm_main', ['audio/bgm_main_loop.mp3'])
   }
 
   static tryStartBgm(key: string, config: Phaser.Types.Sound.SoundConfig = { loop: true, volume: 0.25 }) {

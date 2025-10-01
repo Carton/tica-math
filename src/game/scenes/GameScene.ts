@@ -117,7 +117,7 @@ export default class GameScene extends Phaser.Scene {
     if (!this.current) return
     const isCorrect = choice === this.current.isTrue
     emit('ui:feedback', { type: isCorrect ? 'correct' : 'wrong' })
-    this.cameras.main.flash(100, isCorrect ? 0 : 255, isCorrect ? 255 : 0, 0)
+    // 移除背景闪烁效果，因为现在有音效反馈了
 
     if (isCorrect) {
       this.correctCount += 1
@@ -133,7 +133,7 @@ export default class GameScene extends Phaser.Scene {
 
   private handleTimeout() {
     emit('ui:feedback', { type: 'timeout' })
-    this.cameras.main.flash(100, 255, 0, 0)
+    // 移除背景闪烁效果，因为现在有音效反馈了
     this.combo = 0
     this.questionIndex += 1
     this.time.delayedCall(120, () => this.nextQuestion())

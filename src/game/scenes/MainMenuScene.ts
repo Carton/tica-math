@@ -94,7 +94,15 @@ export default class MainMenuScene extends Phaser.Scene {
           fadeLabel(0, 160)
         })
 
-        rect.on('pointerup', onPointerUp)
+        rect.on('pointerup', () => {
+        onPointerUp()
+        // 为不同的热点设置不同的音效
+        if (labelText === '开始破案') {
+          AudioManager.playSfx('sfx_stamp')
+        } else {
+          AudioManager.playSfx('sfx_click')
+        }
+      })
 
         return rect
       }
@@ -145,15 +153,25 @@ export default class MainMenuScene extends Phaser.Scene {
 
       // 按钮事件处理
       startBtn.on('pointerup', () => {
+        AudioManager.playSfx('sfx_stamp') // 开始游戏使用印章音效
         const level = user.bestLevel || 1
         ToolManager.resetToDefault()
         this.scene.launch('UIScene', { level })
         this.scene.start('GameScene', { level })
       })
 
-      manualBtn.on('pointerup', () => this.scene.start('ManualScene'))
-      honorBtn.on('pointerup', () => this.scene.start('HonorScene'))
-      manageBtn.on('pointerup', () => this.scene.start('UserScene'))
+      manualBtn.on('pointerup', () => {
+        AudioManager.playSfx('sfx_click') // 其他按钮使用点击音效
+        this.scene.start('ManualScene')
+      })
+      honorBtn.on('pointerup', () => {
+        AudioManager.playSfx('sfx_click')
+        this.scene.start('HonorScene')
+      })
+      manageBtn.on('pointerup', () => {
+        AudioManager.playSfx('sfx_click')
+        this.scene.start('UserScene')
+      })
 
       this.input.keyboard?.once('keydown-ENTER', () => startBtn.emit('pointerup'))
     }

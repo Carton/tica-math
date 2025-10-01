@@ -1,6 +1,7 @@
 import Phaser from 'phaser'
 import type { ResultSummary } from '@/game/utils/types'
 import { resultPrimaryActionLabel } from '@/game/utils/gameFlow'
+import { AudioManager } from '@/game/managers/AudioManager'
 
 export default class ResultScene extends Phaser.Scene {
   constructor() {
@@ -10,6 +11,11 @@ export default class ResultScene extends Phaser.Scene {
   create(data: { summary?: ResultSummary; nextLevel?: number }) {
     const { width, height } = this.scale
     const sum = data.summary
+
+    // 如果关卡失败，播放失败音效
+    if (!sum?.pass) {
+      AudioManager.playSfx('sfx_lose_game')
+    }
 
     const title = this.add.text(width / 2, height / 2 - 140, sum?.pass ? '案件告破！' : '让教授逃跑了！', {
       fontFamily: 'sans-serif', fontSize: '36px', color: '#ffffff'
