@@ -29,6 +29,8 @@ export default class PreloadScene extends Phaser.Scene {
     this.load.audio('sfx_success', ['audio/sfx_success.mp3'])
     this.load.audio('sfx_lose_level', ['audio/sfx_lose_level.mp3'])
     this.load.audio('sfx_win_level', ['audio/sfx_win_level.mp3'])
+    this.load.audio('sfx_combo', ['audio/sfx_combo.mp3'])
+    this.load.audio('sfx_combo1', ['audio/sfx_combo1.mp3'])
   }
 
   create() {
@@ -47,7 +49,8 @@ export default class PreloadScene extends Phaser.Scene {
     on('ui:feedback', ({ type }) => {
       if (type === 'correct') AudioManager.playSfx('sfx_stamp') // 答题正确使用印章音效
       else if (type === 'wrong' || type === 'timeout') AudioManager.playSfx('sfx_wrong')
-      else if (type === 'combo') AudioManager.playSfx('sfx_combo')
+      else if (type === 'combo') AudioManager.playSfx('sfx_combo') // 基础连击音效
+      else if (type === 'combo_super') AudioManager.playSfx('sfx_combo1') // 超级连击音效
     })
     // 移除 ui:choice 事件的音效，因为答题音效已经由 ui:feedback 处理
     on('tool:use', () => AudioManager.playSfx('sfx_click'))

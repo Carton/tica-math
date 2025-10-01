@@ -81,15 +81,34 @@ export class SaveManager {
     return Object.entries(data.users).map(([id, d]) => ({ id, data: d }))
   }
 
+  static calculateComboEXPBonus(comboMax: number, baseEXP: number): number {
+    let bonusRatio = 0
+    if (comboMax >= 10) bonusRatio = 0.3      // 10+连击：30%加成
+    else if (comboMax >= 8) bonusRatio = 0.2  // 8-9连击：20%加成
+    else if (comboMax >= 6) bonusRatio = 0.15  // 6-7连击：15%加成
+    else if (comboMax >= 4) bonusRatio = 0.1   // 4-5连击：10%加成
+    else if (comboMax >= 3) bonusRatio = 0.05  // 3连击：5%加成
+
+    return Math.round(baseEXP * bonusRatio)
+  }
+
   static updateWithResult(level: number, result: ResultSummary) {
     const data = this.loadRaw()
     const user = data.users[data.currentUserId] ?? (data.users[data.currentUserId] = defaultUser())
     user.lastResult = result
     if (level > user.bestLevel) user.bestLevel = level
+
     // 如果闯关成功，更新当前应该开始的关卡并给予EXP奖励
     if (result.pass) {
       user.currentLevel = level + 1
-      user.exp += Math.round(result.accuracy * 100)  // 只有闯关成功才给EXP
+
+      // 计算基础EXP和连击加成
+      const baseEXP = Math.round(result.accuracy * 100)
+      const comboBonus = this.calculateComboEXPBonus(result.comboMax, baseEXP)
+      const totalEXP = baseEXP + comboBonus
+
+      user.exp += totalEXP
+
       if (result.grade === 'S') user.badges = Array.from(new Set([...user.badges, `S_${level}`]))
     }
     data.users[data.currentUserId] = user

@@ -7,6 +7,7 @@ import { ToolManager } from '@/game/managers/ToolManager'
 import { gradeByAccuracy } from '@/game/utils/scoring'
 import { SaveManager } from '@/game/managers/SaveManager'
 import { isPass, nextLevel } from '@/game/utils/gameFlow'
+import { AudioManager } from '@/game/managers/AudioManager'
 
 export default class GameScene extends Phaser.Scene {
   private questionIndex = 0
@@ -125,6 +126,13 @@ export default class GameScene extends Phaser.Scene {
       this.correctCount += 1
       this.combo += 1
       this.comboMax = Math.max(this.comboMax, this.combo)
+
+      // 播放连击音效
+      this.playComboSound(this.combo)
+
+      // 显示连击数
+      this.showComboDisplay(this.combo)
+
       // 添加正确答案的stamp动画效果，显示用户选择的对错
       this.showCorrectStamp(choice)
     } else {
@@ -205,6 +213,71 @@ export default class GameScene extends Phaser.Scene {
             duration: 200,
             onComplete: () => {
               stamp.destroy()
+            }
+          })
+        })
+      }
+    })
+  }
+
+  private playComboSound(combo: number) {
+    // 3-5次连击播放基础连击音效，6次以上播放超级连击音效
+    if (combo >= 3 && combo <= 5) {
+      // 延迟播放连击音效，避免与正常答对音效重叠
+      this.time.delayedCall(200, () => {
+        emit('ui:feedback', { type: 'combo' })
+      })
+    } else if (combo >= 6) {
+      // 延迟播放超级连击音效
+      this.time.delayedCall(200, () => {
+        emit('ui:feedback', { type: 'combo_super' })
+      })
+    }
+  }
+
+  private showComboDisplay(combo: number) {
+    if (combo < 3) return // 只有3次及以上连击才显示
+
+    const { width, height } = this.scale
+    const comboText = combo >= 6 ? `${combo}连击！🔥` : `${combo}连击！`
+
+    // 创建连击文字，位置在左下方
+    const comboDisplay = this.add.text(120, height - 150, comboText, {
+      fontFamily: 'sans-serif',
+      fontSize: combo >= 6 ? '36px' : '32px',
+      color: combo >= 6 ? '#ff6b35' : '#ffd166',
+      fontStyle: 'bold',
+      shadow: {
+        offsetX: 2,
+        offsetY: 2,
+        color: '#000000',
+        blur: 4,
+        shadowStroke: true,
+        shadowFill: true
+      }
+    }).setOrigin(0.5)
+
+    // 设置动画：从小到大，再淡出
+    comboDisplay.setScale(0.5)
+    comboDisplay.setAlpha(0)
+
+    this.tweens.add({
+      targets: comboDisplay,
+      scale: 1.2,
+      alpha: 1,
+      duration: 200,
+      ease: 'Back.out',
+      onComplete: () => {
+        // 保持一段时间后开始淡出
+        this.time.delayedCall(800, () => {
+          this.tweens.add({
+            targets: comboDisplay,
+            alpha: 0,
+            y: comboDisplay.y - 30, // 向上飘
+            duration: 300,
+            ease: 'Power2.easeOut',
+            onComplete: () => {
+              comboDisplay.destroy()
             }
           })
         })
