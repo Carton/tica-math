@@ -86,12 +86,12 @@ export class SaveManager {
     const user = data.users[data.currentUserId] ?? (data.users[data.currentUserId] = defaultUser())
     user.lastResult = result
     if (level > user.bestLevel) user.bestLevel = level
-    // 如果闯关成功，更新当前应该开始的关卡
+    // 如果闯关成功，更新当前应该开始的关卡并给予EXP奖励
     if (result.pass) {
       user.currentLevel = level + 1
+      user.exp += Math.round(result.accuracy * 100)  // 只有闯关成功才给EXP
+      if (result.grade === 'S') user.badges = Array.from(new Set([...user.badges, `S_${level}`]))
     }
-    if (result.grade === 'S') user.badges = Array.from(new Set([...user.badges, `S_${level}`]))
-    user.exp += Math.round(result.accuracy * 100)
     data.users[data.currentUserId] = user
     this.saveRaw(data)
   }

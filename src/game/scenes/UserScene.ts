@@ -95,14 +95,14 @@ export default class UserScene extends Phaser.Scene {
 
     let y = startY
     slice.forEach(({ id, data }) => {
-      const bg = this.add.rectangle(listLeft + rowWidth / 2, y, rowWidth, rowHeight, 0x1a2332)
+      const bg = this.add.rectangle(rowWidth / 2, 0, rowWidth, rowHeight, 0x1a2332)
         .setStrokeStyle(2, id === this.currentUserId ? 0x2de1c2 : 0x3a4a5c)
 
-      const text = this.add.text(listLeft + 12, y, `${id}  Lv.${data.bestLevel}  徽章:${data.badges.length}  EXP:${data.exp}`, {
+      const text = this.add.text(12, 0, `${id}  Lv.${data.bestLevel}  徽章:${data.badges.length}  EXP:${data.exp}`, {
         fontFamily: 'monospace', fontSize: '18px', color: id === this.currentUserId ? '#2de1c2' : '#a9ffea'
       }).setOrigin(0, 0.5)
 
-      const row = this.add.container(0, 0, [bg, text]).setSize(rowWidth, rowHeight).setInteractive(new Phaser.Geom.Rectangle(listLeft, y - rowHeight / 2, rowWidth, rowHeight), Phaser.Geom.Rectangle.Contains)
+      const row = this.add.container(listLeft, y, [bg, text]).setSize(rowWidth, rowHeight).setInteractive({ useHandCursor: true })
 
       row.on('pointerup', () => {
         SaveManager.setCurrentUser(id)

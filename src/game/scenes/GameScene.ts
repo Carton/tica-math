@@ -95,6 +95,9 @@ export default class GameScene extends Phaser.Scene {
     this.current = QuestionGenerator.createQuestion(params)
     ToolManager.setQuestion(this.current)
 
+    // 清除之前的提示信息
+    emit('tool:hints', { targetSkills: [], hint: '' })
+
     // 创建题目文字
     const text = this.add.text(640, 360, this.current.questionString, {
       fontFamily: 'monospace',

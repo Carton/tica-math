@@ -12,22 +12,28 @@ export default class HonorScene extends Phaser.Scene {
     // 标题
     this.add.text(width / 2, 60, '荣誉墙', { fontFamily: 'sans-serif', fontSize: '32px', color: '#ffffff' }).setOrigin(0.5)
 
-    // 多用户列表（可点击切换当前用户）
+    // 获取所有用户并按exp分数排序
     const users = SaveManager.getAllUsers()
     const cur = SaveManager.getCurrentUserId()
 
+    // 按exp从高到低排序，EXP相同时按徽章数排序
+    const sortedUsers = [...users].sort((a, b) => {
+      if (b.data.exp !== a.data.exp) {
+        return b.data.exp - a.data.exp  // 先按EXP排序
+      }
+      return b.data.badges.length - a.data.badges.length  // EXP相同时按徽章数排序
+    })
+
     let y = 120
-    users.forEach(({ id, data }) => {
-      const line = this.add.text(80, y, `${id}  Lv.${data.bestLevel}  徽章:${data.badges.length}  EXP:${data.exp}`, {
+    sortedUsers.forEach(({ id, data }, index) => {
+      const isCurrentUser = id === cur
+      const prefix = isCurrentUser ? '→ ' : '  ' // 当前用户用箭头标识
+      const line = this.add.text(80, y, `${prefix}${index + 1}. ${id}  Lv.${data.bestLevel}  徽章:${data.badges.length}  EXP:${data.exp}`, {
         fontFamily: 'monospace',
         fontSize: '18px',
-        color: id === cur ? '#2de1c2' : '#a9ffea'
-      }).setInteractive({ useHandCursor: true })
+        color: isCurrentUser ? '#2de1c2' : '#a9ffea'
+      }) // 移除interactive，不允许点击切换
 
-      line.on('pointerup', () => {
-        SaveManager.setCurrentUser(id)
-        this.scene.restart()
-      })
       y += 32
     })
 
