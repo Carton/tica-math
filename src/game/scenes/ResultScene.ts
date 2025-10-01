@@ -16,7 +16,7 @@ export default class ResultScene extends Phaser.Scene {
     if (sum?.pass) {
       AudioManager.playSfx('sfx_win_level') // 闯关成功播放胜利音效
     } else {
-      AudioManager.playSfx('sfx_lose_game') // 闯关失败播放失败音效
+      AudioManager.playSfx('sfx_lose_level') // 闯关失败播放失败音效
     }
 
     const title = this.add.text(width / 2, height / 2 - 140, sum?.pass ? '案件告破！' : '让教授逃跑了！', {

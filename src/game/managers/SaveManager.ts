@@ -4,6 +4,7 @@ const KEY = 'tica_math_game_save_v1'
 
 export interface SaveData {
   bestLevel: number
+  currentLevel: number  // 当前应该开始的关卡（闯关成功后更新）
   badges: string[]
   exp: number
   lastResult?: ResultSummary
@@ -16,7 +17,7 @@ export interface MultiSave {
 }
 
 function defaultUser(): SaveData {
-  return { bestLevel: 1, badges: [], exp: 0, toolCounts: { magnify: 3, watch: 3, light: 3 } }
+  return { bestLevel: 1, currentLevel: 1, badges: [], exp: 0, toolCounts: { magnify: 3, watch: 3, light: 3 } }
 }
 
 export class SaveManager {
@@ -27,7 +28,21 @@ export class SaveManager {
       const parsed = JSON.parse(raw)
       if (parsed && !parsed.users) {
         const legacy: SaveData = parsed
-        return { currentUserId: 'default', users: { default: { ...defaultUser(), ...legacy, toolCounts: legacy.toolCounts ?? { magnify: 3, watch: 3, light: 3 } } } }
+        return { currentUserId: 'default', users: { default: {
+          ...defaultUser(),
+          ...legacy,
+          currentLevel: legacy.currentLevel ?? legacy.bestLevel ?? 1, // 兼容旧数据
+          toolCounts: legacy.toolCounts ?? { magnify: 3, watch: 3, light: 3 }
+        } } }
+      }
+      // 兼容现有用户数据中可能没有currentLevel的情况
+      if (parsed.users) {
+        Object.keys(parsed.users).forEach(userId => {
+          const user = parsed.users[userId]
+          if (!user.currentLevel) {
+            user.currentLevel = user.bestLevel ?? 1
+          }
+        })
       }
       return parsed as MultiSave
     } catch {
@@ -71,6 +86,10 @@ export class SaveManager {
     const user = data.users[data.currentUserId] ?? (data.users[data.currentUserId] = defaultUser())
     user.lastResult = result
     if (level > user.bestLevel) user.bestLevel = level
+    // 如果闯关成功，更新当前应该开始的关卡
+    if (result.pass) {
+      user.currentLevel = level + 1
+    }
     if (result.grade === 'S') user.badges = Array.from(new Set([...user.badges, `S_${level}`]))
     user.exp += Math.round(result.accuracy * 100)
     data.users[data.currentUserId] = user

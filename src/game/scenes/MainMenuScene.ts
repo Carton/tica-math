@@ -108,7 +108,7 @@ export default class MainMenuScene extends Phaser.Scene {
       }
 
       createHotspot(0.41, 0.68, 0.35, 0.12, '开始破案', () => {
-        const level = user.bestLevel || 1
+        const level = user.currentLevel || 1
         ToolManager.resetToDefault()
         this.scene.launch('UIScene', { level })
         this.scene.start('GameScene', { level })
@@ -154,7 +154,7 @@ export default class MainMenuScene extends Phaser.Scene {
       // 按钮事件处理
       startBtn.on('pointerup', () => {
         AudioManager.playSfx('sfx_stamp') // 开始游戏使用印章音效
-        const level = user.bestLevel || 1
+        const level = user.currentLevel || 1
         ToolManager.resetToDefault()
         this.scene.launch('UIScene', { level })
         this.scene.start('GameScene', { level })
