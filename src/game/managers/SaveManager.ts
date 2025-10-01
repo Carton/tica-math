@@ -7,7 +7,7 @@ export interface SaveData {
   badges: string[]
   exp: number
   lastResult?: ResultSummary
-  toolCounts?: { magnify: number; watch: number; flash: number }
+  toolCounts?: { magnify: number; watch: number; light: number }
 }
 
 export interface MultiSave {
@@ -16,7 +16,7 @@ export interface MultiSave {
 }
 
 function defaultUser(): SaveData {
-  return { bestLevel: 1, badges: [], exp: 0, toolCounts: { magnify: 3, watch: 3, flash: 3 } }
+  return { bestLevel: 1, badges: [], exp: 0, toolCounts: { magnify: 3, watch: 3, light: 3 } }
 }
 
 export class SaveManager {
@@ -27,7 +27,7 @@ export class SaveManager {
       const parsed = JSON.parse(raw)
       if (parsed && !parsed.users) {
         const legacy: SaveData = parsed
-        return { currentUserId: 'default', users: { default: { ...defaultUser(), ...legacy, toolCounts: legacy.toolCounts ?? { magnify: 3, watch: 3, flash: 3 } } } }
+        return { currentUserId: 'default', users: { default: { ...defaultUser(), ...legacy, toolCounts: legacy.toolCounts ?? { magnify: 3, watch: 3, light: 3 } } } }
       }
       return parsed as MultiSave
     } catch {
@@ -77,7 +77,7 @@ export class SaveManager {
     this.saveRaw(data)
   }
 
-  static setToolCounts(counts: { magnify: number; watch: number; flash: number }) {
+  static setToolCounts(counts: { magnify: number; watch: number; light: number }) {
     const data = this.loadRaw()
     const user = data.users[data.currentUserId] ?? (data.users[data.currentUserId] = defaultUser())
     user.toolCounts = { ...counts }
@@ -85,13 +85,13 @@ export class SaveManager {
   }
 
   static resetToolCountsToDefault() {
-    this.setToolCounts({ magnify: 3, watch: 3, flash: 3 })
+    this.setToolCounts({ magnify: 3, watch: 3, light: 3 })
   }
 
-  static consumeTool(type: 'magnify'|'watch'|'flash'): boolean {
+  static consumeTool(type: 'magnify'|'watch'|'light'): boolean {
     const data = this.loadRaw()
     const user = data.users[data.currentUserId] ?? (data.users[data.currentUserId] = defaultUser())
-    const stock = user.toolCounts ?? (user.toolCounts = { magnify: 3, watch: 3, flash: 3 })
+    const stock = user.toolCounts ?? (user.toolCounts = { magnify: 3, watch: 3, light: 3 })
     if (stock[type] > 0) {
       stock[type] -= 1
       this.saveRaw(data)
@@ -100,9 +100,9 @@ export class SaveManager {
     return false
   }
 
-  static getToolCounts(): { magnify: number; watch: number; flash: number } {
+  static getToolCounts(): { magnify: number; watch: number; light: number } {
     const data = this.loadRaw()
     const user = data.users[data.currentUserId] ?? defaultUser()
-    return user.toolCounts ?? { magnify: 3, watch: 3, flash: 3 }
+    return user.toolCounts ?? { magnify: 3, watch: 3, light: 3 }
   }
 }

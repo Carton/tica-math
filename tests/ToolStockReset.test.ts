@@ -14,5 +14,5 @@ test('tool stock resets to default on new run', () => {
   const c2 = ToolManager.getCounts()
   expect(c2.magnify).toBe(3)
   expect(c2.watch).toBe(3)
-  expect(c2.flash).toBe(3)
+  expect(c2.light).toBe(3)
 })

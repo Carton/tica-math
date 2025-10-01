@@ -6,6 +6,7 @@ import { SaveManager } from '@/game/managers/SaveManager'
 export default class UIScene extends Phaser.Scene {
   private headerLeftText?: Phaser.GameObjects.Text
   private headerToolText?: Phaser.GameObjects.Text
+  private headerToolsContainer?: Phaser.GameObjects.Container
   private countdownText?: Phaser.GameObjects.Text
   private footerToolText?: Phaser.GameObjects.Text
   private hintText?: Phaser.GameObjects.Text
@@ -26,7 +27,7 @@ export default class UIScene extends Phaser.Scene {
   private toolIcons: {
     magnify?: Phaser.GameObjects.Image | Phaser.GameObjects.Text
     watch?: Phaser.GameObjects.Image | Phaser.GameObjects.Text
-    flash?: Phaser.GameObjects.Image | Phaser.GameObjects.Text
+    light?: Phaser.GameObjects.Image | Phaser.GameObjects.Text
   } = {}
 
   private progressHandler = ({ index, total }: { index: number; total: number }) => {
@@ -81,12 +82,8 @@ export default class UIScene extends Phaser.Scene {
       wordWrap: { width: hintAreaWidth },
     }).setOrigin(0.5, 0.5)
 
-    this.headerToolText = this.add.text(width * 0.82, headerY, '', {
-      fontFamily: 'sans-serif',
-      fontSize: '20px',
-      color: '#a9ffea',
-      align: 'center',
-    }).setOrigin(0.5, 0.5)
+    // 创建右上角道具显示容器
+    this.createHeaderToolDisplay(width * 0.82, headerY)
 
     this.footerToolText = this.add.text(width - 260, height - 140, '', {
       fontFamily: 'sans-serif',
@@ -253,6 +250,16 @@ export default class UIScene extends Phaser.Scene {
     this.footerHintText?.setText(hint)
   }
 
+  private createHeaderToolDisplay(x: number, y: number) {
+    // 创建右上角道具显示文本
+    this.headerToolText = this.add.text(x, y, '', {
+      fontFamily: 'sans-serif',
+      fontSize: '18px',
+      color: '#a9ffea',
+      align: 'center',
+    }).setOrigin(0.5, 0.5)
+  }
+
   private createToolIcons() {
     const { width, height } = this.scale
     const useIcons = this.textures.exists('icons_magnify') && this.textures.exists('icons_watch') && this.textures.exists('icons_light')
@@ -273,7 +280,7 @@ export default class UIScene extends Phaser.Scene {
         .setDisplaySize(iconSize, iconSize)
         .setInteractive({ useHandCursor: true })
 
-      this.toolIcons.flash = this.add.image((iconSize + iconSpacing) * 2, 0, 'icons_light')
+      this.toolIcons.light = this.add.image((iconSize + iconSpacing) * 2, 0, 'icons_light')
         .setDisplaySize(iconSize, iconSize)
         .setInteractive({ useHandCursor: true })
     } else {
@@ -288,7 +295,7 @@ export default class UIScene extends Phaser.Scene {
         fontSize: '64px',
       }).setOrigin(0.5).setInteractive({ useHandCursor: true })
 
-      this.toolIcons.flash = this.add.text((iconSize + iconSpacing) * 2, 0, '⚡', {
+      this.toolIcons.light = this.add.text((iconSize + iconSpacing) * 2, 0, '💡', {
         fontFamily: 'sans-serif',
         fontSize: '64px',
       }).setOrigin(0.5).setInteractive({ useHandCursor: true })
@@ -297,7 +304,7 @@ export default class UIScene extends Phaser.Scene {
     // 添加点击事件
     this.toolIcons.magnify.on('pointerup', () => this.useTool('magnify'))
     this.toolIcons.watch.on('pointerup', () => this.useTool('watch'))
-    this.toolIcons.flash.on('pointerup', () => this.useTool('flash'))
+    this.toolIcons.light.on('pointerup', () => this.useTool('light'))
 
     // 添加悬停效果
     Object.values(this.toolIcons).forEach(icon => {
@@ -312,7 +319,7 @@ export default class UIScene extends Phaser.Scene {
     this.toolsContainer.add([
       this.toolIcons.magnify,
       this.toolIcons.watch,
-      this.toolIcons.flash
+      this.toolIcons.light
     ])
   }
 
@@ -323,19 +330,19 @@ export default class UIScene extends Phaser.Scene {
 
   private updateToolDisplay() {
     const counts = ToolManager.getCounts()
-    const headerText = `🔍x${counts.magnify}  ⏱️x${counts.watch}  ⚡x${counts.flash}`
 
-    // 更新头部文本显示
+    // 右上角显示简洁格式：图标+数量
+    const headerText = `🔍${counts.magnify}  ⏱️${counts.watch}  💡${counts.light}`
     this.headerToolText?.setText(headerText)
-    this.footerToolText?.setText(headerText)
 
     // 更新图标状态
     this.updateIconState('magnify', counts.magnify)
     this.updateIconState('watch', counts.watch)
-    this.updateIconState('flash', counts.flash)
+    this.updateIconState('light', counts.light)
 
-    // 隐藏底部文本（因为现在用图标显示）
+    // 隐藏底部文本和提示（因为现在统一在顶部显示）
     this.footerToolText?.setVisible(false)
+    this.footerHintText?.setVisible(false)
   }
 
   private updateIconState(type: ToolType, count: number) {

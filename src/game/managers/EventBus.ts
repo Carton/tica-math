@@ -41,8 +41,8 @@ export type EventPayloads = {
   'ui:choice': { choice: boolean }
   'ui:pause': void
   'ui:resume': void
-  'tool:use': { type: 'magnify' | 'watch' | 'flash' }
-  'tool:update': { magnify: number; watch: number; flash: number }
+  'tool:use': { type: 'magnify' | 'watch' | 'light' }
+  'tool:update': { magnify: number; watch: number; light: number }
   'tool:hints': { targetSkills: string[]; hint: string }
   'progress:update': { index: number; total: number }
   'audio:play': { key: string }

@@ -119,7 +119,7 @@ describe('GameScene Interactions', () => {
 
       on('tool:use', toolUseHandler)
 
-      const toolTypes = ['magnify', 'watch', 'flash'] as const
+      const toolTypes = ['magnify', 'watch', 'light'] as const
       toolTypes.forEach(toolType => {
         emit('tool:use', { type: toolType })
       })
@@ -127,16 +127,16 @@ describe('GameScene Interactions', () => {
       expect(toolUseHandler).toHaveBeenCalledTimes(3)
       expect(toolUseHandler).toHaveBeenCalledWith({ type: 'magnify' })
       expect(toolUseHandler).toHaveBeenCalledWith({ type: 'watch' })
-      expect(toolUseHandler).toHaveBeenCalledWith({ type: 'flash' })
+      expect(toolUseHandler).toHaveBeenCalledWith({ type: 'light' })
     })
 
     test('应该正确处理工具更新事件', () => {
       const toolUpdateHandler = jest.fn()
 
       on('tool:update', toolUpdateHandler)
-      emit('tool:update', { magnify: 2, watch: 1, flash: 0 })
+      emit('tool:update', { magnify: 2, watch: 1, light: 0 })
 
-      expect(toolUpdateHandler).toHaveBeenCalledWith({ magnify: 2, watch: 1, flash: 0 })
+      expect(toolUpdateHandler).toHaveBeenCalledWith({ magnify: 2, watch: 1, light: 0 })
     })
 
     test('应该正确处理工具提示事件', () => {

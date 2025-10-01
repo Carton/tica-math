@@ -3,7 +3,7 @@ import type { Question, SkillTag } from '@/game/utils/types'
 import { Strings } from '@/game/managers/Strings'
 import { SaveManager } from '@/game/managers/SaveManager'
 
-export type ToolType = 'magnify' | 'watch' | 'flash'
+export type ToolType = 'magnify' | 'watch' | 'light'
 
 export class ToolManager {
   private static current?: Question
@@ -29,8 +29,8 @@ export class ToolManager {
       case 'watch':
         this.useWatch()
         break
-      case 'flash':
-        this.useFlash()
+      case 'light':
+        this.useLight()
         break
     }
     emit('tool:update', this.getCounts() as any)
@@ -47,9 +47,10 @@ export class ToolManager {
     emit('ui:countdown:extend', { deltaMs: 10000 })
   }
 
-  private static useFlash() {
-    const skills = this.current?.targetSkills ?? []
-    const message = skills.includes('lastDigit') ? '尾数计算有问题！' : '关键环节值得再想一想！'
-    emit('tool:hints', { targetSkills: skills, hint: message })
+  private static useLight() {
+    // 直接选择正确答案
+    if (this.current) {
+      emit('ui:choice', { choice: this.current.isTrue })
+    }
   }
 }

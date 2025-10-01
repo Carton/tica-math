@@ -141,7 +141,7 @@ export default class GameScene extends Phaser.Scene {
 
   private finish() {
     const toolsCounts = ToolManager.getCounts()
-    const toolsUsed = (3 - toolsCounts.magnify) + (3 - toolsCounts.watch) + (3 - toolsCounts.flash)
+    const toolsUsed = (3 - toolsCounts.magnify) + (3 - toolsCounts.watch) + (3 - toolsCounts.light)
     const accuracy = this.total > 0 ? this.correctCount / this.total : 0
     const grade = gradeByAccuracy(accuracy, toolsUsed)
     const pass = isPass(accuracy)

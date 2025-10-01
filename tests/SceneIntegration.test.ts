@@ -141,7 +141,7 @@ describe('Scene Integration Tests', () => {
 
     test('应该正确处理工具使用后的状态更新', () => {
       const toolUseEvents: Array<{ type: string }> = []
-      const toolUpdateEvents: Array<{ magnify: number; watch: number; flash: number }> = []
+      const toolUpdateEvents: Array<{ magnify: number; watch: number; light: number }> = []
 
       on('tool:use', (data) => {
         toolUseEvents.push(data)
@@ -153,7 +153,7 @@ describe('Scene Integration Tests', () => {
 
       // 模拟工具使用
       emit('tool:use', { type: 'magnify' })
-      emit('tool:update', { magnify: 2, watch: 3, flash: 1 })
+      emit('tool:update', { magnify: 2, watch: 3, light: 1 })
 
       expect(toolUseEvents).toHaveLength(1)
       expect(toolUpdateEvents).toHaveLength(1)
