@@ -283,6 +283,15 @@ function makeStrategicError(correct: number, skill: SkillTag, allowNegative: boo
       do {
         lastDigitChange = Math.floor(Math.random() * 11) - 5 // -5 到 5
       } while (lastDigitChange === 0)
+
+      // 确保变化不会导致符号反转
+      if (correct < 0) {
+        // 负数：只能加负方向的变化，或者小的正向变化
+        if (lastDigitChange > 0 && Math.abs(lastDigitChange) > Math.abs(correct)) {
+          lastDigitChange = -Math.floor(Math.random() * 5) - 1 // -1 到 -5
+        }
+      }
+
       v = correct + lastDigitChange
       break
 
@@ -299,11 +308,14 @@ function makeStrategicError(correct: number, skill: SkillTag, allowNegative: boo
           } while (change === 0)
           v = correct + change * highestPlace
         } else {
+          // 一位数特殊处理：直接在个位数上变化，然后跳过个位数保持逻辑
           let change
           do {
             change = Math.floor(Math.random() * 3) - 1 // -1 到 1，排除0
           } while (change === 0)
           v = correct + change
+          // 一位数不需要保持个位数，直接返回
+          break
         }
       } else {
         // 方案2：在中间插入或删除一个数字
@@ -355,7 +367,20 @@ function makeStrategicError(correct: number, skill: SkillTag, allowNegative: boo
 
     case 'carryBorrow':
       // 个位正确但十位错误，通常是±10, ±20等
-      const carryError = (Math.random() < 0.5 ? 10 : 20) * (Math.random() < 0.5 ? 1 : -1)
+      let carryError = (Math.random() < 0.5 ? 10 : 20) * (Math.random() < 0.5 ? 1 : -1)
+
+      // 确保变化不会导致符号反转
+      if (correct < 0) {
+        // 负数：只能加负方向的变化
+        if (carryError > 0) {
+          carryError = -carryError // 反转符号
+        }
+        // 确保不会超过数值的绝对值
+        if (Math.abs(carryError) > Math.abs(correct)) {
+          carryError = -10 // 使用最小的变化
+        }
+      }
+
       v = correct + carryError
       break
 
@@ -409,10 +434,80 @@ function makeStrategicError(correct: number, skill: SkillTag, allowNegative: boo
         }
       }
 
-      // 最后的回退方案
+      // 最后的回退方案：确保仍然满足技能要求
       if (!found) {
-        const diff = 100 * (Math.random() < 0.5 ? 1 : -1)
-        v = correct + diff
+        // 尝试更直接的策略：直接修改一个位数来破坏整除性
+        for (let place = 10; place <= 10000; place *= 10) {
+          for (let change = 1; change <= 9; change++) {
+            const candidate1 = correct + place * change
+            const candidate2 = correct - place * change
+
+            const candidate1LastDigit = Math.abs(candidate1 % 10)
+            const candidate2LastDigit = Math.abs(candidate2 % 10)
+
+            if (candidate1LastDigit === lastDigit) {
+              const candidate1Sum = digitSum(candidate1)
+              if ((candidate1Sum % 3 !== currentSum % 3) || (candidate1Sum % 9 !== currentSum % 9)) {
+                v = candidate1
+                found = true
+                break
+              }
+            }
+
+            if (candidate2LastDigit === lastDigit) {
+              const candidate2Sum = digitSum(candidate2)
+              if ((candidate2Sum % 3 !== currentSum % 3) || (candidate2Sum % 9 !== currentSum % 9)) {
+                v = candidate2
+                found = true
+                break
+              }
+            }
+          }
+          if (found) break
+        }
+
+        // 如果还是找不到，使用智能回退
+        if (!found) {
+          // 根据当前数字的特性选择合适的修改
+          const isDivisibleBy3 = currentSum % 3 === 0
+          const isDivisibleBy9 = currentSum % 9 === 0
+
+          let targetDiff
+          if (isDivisibleBy3) {
+            targetDiff = 1 // 破坏3的整除性
+          } else if (isDivisibleBy9) {
+            targetDiff = 1 // 破坏9的整除性
+          } else {
+            targetDiff = 3 // 确保不被3整除
+          }
+
+          // 寻找最小的影响个位数的变化
+          let foundValid = false
+          for (let testDiff = 1; testDiff <= 100; testDiff++) {
+            const candidate1 = correct + testDiff
+            const candidate2 = correct - testDiff
+
+            const candidate1LastDigit = Math.abs(candidate1 % 10)
+            const candidate2LastDigit = Math.abs(candidate2 % 10)
+
+            if (candidate1LastDigit === lastDigit && digitSum(candidate1) % 3 !== currentSum % 3) {
+              v = candidate1
+              foundValid = true
+              break
+            }
+
+            if (candidate2LastDigit === lastDigit && digitSum(candidate2) % 3 !== currentSum % 3) {
+              v = candidate2
+              foundValid = true
+              break
+            }
+          }
+
+          if (!foundValid) {
+            // 最后的保险方案：修改百位数
+            v = correct + 100
+          }
+        }
       }
       break
 

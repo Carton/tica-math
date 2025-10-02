@@ -4,7 +4,7 @@
 // 复制修复后的estimate算法逻辑进行测试
 function makeStrategicError_Estimate(correct: number): number {
   let v = correct
-  const lastDigit = correct % 10
+  const lastDigit = Math.abs(correct % 10)
   const absCorrect = Math.abs(correct)
 
   // 估算错误：首位±1（50%）或者中间位数插入/删除（50%）
@@ -19,11 +19,14 @@ function makeStrategicError_Estimate(correct: number): number {
       } while (change === 0)
       v = correct + change * highestPlace
     } else {
+      // 一位数特殊处理：直接在个位数上变化，然后跳过个位数保持逻辑
       let change
       do {
         change = Math.floor(Math.random() * 3) - 1 // -1 到 1，排除0
       } while (change === 0)
       v = correct + change
+      // 一位数不需要保持个位数，直接返回
+      return v
     }
   } else {
     // 方案2：在中间插入或删除一个数字
@@ -52,13 +55,21 @@ function makeStrategicError_Estimate(correct: number): number {
         // 两位数，删除第二位
         v = parseInt(correctStr[0]) * (correct < 0 ? -1 : 1)
       } else {
-        // 一位数，只能变成0
-        v = 0
+        // 一位数：删除操作不合理，改为插入操作
+        const insertDigit = Math.floor(Math.random() * 10)
+        v = parseInt(correctStr + insertDigit) * (correct < 0 ? -1 : 1)
       }
     }
   }
-  // 保持个位数正确
-  v = Math.floor(v / 10) * 10 + lastDigit
+  // 保持个位数正确：使用绝对值的个位数，符合用户真实意图
+  const originalLastDigit = Math.abs(correct % 10)
+  if (correct < 0) {
+    // 负数：先对绝对值进行调整，然后恢复负号
+    v = Math.floor(Math.abs(v) / 10) * 10 + originalLastDigit
+    v = -v  // 恢复负号
+  } else {
+    v = Math.floor(v / 10) * 10 + originalLastDigit
+  }
   return v
 }
 
@@ -70,7 +81,8 @@ function validateEstimateSkill(correct: number, wrong: number): { valid: boolean
   const wrongHighest = Math.floor(Math.abs(wrong) / Math.pow(10, wrongDigits - 1))
 
   const isValid = correctDigits !== wrongDigits || correctHighest !== wrongHighest
-  const lastDigitCorrect = (wrong % 10) === (correct % 10)
+  // 修复个位数保持验证：使用绝对值的个位数进行比较
+  const lastDigitCorrect = Math.abs(wrong % 10) === Math.abs(correct % 10)
 
   return {
     valid: isValid,
