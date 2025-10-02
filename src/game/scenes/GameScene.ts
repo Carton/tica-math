@@ -49,9 +49,8 @@ export default class GameScene extends Phaser.Scene {
       const digitParams = DifficultyManager.getDigitParams(this.level)
       this.total = digitParams.questionCount
     } catch (error) {
-      console.warn('Failed to load digit difficulty params, falling back to legacy system:', error)
-      const params = DifficultyManager.getParams(this.level)
-      this.total = params.questionCount
+      console.error('Failed to load digit difficulty params:', error)
+      this.total = 10 // 默认值
     }
 
     on('ui:choice', this.choiceHandler)
@@ -128,8 +127,8 @@ export default class GameScene extends Phaser.Scene {
       const digitParams = DifficultyManager.getDigitParams(this.level)
       timePerQuestionMs = digitParams.timePerQuestionMs
     } catch (error) {
-      const legacyParams = DifficultyManager.getParams(this.level)
-      timePerQuestionMs = legacyParams.timePerQuestionMs
+      console.error('Failed to load digit difficulty params:', error)
+      timePerQuestionMs = 15000 // 保持默认值
     }
     emit('ui:countdown:start', { totalMs: timePerQuestionMs })
   }
