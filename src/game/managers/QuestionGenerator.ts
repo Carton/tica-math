@@ -272,12 +272,13 @@ function generateThreeTermsExpression(
 // 根据技能类型制造策略性错误
 function makeStrategicError(correct: number, skill: SkillTag, allowNegative: boolean): number {
   let v = correct
-  const lastDigit = correct % 10
+  // 个位数计算：使用绝对值的个位数，符合用户的真实意图
+  const lastDigit = Math.abs(correct % 10)
   const absCorrect = Math.abs(correct)
 
   switch (skill) {
     case 'lastDigit':
-      // 只修改个位数，在±5范围内（排除0）
+      // 要求：给数值加减-5到+5，允许影响其他位数
       let lastDigitChange
       do {
         lastDigitChange = Math.floor(Math.random() * 11) - 5 // -5 到 5
@@ -336,8 +337,15 @@ function makeStrategicError(correct: number, skill: SkillTag, allowNegative: boo
           }
         }
       }
-      // 保持个位数正确
-      v = Math.floor(v / 10) * 10 + lastDigit
+      // 保持个位数正确：使用绝对值的个位数，符合用户真实意图
+      const originalLastDigit = Math.abs(correct % 10)
+      if (correct < 0) {
+        // 负数：先对绝对值进行调整，然后恢复负号
+        v = Math.floor(Math.abs(v) / 10) * 10 + originalLastDigit
+        v = -v  // 恢复负号
+      } else {
+        v = Math.floor(v / 10) * 10 + originalLastDigit
+      }
       break
 
     case 'parity':
@@ -369,7 +377,9 @@ function makeStrategicError(correct: number, skill: SkillTag, allowNegative: boo
         for (let i = 1; i <= magnitude / 10 && i <= 100; i++) {
           const testDiff = i * magnitude * (Math.random() < 0.5 ? 1 : -1)
           const candidate = correct + testDiff
-          if (candidate % 10 === lastDigit) {
+          // 检查个位数是否保持（使用绝对值的个位数）
+          const candidateLastDigit = Math.abs(candidate % 10)
+          if (candidateLastDigit === lastDigit) {
             const candidateSum = digitSum(candidate)
             if ((modTarget === targetMod3 && candidateSum % 3 !== currentSum % 3) ||
                 (modTarget === targetMod9 && candidateSum % 9 !== currentSum % 9)) {
@@ -386,7 +396,9 @@ function makeStrategicError(correct: number, skill: SkillTag, allowNegative: boo
         for (let attempt = 0; attempt < 20 && !found; attempt++) {
           const largeChange = (Math.random() < 0.5 ? 1 : -1) * (5000 + Math.floor(Math.random() * 5000))
           const candidate = correct + largeChange
-          if (candidate % 10 === lastDigit) {
+          // 检查个位数是否保持（使用绝对值的个位数）
+          const candidateLastDigit = Math.abs(candidate % 10)
+          if (candidateLastDigit === lastDigit) {
             const candidateSum = digitSum(candidate)
             if ((modTarget === targetMod3 && candidateSum % 3 !== currentSum % 3) ||
                 (modTarget === targetMod9 && candidateSum % 9 !== currentSum % 9)) {
@@ -419,7 +431,9 @@ function makeStrategicError(correct: number, skill: SkillTag, allowNegative: boo
           for (let tensChange = -9; tensChange <= 9; tensChange++) {
             if (tensChange === 0) continue
             const candidate = correct + tensChange * 10
-            if (candidate % 10 === lastDigit && digitSumMod9(candidate) === wrongMod9_value) {
+            // 检查个位数是否保持（使用绝对值的个位数）
+            const candidateLastDigit = Math.abs(candidate % 10)
+            if (candidateLastDigit === lastDigit && digitSumMod9(candidate) === wrongMod9_value) {
               return candidate
             }
           }
@@ -430,7 +444,9 @@ function makeStrategicError(correct: number, skill: SkillTag, allowNegative: boo
           for (let hundredsChange = -9; hundredsChange <= 9; hundredsChange++) {
             if (hundredsChange === 0) continue
             const candidate = correct + hundredsChange * 100
-            if (candidate % 10 === lastDigit && digitSumMod9(candidate) === wrongMod9_value) {
+            // 检查个位数是否保持（使用绝对值的个位数）
+            const candidateLastDigit = Math.abs(candidate % 10)
+            if (candidateLastDigit === lastDigit && digitSumMod9(candidate) === wrongMod9_value) {
               return candidate
             }
           }
@@ -441,7 +457,9 @@ function makeStrategicError(correct: number, skill: SkillTag, allowNegative: boo
           for (let thousandsChange = -9; thousandsChange <= 9; thousandsChange++) {
             if (thousandsChange === 0) continue
             const candidate = correct + thousandsChange * 1000
-            if (candidate % 10 === lastDigit && digitSumMod9(candidate) === wrongMod9_value) {
+            // 检查个位数是否保持（使用绝对值的个位数）
+            const candidateLastDigit = Math.abs(candidate % 10)
+            if (candidateLastDigit === lastDigit && digitSumMod9(candidate) === wrongMod9_value) {
               return candidate
             }
           }
@@ -453,10 +471,13 @@ function makeStrategicError(correct: number, skill: SkillTag, allowNegative: boo
           for (let change of baseChanges) {
             const candidate1 = correct + change
             const candidate2 = correct - change
-            if (candidate1 % 10 === lastDigit && digitSumMod9(candidate1) === wrongMod9_value) {
+            // 检查个位数是否保持（使用绝对值的个位数）
+            const candidate1LastDigit = Math.abs(candidate1 % 10)
+            const candidate2LastDigit = Math.abs(candidate2 % 10)
+            if (candidate1LastDigit === lastDigit && digitSumMod9(candidate1) === wrongMod9_value) {
               return candidate1
             }
-            if (candidate2 % 10 === lastDigit && digitSumMod9(candidate2) === wrongMod9_value) {
+            if (candidate2LastDigit === lastDigit && digitSumMod9(candidate2) === wrongMod9_value) {
               return candidate2
             }
           }

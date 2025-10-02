@@ -1,4 +1,5 @@
-// 技能验证测试套件
+// 技能集成测试套件 - 测试完整的题目生成流程
+// 这测试的是实际游戏中的表现，包括技能权重选择、题目适用性检查等
 import { QuestionGenerator } from '@/game/managers/QuestionGenerator'
 import { DifficultyManager } from '@/game/managers/DifficultyManager'
 
@@ -121,12 +122,12 @@ beforeAll(() => {
   DifficultyManager.init(digitDifficultyConfig)
 })
 
-describe('技能验证测试套件', () => {
+describe('技能集成测试套件', () => {
   const skills = ['lastDigit', 'estimate', 'parity', 'carryBorrow', 'specialDigits', 'castingOutNines']
   const testLevel = 15 // 对应6位数字难度
 
-  test.each(skills)('%s 技能应该生成有效的错题', (skill) => {
-    // 创建特定技能的配置
+  test.each(skills)('%s 技能在实际游戏中应该有效工作', (skill) => {
+    // 创建特定技能的配置 - 模拟实际游戏中的权重设置
     const config = createConfigForSkill(skill)
     DifficultyManager.init(config)
 
@@ -156,17 +157,17 @@ describe('技能验证测试套件', () => {
       expect(Array.isArray(question.targetSkills)).toBe(true)
     }
 
-    // 验证目标技能匹配率（考虑到权重可能不完全精确）
+    // 验证目标技能匹配率（实际游戏中权重选择的效果）
     const matchRate = (targetSkillMatchCount / testCount) * 100
     expect(matchRate).toBeGreaterThanOrEqual(30) // 至少30%的题目应该包含目标技能
 
     // 对于匹配了目标技能的题目，验证成功率
     if (targetSkillMatchCount > 0) {
       const successRate = (validCount / targetSkillMatchCount) * 100
-      expect(successRate).toBeGreaterThanOrEqual(50) // 至少50%成功率
+      expect(successRate).toBeGreaterThanOrEqual(50) // 集成测试中，考虑到各种因素，50%是可以接受的
     }
 
-    console.log(`${skill} 技能: 目标匹配率${matchRate.toFixed(1)}% (${targetSkillMatchCount}/${testCount})`)
+    console.log(`${skill} 技能集成测试: 匹配率${matchRate.toFixed(1)}% (${targetSkillMatchCount}/${testCount}), 成功率${targetSkillMatchCount > 0 ? ((validCount / targetSkillMatchCount) * 100).toFixed(1) : '0'}%`)
   })
 
   test('estimate 技能的特定验证', () => {
