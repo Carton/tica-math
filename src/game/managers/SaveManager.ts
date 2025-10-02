@@ -17,7 +17,24 @@ export interface MultiSave {
 }
 
 function defaultUser(): SaveData {
-  return { bestLevel: 1, currentLevel: 1, badges: [], exp: 0, toolCounts: { magnify: 3, watch: 3, light: 3 } }
+  return { bestLevel: 1, currentLevel: 1, badges: [], exp: 0, toolCounts: getDefaultToolCounts() }
+}
+
+// 获取默认道具数，支持debug模式
+function getDefaultToolCounts(): { magnify: number; watch: number; light: number } {
+  // 检查是否为debug模式
+  const isDebugMode = typeof window !== 'undefined' && (
+    (window as any).import_meta_env_DEV || // 兼容 import.meta.env.DEV
+    window.location.hostname === 'localhost' ||
+    window.location.hostname === '127.0.0.1' ||
+    window.location.search.includes('debug=true')
+  )
+
+  if (isDebugMode) {
+    return { magnify: 999, watch: 999, light: 999 } // debug模式下道具无限
+  }
+
+  return { magnify: 3, watch: 3, light: 3 } // 正常模式默认道具数
 }
 
 export class SaveManager {
@@ -32,7 +49,7 @@ export class SaveManager {
           ...defaultUser(),
           ...legacy,
           currentLevel: legacy.currentLevel ?? legacy.bestLevel ?? 1, // 兼容旧数据
-          toolCounts: legacy.toolCounts ?? { magnify: 3, watch: 3, light: 3 }
+          toolCounts: legacy.toolCounts ?? getDefaultToolCounts()
         } } }
       }
       // 兼容现有用户数据中可能没有currentLevel的情况
@@ -123,13 +140,26 @@ export class SaveManager {
   }
 
   static resetToolCountsToDefault() {
-    this.setToolCounts({ magnify: 3, watch: 3, light: 3 })
+    this.setToolCounts(getDefaultToolCounts())
   }
 
   static consumeTool(type: 'magnify'|'watch'|'light'): boolean {
     const data = this.loadRaw()
     const user = data.users[data.currentUserId] ?? (data.users[data.currentUserId] = defaultUser())
-    const stock = user.toolCounts ?? (user.toolCounts = { magnify: 3, watch: 3, light: 3 })
+
+    // 检查是否为debug模式，如果是则不消耗道具
+    const isDebugMode = typeof window !== 'undefined' && (
+      (window as any).import_meta_env_DEV || // 兼容 import.meta.env.DEV
+      window.location.hostname === 'localhost' ||
+      window.location.hostname === '127.0.0.1' ||
+      window.location.search.includes('debug=true')
+    )
+
+    if (isDebugMode) {
+      return true // debug模式下道具无限，不消耗
+    }
+
+    const stock = user.toolCounts ?? (user.toolCounts = this.getDefaultToolCounts())
     if (stock[type] > 0) {
       stock[type] -= 1
       this.saveRaw(data)
@@ -141,6 +171,6 @@ export class SaveManager {
   static getToolCounts(): { magnify: number; watch: number; light: number } {
     const data = this.loadRaw()
     const user = data.users[data.currentUserId] ?? defaultUser()
-    return user.toolCounts ?? { magnify: 3, watch: 3, light: 3 }
+    return user.toolCounts ?? this.getDefaultToolCounts()
   }
 }
