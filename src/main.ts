@@ -10,6 +10,9 @@ import HonorScene from './game/scenes/HonorScene'
 import ManualScene from './game/scenes/ManualScene'
 import UserScene from './game/scenes/UserScene'
 
+// 开发环境加载调试助手
+import './utils/debugHelper'
+
 const config: Phaser.Types.Core.GameConfig = getGameConfig({
   parent: 'game',
   scenes: [BootScene, PreloadScene, MainMenuScene, GameScene, UIScene, ResultScene, HonorScene, ManualScene, UserScene],

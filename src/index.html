@@ -11,5 +11,69 @@
   <body style="margin:0;background:#0b1021;color:#fff;">
     <div id="game"></div>
     <script type="module" src="./main.ts"></script>
+
+    <!-- 开发环境调试面板 -->
+    <div id="debug-panel" style="display:none; position:fixed; top:10px; right:10px; background:rgba(0,0,0,0.8); color:white; padding:15px; border-radius:8px; font-family:monospace; font-size:12px; z-index:9999; min-width:200px;">
+      <h4 style="margin:0 0 10px 0; color:#4CAF50;">🎮 游戏调试面板</h4>
+      <div style="margin-bottom:10px;">
+        <label style="display:block; margin-bottom:5px;">设置关卡:</label>
+        <input type="number" id="debug-level" value="1" min="1" max="100" style="width:100%; padding:5px;">
+        <button onclick="applyDebugLevel()" style="width:100%; margin-top:5px; padding:5px; background:#4CAF50; color:white; border:none; border-radius:3px; cursor:pointer;">应用</button>
+      </div>
+            <div style="margin-bottom:10px;">
+        <button onclick="resetDebugGame()" style="width:100%; padding:5px; background:#f44336; color:white; border:none; border-radius:3px; cursor:pointer;">重置游戏</button>
+      </div>
+      <div>
+        <button onclick="toggleDebugPanel()" style="width:100%; padding:5px; background:#666; color:white; border:none; border-radius:3px; cursor:pointer;">隐藏面板</button>
+      </div>
+    </div>
+
+    <script>
+      // 调试面板功能
+      function applyDebugLevel() {
+        const level = parseInt(document.getElementById('debug-level').value);
+        if (window.DebugHelper && window.DebugHelper.setLevel(level)) {
+          setTimeout(() => window.location.reload(), 100);
+        }
+      }
+
+      // addDebugTools已移除 - 调试模式下道具无限
+
+      function resetDebugGame() {
+        if (confirm('确定要重置游戏吗？')) {
+          if (window.DebugHelper && window.DebugHelper.resetGame()) {
+            setTimeout(() => window.location.reload(), 100);
+          }
+        }
+      }
+
+      function toggleDebugPanel() {
+        const panel = document.getElementById('debug-panel');
+        panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
+      }
+
+      // 开发环境自动显示调试面板
+      if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+        document.getElementById('debug-panel').style.display = 'block';
+      }
+
+      // 快捷键支持
+      document.addEventListener('keydown', (e) => {
+        // Ctrl+Shift+D 切换调试面板
+        if (e.ctrlKey && e.shiftKey && e.key === 'D') {
+          e.preventDefault();
+          toggleDebugPanel();
+        }
+        // Ctrl+Shift+L 快速设置关卡
+        if (e.ctrlKey && e.shiftKey && e.key === 'L') {
+          e.preventDefault();
+          const level = prompt('输入关卡数 (1-100):');
+          if (level && !isNaN(level)) {
+            document.getElementById('debug-level').value = parseInt(level);
+            applyDebugLevel();
+          }
+        }
+      });
+    </script>
   </body>
 </html>
