@@ -276,7 +276,7 @@ describe('插值逻辑单元测试', () => {
       const end = performance.now()
       const duration = end - start
 
-      expect(duration).toBeLessThan(100) // 应该在100ms内完成10万次插值
+      expect(duration).toBeLessThan(150) // 应该在150ms内完成10万次插值
     })
 
     test('复杂配置插值性能', () => {

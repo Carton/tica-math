@@ -2,20 +2,15 @@ import { QuestionGenerator } from '@/game/managers/QuestionGenerator'
 import { DifficultyManager } from '@/game/managers/DifficultyManager'
 
 const diff = {
-  levels: [
+  version: "2.0",
+  digitDifficultyLevels: [
     {
       level: 1,
-      numberRange: { min: 1, max: 9 },
-      operators: { plus: true, minus: true, mul: false, div: false },
-      operatorWeights: { plus: 0.5, minus: 0.5, mul: 0, div: 0 },
-      allowFractions: false,
-      allowDecimals: false,
-      allowNegative: false,
-      threeTermsProbability: 0,
-      allowParentheses: false,
-      timePerQuestionMs: 15000,
-      minTimeMs: 8000,
-      questionCount: 5
+      digitRange: { min: 2, max: 3 },
+      skills: { "lastDigit": 70, "estimate": 30, "parity": 0, "castingOutNines": 0, "carryBorrow": 0, "specialDigits": 0 },
+      expressions: { "twoTerms": { "simple": {"plus": 60, "minus": 40, "mul": 0, "div": 0 } }, "threeTerms": { "noParentheses": {}, "withParentheses": {}}},
+      allowNegative: false, "allowFractions": false, "allowDecimals": false,
+      timePerQuestionMs: 15000, "minTimeMs": 8000, "questionCount": 10
     }
   ]
 }

@@ -158,7 +158,7 @@ describe('Scene Integration Tests', () => {
       expect(toolUseEvents).toHaveLength(1)
       expect(toolUpdateEvents).toHaveLength(1)
       expect(toolUseEvents[0]).toEqual({ type: 'magnify' })
-      expect(toolUpdateEvents[0]).toEqual({ magnify: 2, watch: 3, flash: 1 })
+      expect(toolUpdateEvents[0]).toEqual({ magnify: 2, watch: 3, light: 1 })
     })
   })
 
