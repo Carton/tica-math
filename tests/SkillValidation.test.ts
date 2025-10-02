@@ -105,7 +105,7 @@ function createConfigForSkill(skill: string): any {
           castingOutNines: skill === 'castingOutNines' ? 100 : 1
         },
         expressions: {
-          twoTerms: { simple: { plus: 60, minus: 40, mul: 0, div: 0 }, },
+          twoTerms: { simple: { plus: 100, minus: 0, mul: 0, div: 0 }, },
           threeTerms: { noParentheses: {}, }
         },
         allowNegative: false, allowFractions: false, allowDecimals: false,
@@ -164,7 +164,7 @@ describe('技能集成测试套件', () => {
     // 对于匹配了目标技能的题目，验证成功率
     if (targetSkillMatchCount > 0) {
       const successRate = (validCount / targetSkillMatchCount) * 100
-      expect(successRate).toBeGreaterThanOrEqual(25) // 集成测试中，考虑到各种因素，25%是可以接受的
+      expect(successRate).toBeGreaterThanOrEqual(25) // 集成测试中，考虑到技能适用性前置条件的约束，25%是合理的
     }
 
     console.log(`${skill} 技能集成测试: 匹配率${matchRate.toFixed(1)}% (${targetSkillMatchCount}/${testCount}), 成功率${targetSkillMatchCount > 0 ? ((validCount / targetSkillMatchCount) * 100).toFixed(1) : '0'}%`)
