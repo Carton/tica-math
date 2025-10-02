@@ -708,8 +708,6 @@ export class QuestionGenerator {
     switch (exprType) {
       case 'twoTermsSimple':
         return this.generateTwoTermsSimple(targetDifficulty, params)
-      case 'twoTermsWithParentheses':
-        return this.generateTwoTermsWithParentheses(targetDifficulty, params)
       case 'threeTermsNoParentheses':
         return this.generateThreeTermsNoParentheses(targetDifficulty, params)
       case 'threeTermsWithParentheses':
@@ -727,10 +725,7 @@ export class QuestionGenerator {
       weights[`twoTermsSimple_${op}`] = weight
     })
 
-    // 两数字带括号表达式
-    Object.entries(expressions.twoTerms.withParentheses).forEach(([op, weight]) => {
-      weights[`twoTermsWithParentheses_${op}`] = weight
-    })
+    // 两数字带括号表达式已删除 - 两数运算不需要括号
 
     // 三数字无括号表达式
     Object.entries(expressions.threeTerms.noParentheses).forEach(([type, weight]) => {
@@ -762,23 +757,7 @@ export class QuestionGenerator {
     )
   }
 
-  private static generateTwoTermsWithParentheses(
-    targetDifficulty: number,
-    params: DigitDifficultyLevel
-  ): { expr: string; value: number; digitDifficulty: number } {
-    const operators = Object.entries(params.expressions.twoTerms.withParentheses)
-      .filter(([_, weight]) => weight > 0.001) as [Operator, number][]
-    const operator = sampleByWeights(Object.fromEntries(operators)) as Operator
-
-    return generateTwoTermsExpression(
-      targetDifficulty,
-      operator,
-      true,
-      params.allowNegative,
-      params.allowFractions
-    )
-  }
-
+  // generateTwoTermsWithParentheses 函数已删除 - 两数运算不需要括号
   private static generateThreeTermsNoParentheses(
     targetDifficulty: number,
     params: DigitDifficultyLevel

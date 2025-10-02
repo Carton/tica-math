@@ -7,7 +7,7 @@ function lerp(a: number, b: number, t: number): number {
 }
 
 function lerpBool(a: boolean, b: boolean, t: number): boolean {
-  return (a ? 1 : 0) + ((b ? 1 : 0) - (a ? 1 : 0)) * t >= 0.5
+  return (a ? 1 : 0) + ((b ? 1 : 0) - (a ? 1 : 0)) * t >= 50
 }
 
 function lerpRecord<T extends Record<string, number>>(a: T, b: T, t: number): T {
@@ -31,12 +31,7 @@ interface ExpressionConfig {
       withMul: number
       withDiv: number
     }
-    withParentheses: {
-      plusMinus: number
-      mul: number
-      div: number
     }
-  }
 }
 
 function lerpExpressionConfig(a: ExpressionConfig, b: ExpressionConfig, t: number): ExpressionConfig {
@@ -51,12 +46,7 @@ function lerpExpressionConfig(a: ExpressionConfig, b: ExpressionConfig, t: numbe
         withMul: lerp(a.threeTerms.noParentheses.withMul, b.threeTerms.noParentheses.withMul, t),
         withDiv: lerp(a.threeTerms.noParentheses.withDiv, b.threeTerms.noParentheses.withDiv, t)
       },
-      withParentheses: {
-        plusMinus: lerp(a.threeTerms.withParentheses.plusMinus, b.threeTerms.withParentheses.plusMinus, t),
-        mul: lerp(a.threeTerms.withParentheses.mul, b.threeTerms.withParentheses.mul, t),
-        div: lerp(a.threeTerms.withParentheses.div, b.threeTerms.withParentheses.div, t)
       }
-    }
   }
 }
 
@@ -65,46 +55,46 @@ describe('插值逻辑单元测试', () => {
     test('应该正确处理边界情况', () => {
       expect(lerp(0, 10, 0)).toBe(0)    // 完全在起点
       expect(lerp(0, 10, 1)).toBe(10)   // 完全在终点
-      expect(lerp(0, 10, 0.5)).toBe(5)  // 中点
+      expect(lerp(0, 10, 50)).toBe(5)  // 中点
     })
 
     test('应该正确处理负数', () => {
-      expect(lerp(-10, 10, 0.5)).toBe(0)
-      expect(lerp(-5, -1, 0.5)).toBe(-3)
-      expect(lerp(-10, 0, 0.3)).toBe(-7)
+      expect(lerp(-10, 10, 50)).toBe(0)
+      expect(lerp(-5, -1, 50)).toBe(-3)
+      expect(lerp(-10, 0, 30)).toBe(-7)
     })
 
     test('应该正确处理反向插值', () => {
-      expect(lerp(10, 0, 0.5)).toBe(5)
-      expect(lerp(100, 0, 0.25)).toBe(75)
+      expect(lerp(10, 0, 50)).toBe(5)
+      expect(lerp(100, 0, 25)).toBe(75)
     })
 
     test('应该正确处理小数精度', () => {
-      expect(lerp(0, 1, 0.333)).toBeCloseTo(0.333, 3)
-      expect(lerp(0.1, 0.9, 0.5)).toBeCloseTo(0.5, 3)
+      expect(lerp(0, 1, 333)).toBeCloseTo(333, 3)
+      expect(lerp(10, 90, 50)).toBeCloseTo(50, 3)
     })
 
     test('应该处理极端值', () => {
-      expect(lerp(0, 1000, 0.001)).toBeCloseTo(1, 0)
-      expect(lerp(-1000, 1000, 0.999)).toBeCloseTo(998, 0)
+      expect(lerp(0, 1000, 01)).toBeCloseTo(1, 0)
+      expect(lerp(-1000, 1000, 999)).toBeCloseTo(998, 0)
     })
   })
 
   describe('布尔插值 (lerpBool)', () => {
     test('应该正确处理相同布尔值', () => {
-      expect(lerpBool(true, true, 0.5)).toBe(true)
-      expect(lerpBool(false, false, 0.5)).toBe(false)
+      expect(lerpBool(true, true, 50)).toBe(true)
+      expect(lerpBool(false, false, 50)).toBe(false)
       expect(lerpBool(true, true, 0)).toBe(true)
       expect(lerpBool(true, true, 1)).toBe(true)
     })
 
     test('应该正确处理不同布尔值', () => {
-      expect(lerpBool(false, true, 0.5)).toBe(true)   // 0 + (1-0)*0.5 = 0.5 >= 0.5
-      expect(lerpBool(true, false, 0.5)).toBe(true)  // 1 + (0-1)*0.5 = 0.5 >= 0.5
-      expect(lerpBool(false, true, 0.49)).toBe(false) // 0 + (1-0)*0.49 = 0.49 < 0.5
-      expect(lerpBool(false, true, 0.51)).toBe(true)  // 0 + (1-0)*0.51 = 0.51 >= 0.5
-      expect(lerpBool(true, false, 0.49)).toBe(true)  // 1 + (0-1)*0.49 = 0.51 >= 0.5
-      expect(lerpBool(true, false, 0.51)).toBe(false) // 1 + (0-1)*0.51 = 0.49 < 0.5
+      expect(lerpBool(false, true, 50)).toBe(true)   // 0 + (1-0)*50 = 50 >= 50
+      expect(lerpBool(true, false, 50)).toBe(true)  // 1 + (0-1)*50 = 50 >= 50
+      expect(lerpBool(false, true, 49)).toBe(false) // 0 + (1-0)*49 = 49 < 50
+      expect(lerpBool(false, true, 51)).toBe(true)  // 0 + (1-0)*51 = 51 >= 50
+      expect(lerpBool(true, false, 49)).toBe(true)  // 1 + (0-1)*49 = 51 >= 50
+      expect(lerpBool(true, false, 51)).toBe(false) // 1 + (0-1)*51 = 49 < 50
     })
 
     test('边界值测试', () => {
@@ -119,7 +109,7 @@ describe('插值逻辑单元测试', () => {
     test('应该正确插值简单记录', () => {
       const a = { x: 0, y: 10, z: 5 }
       const b = { x: 10, y: 0, z: 15 }
-      const result = lerpRecord(a, b, 0.5)
+      const result = lerpRecord(a, b, 50)
 
       expect(result.x).toBe(5)
       expect(result.y).toBe(5)
@@ -127,19 +117,19 @@ describe('插值逻辑单元测试', () => {
     })
 
     test('应该正确处理部分字段', () => {
-      const a = { plus: 1.0, minus: 0, mul: 0.5 }
-      const b = { plus: 0.5, minus: 0.5, mul: 0.8 }
-      const result = lerpRecord(a, b, 0.25)
+      const a = { plus: 100, minus: 0, mul: 50 }
+      const b = { plus: 50, minus: 50, mul: 80 }
+      const result = lerpRecord(a, b, 25)
 
-      expect(result.plus).toBeCloseTo(0.875, 3)  // 1.0 + (0.5-1.0)*0.25 = 0.875
-      expect(result.minus).toBeCloseTo(0.125, 3) // 0 + (0.5-0)*0.25 = 0.125
-      expect(result.mul).toBeCloseTo(0.575, 3)   // 0.5 + (0.8-0.5)*0.25 = 0.575
+      expect(result.plus).toBeCloseTo(875, 3)  // 100 + (50-100)*25 = 875
+      expect(result.minus).toBeCloseTo(125, 3) // 0 + (50-0)*25 = 125
+      expect(result.mul).toBeCloseTo(575, 3)   // 50 + (80-50)*25 = 575
     })
 
     test('应该保持记录结构', () => {
-      const a = { weight1: 0.3, weight2: 0.7 }
-      const b = { weight1: 0.6, weight2: 0.4 }
-      const result = lerpRecord(a, b, 0.3)
+      const a = { weight1: 30, weight2: 70 }
+      const b = { weight1: 60, weight2: 40 }
+      const result = lerpRecord(a, b, 30)
 
       expect(Object.keys(result)).toEqual(['weight1', 'weight2'])
       expect(typeof result.weight1).toBe('number')
@@ -149,14 +139,14 @@ describe('插值逻辑单元测试', () => {
     test('应该处理空记录', () => {
       const a = {}
       const b = {}
-      const result = lerpRecord(a, b, 0.5)
+      const result = lerpRecord(a, b, 50)
       expect(Object.keys(result)).toEqual([])
     })
 
     test('应该处理undefined字段', () => {
       const a = { x: 1, y: 2, z: undefined }
       const b = { x: 3, y: undefined, z: 5 }
-      const result = lerpRecord(a, b, 0.5)
+      const result = lerpRecord(a, b, 50)
 
       expect(result.x).toBe(2)           // 正常插值
       expect(result.y).toBeUndefined()   // b[y]是undefined，不插值
@@ -167,63 +157,51 @@ describe('插值逻辑单元测试', () => {
   describe('表达式配置插值 (lerpExpressionConfig)', () => {
     const configA: ExpressionConfig = {
       twoTerms: {
-        simple: { plus: 1.0, minus: 0 },
-        withParentheses: { plus: 0.2, minus: 0.1 }
-      },
+        simple: { plus: 100, minus: 0 },
+        },
       threeTerms: {
         noParentheses: {
-          plusMinus: 0.5,
-          withMul: 0.2,
-          withDiv: 0.1
+          plusMinus: 50,
+          withMul: 20,
+          withDiv: 10
         },
-        withParentheses: {
-          plusMinus: 0.3,
-          mul: 0.2,
-          div: 0.1
         }
-      }
     }
 
     const configB: ExpressionConfig = {
       twoTerms: {
-        simple: { plus: 0.6, minus: 0.4 },
-        withParentheses: { plus: 0.4, minus: 0.3 }
-      },
+        simple: { plus: 60, minus: 40 },
+        },
       threeTerms: {
         noParentheses: {
-          plusMinus: 0.3,
-          withMul: 0.4,
-          withDiv: 0.2
+          plusMinus: 30,
+          withMul: 40,
+          withDiv: 20
         },
-        withParentheses: {
-          plusMinus: 0.2,
-          mul: 0.3,
-          div: 0.2
         }
-      }
     }
 
     test('应该正确插值twoTerms配置', () => {
-      const result = lerpExpressionConfig(configA, configB, 0.5)
+      const result = lerpExpressionConfig(configA, configB, 50)
 
-      expect(result.twoTerms.simple.plus).toBeCloseTo(0.8, 2)   // (1.0 + 0.6) / 2
-      expect(result.twoTerms.simple.minus).toBeCloseTo(0.2, 2)  // (0 + 0.4) / 2
-      expect(result.twoTerms.withParentheses.plus).toBeCloseTo(0.3, 2) // (0.2 + 0.4) / 2
+      expect(result.twoTerms.simple.plus).toBeCloseTo(80, 2)   // (100 + 60) / 2
+      expect(result.twoTerms.simple.minus).toBeCloseTo(20, 2)  // (0 + 40) / 2
+      expect(result.twoTerms.withParentheses.plus).toBeCloseTo(30, 2) // (20 + 40) / 2
     })
 
     test('应该正确插值threeTerms配置', () => {
-      const result = lerpExpressionConfig(configA, configB, 0.25)
+      const result = lerpExpressionConfig(configA, configB, 25)
 
-      // plusMinus: 0.5 + (0.3-0.5)*0.25 = 0.45
-      expect(result.threeTerms.noParentheses.plusMinus).toBeCloseTo(0.45, 3)
-      // withMul: 0.2 + (0.4-0.2)*0.25 = 0.25
-      expect(result.threeTerms.noParentheses.withMul).toBeCloseTo(0.25, 3)
-      // withDiv: 0.1 + (0.2-0.1)*0.25 = 0.125
-      expect(result.threeTerms.noParentheses.withDiv).toBeCloseTo(0.125, 3)
+      // plusMinus: 50 + (30-50)*25 = 45
+      expect(result.threeTerms.noParentheses.plusMinus).toBeCloseTo(45, 3)
+      // withMul: 20 + (40-20)*25 = 25
+      expect(result.threeTerms.noParentheses.withMul).toBeCloseTo(25, 3)
+      // withDiv: 10 + (20-10)*25 = 125
+      expect(result.threeTerms.noParentheses.withDiv).toBeCloseTo(125, 3)
     })
 
     test('应该保持配置结构完整性', () => {
-      const result = lerpExpressionConfig(configA, configB, 0.3)
+      const result = lerpExpressionConfig(configA, configB, 30)
 
       expect(result).toHaveProperty('twoTerms')
       expect(result).toHaveProperty('threeTerms')
@@ -237,45 +215,39 @@ describe('插值逻辑单元测试', () => {
       const emptyConfig: ExpressionConfig = {
         twoTerms: {
           simple: {},
-          withParentheses: {}
-        },
+          },
         threeTerms: {
           noParentheses: {
             plusMinus: 0,
             withMul: 0,
             withDiv: 0
           },
-          withParentheses: {
-            plusMinus: 0,
-            mul: 0,
-            div: 0
           }
-        }
       }
 
-      const result = lerpExpressionConfig(emptyConfig, configA, 0.5)
+      const result = lerpExpressionConfig(emptyConfig, configA, 50)
 
       // 空配置应该保持为空
       expect(Object.keys(result.twoTerms.simple)).toEqual([])
       expect(Object.keys(result.twoTerms.withParentheses)).toEqual([])
 
       // 非空配置应该正常插值
-      expect(result.threeTerms.noParentheses.plusMinus).toBeCloseTo(0.25, 2)
+      expect(result.threeTerms.noParentheses.plusMinus).toBeCloseTo(25, 2)
     })
   })
 
   describe('插值精度和稳定性测试', () => {
     test('插值应该是可逆的', () => {
-      const a = 10, b = 20, t = 0.3
+      const a = 10, b = 20, t = 30
       const interpolated = lerp(a, b, t)
       const reversed = lerp(interpolated, b, t / (1 - t)) // 这个公式不完全正确，但测试概念
 
-      expect(interpolated).toBeCloseTo(13, 1) // 10 + (20-10)*0.3 = 13
+      expect(interpolated).toBeCloseTo(13, 1) // 10 + (20-10)*30 = 13
     })
 
     test('插值应该保持单调性', () => {
       const a = 0, b = 100
-      const t1 = 0.2, t2 = 0.5, t3 = 0.8
+      const t1 = 20, t2 = 50, t3 = 80
 
       const v1 = lerp(a, b, t1)
       const v2 = lerp(a, b, t2)
@@ -286,7 +258,7 @@ describe('插值逻辑单元测试', () => {
     })
 
     test('插值应该是线性组合', () => {
-      const a = 10, b = 30, t = 0.25
+      const a = 10, b = 30, t = 25
       const result = lerp(a, b, t)
       const expected = a * (1 - t) + b * t
 
@@ -294,13 +266,13 @@ describe('插值逻辑单元测试', () => {
     })
 
     test('应该处理浮点数精度问题', () => {
-      const a = 0.1, b = 0.9, t = 0.1
+      const a = 10, b = 90, t = 10
       const result = lerp(a, b, t)
 
-      // 应该接近0.17，但不应该有明显的精度误差
-      expect(result).toBeCloseTo(0.18, 10)
-      expect(result).toBeGreaterThan(0.17)
-      expect(result).toBeLessThan(0.19)
+      // 应该接近17，但不应该有明显的精度误差
+      expect(result).toBeCloseTo(18, 10)
+      expect(result).toBeGreaterThan(17)
+      expect(result).toBeLessThan(19)
     })
   })
 
@@ -325,40 +297,28 @@ describe('插值逻辑单元测试', () => {
     test('复杂配置插值性能', () => {
       const complexA: ExpressionConfig = {
         twoTerms: {
-          simple: { plus: 0.3, minus: 0.2, mul: 0.3, div: 0.2 },
-          withParentheses: { plus: 0.2, minus: 0.2, mul: 0.3, div: 0.3 }
-        },
+          simple: { plus: 30, minus: 20, mul: 30, div: 20 },
+          },
         threeTerms: {
           noParentheses: {
-            plusMinus: 0.4,
-            withMul: 0.3,
-            withDiv: 0.3
+            plusMinus: 40,
+            withMul: 30,
+            withDiv: 30
           },
-          withParentheses: {
-            plusMinus: 0.3,
-            mul: 0.3,
-            div: 0.4
           }
-        }
       }
 
       const complexB: ExpressionConfig = {
         twoTerms: {
-          simple: { plus: 0.4, minus: 0.3, mul: 0.2, div: 0.1 },
-          withParentheses: { plus: 0.3, minus: 0.3, mul: 0.2, div: 0.2 }
-        },
+          simple: { plus: 40, minus: 30, mul: 20, div: 10 },
+          },
         threeTerms: {
           noParentheses: {
-            plusMinus: 0.3,
-            withMul: 0.4,
-            withDiv: 0.3
+            plusMinus: 30,
+            withMul: 40,
+            withDiv: 30
           },
-          withParentheses: {
-            plusMinus: 0.4,
-            mul: 0.3,
-            div: 0.3
           }
-        }
       }
 
       const iterations = 1000

@@ -19,8 +19,7 @@ function lerpRecord<T extends Record<string, number>>(a: T, b: T, t: number): T 
 function lerpExpressionConfig(a: ExpressionConfig, b: ExpressionConfig, t: number): ExpressionConfig {
   return {
     twoTerms: {
-      simple: lerpRecord(a.twoTerms.simple, b.twoTerms.simple, t),
-      withParentheses: lerpRecord(a.twoTerms.withParentheses, b.twoTerms.withParentheses, t)
+      simple: lerpRecord(a.twoTerms.simple, b.twoTerms.simple, t)
     },
     threeTerms: {
       noParentheses: {

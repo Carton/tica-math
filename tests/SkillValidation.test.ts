@@ -97,16 +97,16 @@ function createConfigForSkill(skill: string): any {
         level: 15,
         digitRange: { min: 4, max: 6 },
         skills: {
-          lastDigit: skill === 'lastDigit' ? 1.0 : 0.01,
-          estimate: skill === 'estimate' ? 1.0 : 0.01,
-          parity: skill === 'parity' ? 1.0 : 0.01,
-          carryBorrow: skill === 'carryBorrow' ? 1.0 : 0.01,
-          specialDigits: skill === 'specialDigits' ? 1.0 : 0.01,
-          castingOutNines: skill === 'castingOutNines' ? 1.0 : 0.01
+          lastDigit: skill === 'lastDigit' ? 100 : 1,
+          estimate: skill === 'estimate' ? 100 : 1,
+          parity: skill === 'parity' ? 100 : 1,
+          carryBorrow: skill === 'carryBorrow' ? 100 : 1,
+          specialDigits: skill === 'specialDigits' ? 100 : 1,
+          castingOutNines: skill === 'castingOutNines' ? 100 : 1
         },
         expressions: {
-          twoTerms: { simple: { plus: 0.6, minus: 0.4, mul: 0, div: 0 }, withParentheses: {} },
-          threeTerms: { noParentheses: {}, withParentheses: {} }
+          twoTerms: { simple: { plus: 60, minus: 40, mul: 0, div: 0 }, },
+          threeTerms: { noParentheses: {}, }
         },
         allowNegative: false, allowFractions: false, allowDecimals: false,
         timePerQuestionMs: 14000, minTimeMs: 7500, questionCount: 10
@@ -283,7 +283,7 @@ describe('技能集成测试套件', () => {
         totalValid += results[skill].valid
         totalQuestions += results[skill].total
       } else {
-        console.log(`${skill}: 0/0 (0.0%) - 未生成该技能题目`)
+        console.log(`${skill}: 0/0 (0%) - 未生成该技能题目`)
       }
     })
 

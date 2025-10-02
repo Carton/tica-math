@@ -31,7 +31,6 @@ export interface DigitDifficultyLevel {
 export interface ExpressionConfig {
   twoTerms: {
     simple: Record<Operator, number>
-    withParentheses: Record<Operator, number>
   }
   threeTerms: {
     noParentheses: {
