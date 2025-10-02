@@ -11,8 +11,7 @@ export default class PreloadScene extends Phaser.Scene {
   }
 
   preload() {
-    this.load.json('difficulty', 'game/config/digit-difficulty-v2.json')
-    this.load.json('difficulty-legacy', 'game/config/difficulty.json') // 保留旧配置作为备用
+    this.load.json('difficulty', 'game/config/digit-difficulty.json')
     this.load.json('strings', 'game/config/strings.zh-CN.json')
     // 音频与图片占位符可在此处预加载（文件到位后放开注释）
     this.load.image('bg_office', 'images/bg_office.png')
@@ -36,13 +35,10 @@ export default class PreloadScene extends Phaser.Scene {
 
   create() {
     const diff = this.cache.json.get('difficulty')
-    const legacyDiff = this.cache.json.get('difficulty-legacy')
 
     // 优先使用新的数位难度系统，如果不可用则回退到旧系统
     if (diff) {
       DifficultyManager.init(diff)
-    } else if (legacyDiff) {
-      DifficultyManager.init(legacyDiff)
     }
 
     const lang = this.cache.json.get('strings')

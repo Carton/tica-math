@@ -118,7 +118,7 @@ function createConfigForSkill(skill: string): any {
 // 初始化难度管理器
 beforeAll(() => {
   // 使用默认配置初始化
-  const digitDifficultyConfig = require('@/game/config/digit-difficulty-v2.json')
+  const digitDifficultyConfig = require('@/game/config/digit-difficulty.json')
   DifficultyManager.init(digitDifficultyConfig)
 })
 
@@ -244,7 +244,7 @@ describe('技能集成测试套件', () => {
 
   test('所有技能的组合测试', () => {
     // 使用默认配置进行综合测试
-    const defaultConfig = require('@/game/config/digit-difficulty-v2.json')
+    const defaultConfig = require('@/game/config/digit-difficulty.json')
     DifficultyManager.init(defaultConfig)
 
     const results: { [key: string]: { valid: number, total: number, questions: any[] } } = {}

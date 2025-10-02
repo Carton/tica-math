@@ -49,7 +49,7 @@ export class DifficultyManager {
 
   static getDigitParams(level: number): DigitDifficultyLevel {
     if (this.digitLevels.length === 0) {
-      throw new Error('Digit difficulty system not initialized. Please load digit-difficulty-v2.json')
+      throw new Error('Digit difficulty system not initialized. Please load digit-difficulty.json')
     }
 
     if (level <= this.digitLevels[0].level) return this.digitLevels[0]
