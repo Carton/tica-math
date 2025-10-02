@@ -34,7 +34,7 @@ export default defineConfig({
   plugins: [
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['favicon.svg', 'robots.txt'],
+      includeAssets: ['favicon.png', 'robots.txt'],
       manifest: {
         name: 'Tica 侦探事务所：数字谜案',
         short_name: 'Tica谜案',
