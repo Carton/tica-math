@@ -5,7 +5,6 @@ export type SkillTag =
   | 'castingOutNines'
   | 'carryBorrow'
   | 'specialDigits'
-  | 'times11'
 
 export interface Question {
   questionString: string

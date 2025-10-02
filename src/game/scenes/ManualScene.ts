@@ -71,8 +71,6 @@ export default class ManualScene extends Phaser.Scene {
       '尾数追踪术：先看尾巴抓一抓！',
       '奇偶密码：乘法有偶便是偶！',
       '弃九验算法：数字加加加，加到一位查一查！',
-      '逆运算大法：加变减，乘变除，反向追踪不会输！',
-      '和11交朋友：两头一拉，中间一加！'
     ]
 
     tips.forEach(tip => {

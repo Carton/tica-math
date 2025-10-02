@@ -272,21 +272,63 @@ function generateThreeTermsExpression(
 // 根据技能类型制造策略性错误
 function makeStrategicError(correct: number, skill: SkillTag, allowNegative: boolean): number {
   let v = correct
+  const lastDigit = correct % 10
+  const absCorrect = Math.abs(correct)
 
   switch (skill) {
     case 'lastDigit':
-      // 只修改个位数，通常±1或±2
-      const lastDigitChange = Math.random() < 0.7 ? (Math.random() < 0.5 ? -1 : 1) : (Math.random() < 0.5 ? -2 : 2)
+      // 只修改个位数，在±5范围内（排除0）
+      let lastDigitChange
+      do {
+        lastDigitChange = Math.floor(Math.random() * 11) - 5 // -5 到 5
+      } while (lastDigitChange === 0)
       v = correct + lastDigitChange
       break
 
     case 'estimate':
-      // 在估算范围边界轻微偏移，但保持个位数正确
-      const lastDigit = correct % 10
-      const magnitude = Math.pow(10, Math.floor(Math.log10(Math.abs(correct))) || 1)
-      const estimateError = Math.round(magnitude * 0.1) * (Math.random() < 0.5 ? 1 : -1)
-      v = correct + estimateError
-      // 修正个位数保持正确
+      // 估算错误：首位±3（50%）或者中间位数变化（50%）
+      if (Math.random() < 0.5) {
+        // 方案1：在最高位上±3
+        const digits = absCorrect.toString().length
+        if (digits >= 2) {
+          const highestPlace = Math.pow(10, digits - 1)
+          let change
+          do {
+            change = Math.floor(Math.random() * 7) - 3 // -3 到 3，排除0
+          } while (change === 0)
+          v = correct + change * highestPlace
+        } else {
+          let change
+          do {
+            change = Math.floor(Math.random() * 7) - 3 // -3 到 3，排除0
+          } while (change === 0)
+          v = correct + change
+        }
+      } else {
+        // 方案2：在中间位数增加或减少一位
+        const digits = absCorrect.toString().length
+        if (digits >= 3) {
+          // 修改中间某一位
+          const middlePos = Math.floor(Math.random() * (digits - 2)) + 1 // 1到digits-2位
+          const middlePlace = Math.pow(10, digits - 1 - middlePos)
+          let change
+          do {
+            change = Math.floor(Math.random() * 19) - 9 // -9 到 9，排除0
+          } while (change === 0)
+          v = correct + change * middlePlace
+        } else if (digits === 2) {
+          // 只有两位数，修改十位数
+          let change
+          do {
+            change = Math.floor(Math.random() * 19) - 9 // -9 到 9，排除0
+          } while (change === 0)
+          v = correct + change * 10
+        } else {
+          // 一位数，简单修改
+          v = correct + 10
+        }
+      }
+      // 保持个位数正确
       v = Math.floor(v / 10) * 10 + lastDigit
       break
 
@@ -302,34 +344,157 @@ function makeStrategicError(correct: number, skill: SkillTag, allowNegative: boo
       break
 
     case 'specialDigits':
-      // 破坏3或9的整除性，通过修改数字和
+      // 破坏3或9的整除性，但不修改个位数，支持更大的数值变化
       const currentSum = digitSum(correct)
       const targetMod3 = (currentSum % 3 + 1) % 3 // 确保不被3整除
       const targetMod9 = (currentSum % 9 + 1) % 9 // 确保不被9整除
       const modTarget = Math.random() < 0.7 ? targetMod3 : targetMod9
-      const diff = (modTarget - currentSum % 9 + 9) % 9 || 9
-      v = correct + diff
-      break
 
-    case 'castingOutNines':
-      // 使数字和模9不一致
-      const currentMod9 = digitSumMod9(correct)
-      const wrongMod9 = (currentMod9 + 1) % 9 || 9
-      const castingError = ((wrongMod9 - currentMod9 + 9) % 9) || 9
-      v = correct + castingError
-      break
+      // 支持更大的数值变化：±10, ±100, ±1000等
+      const magnitudes = [10, 100, 1000]
+      let found = false
 
-    case 'times11':
-      // 针对11乘法规律的错误，常见的错误模式
-      if (correct >= 100 && correct <= 9999) {
-        // 对于两位数×11，常见错误是首位末位相加忘了进位
-        const change = Math.random() < 0.5 ? 11 : 22
-        v = correct + (Math.random() < 0.5 ? change : -change)
-      } else {
-        v = correct + (Math.random() < 0.5 ? 11 : -11)
+      for (let attempt = 0; attempt < 50 && !found; attempt++) {
+        // 随机选择一个数量级
+        const magnitude = magnitudes[Math.floor(Math.random() * magnitudes.length)]
+        // 在该数量级内寻找合适的修改
+        for (let i = 1; i <= magnitude / 10 && i <= 100; i++) {
+          const testDiff = i * magnitude * (Math.random() < 0.5 ? 1 : -1)
+          const candidate = correct + testDiff
+          if (candidate % 10 === lastDigit) {
+            const candidateSum = digitSum(candidate)
+            if ((modTarget === targetMod3 && candidateSum % 3 !== currentSum % 3) ||
+                (modTarget === targetMod9 && candidateSum % 9 !== currentSum % 9)) {
+              v = candidate
+              found = true
+              break
+            }
+          }
+        }
+      }
+
+      // 如果还没找到，尝试更大的变化（±5000等）
+      if (!found) {
+        for (let attempt = 0; attempt < 20 && !found; attempt++) {
+          const largeChange = (Math.random() < 0.5 ? 1 : -1) * (5000 + Math.floor(Math.random() * 5000))
+          const candidate = correct + largeChange
+          if (candidate % 10 === lastDigit) {
+            const candidateSum = digitSum(candidate)
+            if ((modTarget === targetMod3 && candidateSum % 3 !== currentSum % 3) ||
+                (modTarget === targetMod9 && candidateSum % 9 !== currentSum % 9)) {
+              v = candidate
+              found = true
+            }
+          }
+        }
+      }
+
+      // 最后的回退方案
+      if (!found) {
+        const diff = 100 * (Math.random() < 0.5 ? 1 : -1)
+        v = correct + diff
       }
       break
 
+    case 'castingOutNines':
+      // 使数字和模9不一致，但保证个位数不变
+      const currentMod9_value = digitSumMod9(correct)
+      const wrongMod9_value = (currentMod9_value + 1) % 9 || 9
+
+      // 寻找合适的修改方案，确保个位数不变且弃九验算失效
+      let foundCasting = false
+
+      // 尝试不同的修改策略
+      const strategies = [
+        () => {
+          // 策略1：修改十位数，保持个位数不变
+          for (let tensChange = -9; tensChange <= 9; tensChange++) {
+            if (tensChange === 0) continue
+            const candidate = correct + tensChange * 10
+            if (candidate % 10 === lastDigit && digitSumMod9(candidate) === wrongMod9_value) {
+              return candidate
+            }
+          }
+          return null
+        },
+        () => {
+          // 策略2：修改百位数
+          for (let hundredsChange = -9; hundredsChange <= 9; hundredsChange++) {
+            if (hundredsChange === 0) continue
+            const candidate = correct + hundredsChange * 100
+            if (candidate % 10 === lastDigit && digitSumMod9(candidate) === wrongMod9_value) {
+              return candidate
+            }
+          }
+          return null
+        },
+        () => {
+          // 策略3：修改千位数
+          for (let thousandsChange = -9; thousandsChange <= 9; thousandsChange++) {
+            if (thousandsChange === 0) continue
+            const candidate = correct + thousandsChange * 1000
+            if (candidate % 10 === lastDigit && digitSumMod9(candidate) === wrongMod9_value) {
+              return candidate
+            }
+          }
+          return null
+        },
+        () => {
+          // 策略4：组合修改多个位数
+          const baseChanges = [9, 18, 27, 36, 45, 54, 63, 72, 81]
+          for (let change of baseChanges) {
+            const candidate1 = correct + change
+            const candidate2 = correct - change
+            if (candidate1 % 10 === lastDigit && digitSumMod9(candidate1) === wrongMod9_value) {
+              return candidate1
+            }
+            if (candidate2 % 10 === lastDigit && digitSumMod9(candidate2) === wrongMod9_value) {
+              return candidate2
+            }
+          }
+          return null
+        }
+      ]
+
+      // 尝试所有策略
+      for (let strategy of strategies) {
+        const result = strategy()
+        if (result !== null) {
+          v = result
+          foundCasting = true
+          break
+        }
+      }
+
+      // 如果所有策略都失败，使用强制修改
+      if (!foundCasting) {
+        // 直接修改数字，然后调整以保持个位数
+        const baseChange = 9 // 9的倍数可以改变弃九验算结果
+        const attempts = 100
+        for (let i = 1; i <= attempts; i++) {
+          const multiplier = Math.floor(Math.random() * 10) + 1
+          const testChange = baseChange * multiplier * (Math.random() < 0.5 ? 1 : -1)
+          const candidate = correct + testChange
+          if (candidate % 10 === lastDigit && digitSumMod9(candidate) !== currentMod9_value) {
+            v = candidate
+            foundCasting = true
+            break
+          }
+        }
+
+        // 最后的回退
+        if (!foundCasting) {
+          // 强制调整：先改变数字，再调整回个位数
+          let finalCandidate = correct + 90 // 修改十位数
+          if (finalCandidate % 10 !== lastDigit) {
+            finalCandidate = Math.floor(finalCandidate / 10) * 10 + lastDigit
+          }
+          v = finalCandidate
+        }
+      }
+      break
+
+    
     default:
       v = correct + 1
   }
@@ -341,10 +506,6 @@ function makeStrategicError(correct: number, skill: SkillTag, allowNegative: boo
 // 检查题目是否符合特定技能的考察要求
 function isQuestionSuitableForSkill(expr: string, value: number, skill: SkillTag): boolean {
   switch (skill) {
-    case 'times11':
-      // 必须是乘法且包含11
-      return expr.includes('×') && expr.includes('11')
-
     case 'specialDigits':
       // 必须有乘数含3或9的倍数
       const numbers = expr.match(/\d+/g)
@@ -553,23 +714,6 @@ export class QuestionGenerator {
   ): { expr: string; value: number; digitDifficulty: number } {
     // 为特定技能生成备用表达式
     switch (skill) {
-      case 'times11':
-        // 生成包含11的乘法
-        const otherDigits = targetDifficulty - 2 // 11占2位
-        const otherNum = generateNumberWithDigitCount(Math.max(1, otherDigits), params.allowNegative)
-        const result = generateTwoTermsExpression(
-          targetDifficulty,
-          'mul',
-          false,
-          params.allowNegative,
-          params.allowFractions
-        )
-        return {
-          expr: `${otherNum} × 11`,
-          value: otherNum * 11,
-          digitDifficulty: targetDifficulty
-        }
-
       case 'specialDigits':
         // 生成包含3或9倍数的乘法
         const digits = distributeDigits(targetDifficulty, 2)
@@ -586,6 +730,16 @@ export class QuestionGenerator {
           value: a * b,
           digitDifficulty: targetDifficulty
         }
+
+      case 'castingOutNines':
+        // 生成加法题目用于弃九验算
+        return generateTwoTermsExpression(
+          targetDifficulty,
+          'plus',
+          false,
+          params.allowNegative,
+          params.allowFractions
+        )
 
       default:
         // 默认生成简单的加法
