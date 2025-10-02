@@ -5,16 +5,52 @@ export type SkillTag =
   | 'castingOutNines'
   | 'carryBorrow'
   | 'specialDigits'
-  | 'inverseOp'
   | 'times11'
 
 export interface Question {
   questionString: string
   isTrue: boolean
   targetSkills: SkillTag[]
+  digitDifficulty: number
   metadata: { expr: string; correctValue: number; shownValue: number }
 }
 
+// 新的数位难度配置接口
+export interface DigitDifficultyLevel {
+  level: number
+  digitRange: { min: number; max: number }
+  skills: Record<SkillTag, number>
+  expressions: ExpressionConfig
+  allowNegative: boolean
+  allowFractions: boolean
+  allowDecimals: boolean
+  timePerQuestionMs: number
+  minTimeMs: number
+  questionCount: number
+}
+
+export interface ExpressionConfig {
+  twoTerms: {
+    simple: Record<Operator, number>
+    withParentheses: Record<Operator, number>
+  }
+  threeTerms: {
+    noParentheses: {
+      plusMinus: number
+      withMul: number
+      withDiv: number
+    }
+    withParentheses: {
+      plusMinus: number
+      mul: number
+      div: number
+    }
+  }
+}
+
+export type Operator = 'plus' | 'minus' | 'mul' | 'div'
+
+// 保持向后兼容的旧接口
 export interface DifficultyParams {
   numberRange: { min: number; max: number }
   operators: { plus: boolean; minus: boolean; mul: boolean; div: boolean }

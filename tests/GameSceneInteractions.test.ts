@@ -24,6 +24,7 @@ describe('GameScene Interactions', () => {
         questionString: '2 + 2 = 4',
         isTrue: true,
         targetSkills: ['estimate'],
+        digitDifficulty: 2,
         metadata: { expr: '2+2', correctValue: 4, shownValue: 4 }
       }
 

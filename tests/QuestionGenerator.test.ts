@@ -37,9 +37,9 @@ const diff = {
 beforeAll(() => DifficultyManager.init(diff as any))
 
 test('generate question basic fields', () => {
-  const params = DifficultyManager.getParams(5)
-  const q = QuestionGenerator.createQuestion(params)
+  const q = QuestionGenerator.createQuestion(5)
   expect(q.questionString).toContain('=')
   expect(typeof q.isTrue).toBe('boolean')
   expect(Array.isArray(q.targetSkills)).toBe(true)
+  expect(typeof q.digitDifficulty).toBe('number')
 })

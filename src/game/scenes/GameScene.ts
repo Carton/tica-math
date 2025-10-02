@@ -43,8 +43,16 @@ export default class GameScene extends Phaser.Scene {
 
   create() {
     this.cameras.main.setBackgroundColor('#0b1021')
-    const params = DifficultyManager.getParams(this.level)
-    this.total = params.questionCount
+
+    // 尝试使用新的数位难度系统，如果不可用则回退到旧系统
+    try {
+      const digitParams = DifficultyManager.getDigitParams(this.level)
+      this.total = digitParams.questionCount
+    } catch (error) {
+      console.warn('Failed to load digit difficulty params, falling back to legacy system:', error)
+      const params = DifficultyManager.getParams(this.level)
+      this.total = params.questionCount
+    }
 
     on('ui:choice', this.choiceHandler)
     on('question:timeout', this.timeoutHandler)
@@ -92,8 +100,8 @@ export default class GameScene extends Phaser.Scene {
       this.currentQuestionText = undefined
     }
 
-    const params = DifficultyManager.getParams(this.level)
-    this.current = QuestionGenerator.createQuestion(params)
+    // 使用新的数位难度系统生成题目
+    this.current = QuestionGenerator.createQuestion(this.level)
     ToolManager.setQuestion(this.current)
 
     // 清除之前的提示信息
@@ -114,7 +122,16 @@ export default class GameScene extends Phaser.Scene {
 
     emit('progress:update', { index: this.questionIndex + 1, total: this.total })
     emit('question:new', { question: this.current })
-    emit('ui:countdown:start', { totalMs: params.timePerQuestionMs })
+    // 获取当前关卡的时间设置
+    let timePerQuestionMs = 15000 // 默认值
+    try {
+      const digitParams = DifficultyManager.getDigitParams(this.level)
+      timePerQuestionMs = digitParams.timePerQuestionMs
+    } catch (error) {
+      const legacyParams = DifficultyManager.getParams(this.level)
+      timePerQuestionMs = legacyParams.timePerQuestionMs
+    }
+    emit('ui:countdown:start', { totalMs: timePerQuestionMs })
   }
 
   private handleChoice(choice: boolean) {
@@ -230,7 +247,7 @@ export default class GameScene extends Phaser.Scene {
     } else if (combo >= 6) {
       // 延迟播放超级连击音效
       this.time.delayedCall(200, () => {
-        emit('ui:feedback', { type: 'combo_super' })
+        emit('ui:feedback', { type: 'combo' })
       })
     }
   }
@@ -252,8 +269,7 @@ export default class GameScene extends Phaser.Scene {
         offsetY: 2,
         color: '#000000',
         blur: 4,
-        shadowStroke: true,
-        shadowFill: true
+        fill: true
       }
     }).setOrigin(0.5)
 

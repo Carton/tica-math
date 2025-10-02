@@ -11,7 +11,8 @@ export default class PreloadScene extends Phaser.Scene {
   }
 
   preload() {
-    this.load.json('difficulty', 'game/config/difficulty.json')
+    this.load.json('difficulty', 'game/config/digit-difficulty-v2.json')
+    this.load.json('difficulty-legacy', 'game/config/difficulty.json') // 保留旧配置作为备用
     this.load.json('strings', 'game/config/strings.zh-CN.json')
     // 音频与图片占位符可在此处预加载（文件到位后放开注释）
     this.load.image('bg_office', 'images/bg_office.png')
@@ -35,7 +36,14 @@ export default class PreloadScene extends Phaser.Scene {
 
   create() {
     const diff = this.cache.json.get('difficulty')
-    if (diff) DifficultyManager.init(diff)
+    const legacyDiff = this.cache.json.get('difficulty-legacy')
+
+    // 优先使用新的数位难度系统，如果不可用则回退到旧系统
+    if (diff) {
+      DifficultyManager.init(diff)
+    } else if (legacyDiff) {
+      DifficultyManager.init(legacyDiff)
+    }
 
     const lang = this.cache.json.get('strings')
     if (lang) Strings.init(lang)
@@ -49,8 +57,7 @@ export default class PreloadScene extends Phaser.Scene {
     on('ui:feedback', ({ type }) => {
       if (type === 'correct') AudioManager.playSfx('sfx_stamp') // 答题正确使用印章音效
       else if (type === 'wrong' || type === 'timeout') AudioManager.playSfx('sfx_wrong')
-      else if (type === 'combo') AudioManager.playSfx('sfx_combo') // 基础连击音效
-      else if (type === 'combo_super') AudioManager.playSfx('sfx_combo1') // 超级连击音效
+      else if (type === 'combo') AudioManager.playSfx('sfx_combo') // 连击音效
     })
     // 移除 ui:choice 事件的音效，因为答题音效已经由 ui:feedback 处理
     on('tool:use', () => AudioManager.playSfx('sfx_click'))

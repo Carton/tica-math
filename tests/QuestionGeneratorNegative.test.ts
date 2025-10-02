@@ -24,8 +24,7 @@ beforeAll(() => DifficultyManager.init(diff as any))
 
 test('no negative results when allowNegative=false', () => {
   for (let i = 0; i < 50; i++) {
-    const p = DifficultyManager.getParams(1)
-    const q = QuestionGenerator.createQuestion(p)
+    const q = QuestionGenerator.createQuestion(1)
     expect(q.metadata.shownValue).toBeGreaterThanOrEqual(0)
     expect(q.metadata.correctValue).toBeGreaterThanOrEqual(0)
   }

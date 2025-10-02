@@ -60,8 +60,7 @@ export default class ResultScene extends Phaser.Scene {
             offsetY: 2,
             color: '#000000',
             blur: 4,
-            shadowStroke: true,
-            shadowFill: true
+            fill: true
           }
         }).setOrigin(0.5).setAlpha(0)
 
