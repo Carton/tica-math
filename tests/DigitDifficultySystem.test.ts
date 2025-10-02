@@ -23,7 +23,8 @@ const testDigitDifficultyConfig = {
         },
         threeTerms: {
           noParentheses: {},
-          }
+          withParentheses: {}
+        }
       },
       allowNegative: false,
       allowFractions: false,
@@ -49,7 +50,8 @@ const testDigitDifficultyConfig = {
           },
         threeTerms: {
           noParentheses: { plusMinus: 30 },
-          }
+          withParentheses: {}
+        }
       },
       allowNegative: false,
       allowFractions: false,
@@ -79,7 +81,8 @@ const testDigitDifficultyConfig = {
             withMul: 10,
             withDiv: 5
           },
-          }
+          withParentheses: {}
+        }
       },
       allowNegative: true,
       allowFractions: false,
@@ -134,13 +137,13 @@ describe('数位难度系统测试', () => {
 
     test('技能权重插值应该正确', () => {
       const midLevel = DifficultyManager.getDigitParams(5)
-      // level 5在1和10之间，t = (5-1)/(10-1) = 4/9 ≈ 444
-      // lastDigit: 70 + (40-70)*4/9 ≈ 567
-      expect(midLevel.skills.lastDigit).toBeCloseTo(567, 2)
+      // level 5在1和10之间，t = (5-1)/(10-1) = 4/9 ≈ 0.444
+      // lastDigit: 70 + (40-70)*4/9 ≈ 56.7
+      expect(midLevel.skills.lastDigit).toBeCloseTo(56.7, 1)
       // estimate: 30 + (30-30)*4/9 = 30
       expect(midLevel.skills.estimate).toBeCloseTo(30, 2)
-      // parity: 0 + (20-0)*4/9 ≈ 89
-      expect(midLevel.skills.parity).toBeCloseTo(89, 2)
+      // parity: 0 + (20-0)*4/9 ≈ 8.9
+      expect(midLevel.skills.parity).toBeCloseTo(8.9, 1)
     })
 
     test('时间配置插值应该正确', () => {
@@ -164,18 +167,18 @@ describe('数位难度系统测试', () => {
 
     test('表达式配置插值应该正确', () => {
       const midLevel = DifficultyManager.getDigitParams(5)
-      // twoTerms.simple.plus: 100 + (60-100)*4/9 ≈ 822
-      expect(midLevel.expressions.twoTerms.simple.plus).toBeCloseTo(822, 2)
+      // twoTerms.simple.plus: 100 + (60-100)*4/9 ≈ 82.2
+      expect(midLevel.expressions.twoTerms.simple.plus).toBeCloseTo(82.2, 1)
       // minus字段在level 1中不存在，所以插值后可能也不存在
-      // 如果存在，应该是: 0 + (40-0)*4/9 ≈ 178
+      // 如果存在，应该是: 0 + (40-0)*4/9 ≈ 17.8
       if (midLevel.expressions.twoTerms.simple.minus !== undefined) {
-        expect(midLevel.expressions.twoTerms.simple.minus).toBeCloseTo(178, 2)
+        expect(midLevel.expressions.twoTerms.simple.minus).toBeCloseTo(17.8, 2)
       }
     })
 
     test('复杂表达式配置插值应该正确', () => {
-      const level15 = DifficultyManager.getDigitParams(15) // 10和20的中间，t = (15-10)/(20-10) = 50
-      // threeTerms.noParentheses.plusMinus: 30 + (20-30)*50 = 25
+      const level15 = DifficultyManager.getDigitParams(15) // 10和20的中间，t = (15-10)/(20-10) = 0.5
+      // threeTerms.noParentheses.plusMinus: 30 + (20-30)*0.5 = 25
       expect(level15.expressions.threeTerms.noParentheses.plusMinus).toBeCloseTo(25, 2)
       // withMul字段在level 10中不存在，level 20中存在，插值后可能存在也可能不存在
       // 这里我们只测试存在的情况
@@ -252,11 +255,11 @@ describe('数位难度系统测试', () => {
 
   describe('插值精度测试', () => {
     test('小数级别插值应该有足够精度', () => {
-      const level2_5 = DifficultyManager.getDigitParams(250)
+      const level2_5 = DifficultyManager.getDigitParams(2.5)
       const level1 = testDigitDifficultyConfig.digitDifficultyLevels[0]
       const level10 = testDigitDifficultyConfig.digitDifficultyLevels[1]
 
-      const t = (250 - level1.level) / (level10.level - level1.level) // 166...
+      const t = (2.5 - level1.level) / (level10.level - level1.level) // 0.166...
 
       // 验证插值计算
       const expectedMin = Math.round(level1.digitRange.min + (level10.digitRange.min - level1.digitRange.min) * t)
@@ -308,7 +311,7 @@ describe('数位难度系统测试', () => {
       Object.values(level15.skills).forEach(weight => {
         expect(typeof weight).toBe('number')
         expect(weight).toBeGreaterThanOrEqual(0)
-        expect(weight).toBeLessThanOrEqual(1)
+        expect(weight).toBeLessThanOrEqual(100)
       })
     })
   })

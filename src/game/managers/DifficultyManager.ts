@@ -28,9 +28,9 @@ function lerpExpressionConfig(a: ExpressionConfig, b: ExpressionConfig, t: numbe
         withDiv: lerp(a.threeTerms.noParentheses.withDiv, b.threeTerms.noParentheses.withDiv, t)
       },
       withParentheses: {
-        plusMinus: lerp(a.threeTerms.withParentheses.plusMinus, b.threeTerms.withParentheses.plusMinus, t),
-        mul: lerp(a.threeTerms.withParentheses.mul, b.threeTerms.withParentheses.mul, t),
-        div: lerp(a.threeTerms.withParentheses.div, b.threeTerms.withParentheses.div, t)
+        plusMinus: lerp(a.threeTerms.withParentheses?.plusMinus || 0, b.threeTerms.withParentheses?.plusMinus || 0, t),
+        mul: lerp(a.threeTerms.withParentheses?.mul || 0, b.threeTerms.withParentheses?.mul || 0, t),
+        div: lerp(a.threeTerms.withParentheses?.div || 0, b.threeTerms.withParentheses?.div || 0, t)
       }
     }
   }
