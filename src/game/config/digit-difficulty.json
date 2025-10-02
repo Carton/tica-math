@@ -97,7 +97,7 @@
           "withParentheses": { "plusMinus": 10, "mul": 8, "div": 12 }
         }
       },
-      "allowNegative": true, "allowFractions": true, "allowDecimals": true,
+      "allowNegative": true, "allowFractions": true, "allowDecimals": false,
       "timePerQuestionMs": 13000, "minTimeMs": 5000, "questionCount": 10
     }
   ]

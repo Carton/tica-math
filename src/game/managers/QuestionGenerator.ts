@@ -43,7 +43,7 @@ function generateNumberWithDigitCount(digits: number, allowNegative: boolean = f
   return num
 }
 
-// 分配数字位数到多个操作数
+// 分配数字位数到多个操作数 - 改进版本，更均匀的分配
 function distributeDigits(totalDigits: number, count: number): number[] {
   if (count <= 0) return []
   if (count === 1) return [totalDigits]
@@ -51,11 +51,19 @@ function distributeDigits(totalDigits: number, count: number): number[] {
   const digits: number[] = []
   let remaining = totalDigits
 
-  // 给前count-1个数分配至少1位
+  // 计算平均值和最小/最大位数
+  const averageDigits = Math.floor(totalDigits / count)
+  const minDigits = Math.max(1, averageDigits - 1)
+  const maxDigits = Math.min(totalDigits - (count - 1), averageDigits + 1)
+
+  // 给前count-1个数分配位数，尽量接近平均值
   for (let i = 0; i < count - 1; i++) {
-    const minDigits = 1
-    const maxDigits = Math.max(minDigits, remaining - (count - i - 1))
-    const assignedDigits = randomInt(minDigits, maxDigits)
+    // 根据剩余位数和剩余个数调整范围
+    const remainingCount = count - i
+    const currentMin = Math.max(minDigits, remaining - (remainingCount - 1) * maxDigits)
+    const currentMax = Math.min(maxDigits, remaining - (remainingCount - 1))
+
+    const assignedDigits = randomInt(currentMin, currentMax)
     digits.push(assignedDigits)
     remaining -= assignedDigits
   }
