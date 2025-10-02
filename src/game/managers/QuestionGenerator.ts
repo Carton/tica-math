@@ -286,46 +286,54 @@ function makeStrategicError(correct: number, skill: SkillTag, allowNegative: boo
       break
 
     case 'estimate':
-      // 估算错误：首位±3（50%）或者中间位数变化（50%）
+      // 估算错误：首位±1（50%）或者中间位数插入/删除（50%）
       if (Math.random() < 0.5) {
-        // 方案1：在最高位上±3
+        // 方案1：在最高位上±1
         const digits = absCorrect.toString().length
         if (digits >= 2) {
           const highestPlace = Math.pow(10, digits - 1)
           let change
           do {
-            change = Math.floor(Math.random() * 7) - 3 // -3 到 3，排除0
+            change = Math.floor(Math.random() * 3) - 1 // -1 到 1，排除0
           } while (change === 0)
           v = correct + change * highestPlace
         } else {
           let change
           do {
-            change = Math.floor(Math.random() * 7) - 3 // -3 到 3，排除0
+            change = Math.floor(Math.random() * 3) - 1 // -1 到 1，排除0
           } while (change === 0)
           v = correct + change
         }
       } else {
-        // 方案2：在中间位数增加或减少一位
+        // 方案2：在中间插入或删除一个数字
         const digits = absCorrect.toString().length
-        if (digits >= 3) {
-          // 修改中间某一位
-          const middlePos = Math.floor(Math.random() * (digits - 2)) + 1 // 1到digits-2位
-          const middlePlace = Math.pow(10, digits - 1 - middlePos)
-          let change
-          do {
-            change = Math.floor(Math.random() * 19) - 9 // -9 到 9，排除0
-          } while (change === 0)
-          v = correct + change * middlePlace
-        } else if (digits === 2) {
-          // 只有两位数，修改十位数
-          let change
-          do {
-            change = Math.floor(Math.random() * 19) - 9 // -9 到 9，排除0
-          } while (change === 0)
-          v = correct + change * 10
+        const correctStr = absCorrect.toString()
+
+        if (Math.random() < 0.5) {
+          // 插入一个数字
+          if (digits >= 2) {
+            const insertPos = Math.floor(Math.random() * (digits - 1)) + 1 // 1到digits-1位（不在首位插入）
+            const insertDigit = Math.floor(Math.random() * 10) // 0-9
+            const newStr = correctStr.slice(0, insertPos) + insertDigit + correctStr.slice(insertPos)
+            v = parseInt(newStr) * (correct < 0 ? -1 : 1)
+          } else {
+            // 一位数，简单在后面加一位
+            const insertDigit = Math.floor(Math.random() * 10)
+            v = parseInt(correctStr + insertDigit) * (correct < 0 ? -1 : 1)
+          }
         } else {
-          // 一位数，简单修改
-          v = correct + 10
+          // 删除一个数字
+          if (digits >= 3) {
+            const deletePos = Math.floor(Math.random() * (digits - 1)) + 1 // 1到digits-1位（不删除首位）
+            const newStr = correctStr.slice(0, deletePos) + correctStr.slice(deletePos + 1)
+            v = parseInt(newStr) * (correct < 0 ? -1 : 1)
+          } else if (digits === 2) {
+            // 两位数，删除第二位
+            v = parseInt(correctStr[0]) * (correct < 0 ? -1 : 1)
+          } else {
+            // 一位数，只能变成0
+            v = 0
+          }
         }
       }
       // 保持个位数正确
