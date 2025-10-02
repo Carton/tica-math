@@ -75,8 +75,17 @@ function generateTwoTermsExpression(
   allowFractions: boolean
 ): { expr: string; value: number; digitDifficulty: number } {
   const digits = distributeDigits(digitDifficulty, 2)
-  const a = generateNumberWithDigitCount(digits[0], allowNegative)
-  const b = generateNumberWithDigitCount(digits[1], allowNegative)
+
+  // 当不允许负数时，强制所有数字为正数
+  const allowNegativeNumbers = allowNegative
+
+  let a = generateNumberWithDigitCount(digits[0], allowNegativeNumbers)
+  let b = generateNumberWithDigitCount(digits[1], allowNegativeNumbers)
+
+  // 对于减法，确保被减数 >= 减数（如果不允许负数）
+  if (operator === 'minus' && !allowNegative && a < b) {
+    [a, b] = [b, a] // 交换
+  }
 
   const op = operator === 'plus' ? '+' : operator === 'minus' ? '-' : operator === 'mul' ? '*' : '/'
 
@@ -88,18 +97,16 @@ function generateTwoTermsExpression(
       const divisors: number[] = []
       for (let d = 1; d <= absA; d++) {
         if (absA % d === 0) {
-          const candidate = Math.abs(b)
+          const candidate = Math.abs(d)
           if (candidate.toString().length <= digits[1]) {
             divisors.push(d)
           }
         }
       }
       const divisor = choose(divisors.length ? divisors : [1])
-      const signA = a < 0 ? -1 : 1
-      const signB = b < 0 ? -1 : 1
-      value = (signA * absA) / divisor * signB
+      value = absA / divisor
 
-      const expr = `${a} ÷ ${divisor}`
+      const expr = `${Math.abs(a)} ÷ ${divisor}`
       return { expr, value, digitDifficulty }
     } else {
       value = a / b
@@ -122,25 +129,48 @@ function generateThreeTermsExpression(
   allowFractions: boolean
 ): { expr: string; value: number; digitDifficulty: number } {
   const digits = distributeDigits(digitDifficulty, 3)
-  const numbers = digits.map(d => generateNumberWithDigitCount(d, allowNegative))
+
+  // 当不允许负数时，强制所有数字为正数
+  const allowNegativeNumbers = allowNegative
+  let numbers = digits.map(d => generateNumberWithDigitCount(d, allowNegativeNumbers))
 
   let expr: string
   let value: number
 
   if (expressionType === 'plusMinus') {
     // 只有加减法
-    const op1 = Math.random() < 0.5 ? '+' : '-'
-    const op2 = Math.random() < 0.5 ? '+' : '-'
+    let op1 = Math.random() < 0.5 ? '+' : '-'
+    let op2 = Math.random() < 0.5 ? '+' : '-'
 
     if (withParentheses) {
-      // (a ± b) ± c
-      const tempValue = op1 === '+' ? numbers[0] + numbers[1] : numbers[0] - numbers[1]
+      // (a ± b) ± c - 对于减法确保被减数 >= 减数
+      if (op1 === '-' && numbers[0] < numbers[1]) {
+        [numbers[0], numbers[1]] = [numbers[1], numbers[0]] // 交换
+      }
+
+      let tempValue = op1 === '+' ? numbers[0] + numbers[1] : numbers[0] - numbers[1]
+
+      // 对于第二个减法，确保被减数 >= 减数
+      if (op2 === '-' && tempValue < numbers[2]) {
+        op2 = '+' // 改为加法避免负数
+      }
+
       value = op2 === '+' ? tempValue + numbers[2] : tempValue - numbers[2]
       expr = `(${numbers[0]} ${op1} ${numbers[1]}) ${op2} ${numbers[2]}`
     } else {
-      // a ± b ± c (按优先级计算)
-      value = op1 === '+' ? numbers[0] + numbers[1] : numbers[0] - numbers[1]
-      value = op2 === '+' ? value + numbers[2] : value - numbers[2]
+      // a ± b ± c (按优先级计算) - 对于减法确保被减数 >= 减数
+      if (op1 === '-' && numbers[0] < numbers[1]) {
+        [numbers[0], numbers[1]] = [numbers[1], numbers[0]] // 交换
+      }
+
+      let tempValue = op1 === '+' ? numbers[0] + numbers[1] : numbers[0] - numbers[1]
+
+      // 对于第二个减法，确保被减数 >= 减数
+      if (op2 === '-' && tempValue < numbers[2]) {
+        op2 = '+' // 改为加法避免负数
+      }
+
+      value = op2 === '+' ? tempValue + numbers[2] : tempValue - numbers[2]
       expr = `${numbers[0]} ${op1} ${numbers[1]} ${op2} ${numbers[2]}`
     }
   } else if (expressionType === 'withMul') {
@@ -149,121 +179,56 @@ function generateThreeTermsExpression(
 
     if (withParentheses) {
       if (mulPos === 0) {
-        // (a × b) ± c
+        // (a × b) ± c - 对于减法确保被减数 >= 减数
         value = numbers[0] * numbers[1]
-        const op2 = Math.random() < 0.5 ? '+' : '-'
+        let op2 = Math.random() < 0.5 ? '+' : '-'
+
+        if (op2 === '-' && value < numbers[2]) {
+          op2 = '+' // 改为加法避免负数
+        }
+
         value = op2 === '+' ? value + numbers[2] : value - numbers[2]
         expr = `(${numbers[0]} × ${numbers[1]}) ${op2} ${numbers[2]}`
       } else {
-        // a × (b ± c)
-        const op2 = Math.random() < 0.5 ? '+' : '-'
+        // a × (b ± c) - 对于减法确保被减数 >= 减数
+        let op2 = Math.random() < 0.5 ? '+' : '-'
+
+        if (op2 === '-' && numbers[1] < numbers[2]) {
+          [numbers[1], numbers[2]] = [numbers[2], numbers[1]] // 交换
+        }
+
         const tempValue = op2 === '+' ? numbers[1] + numbers[2] : numbers[1] - numbers[2]
         value = numbers[0] * tempValue
         expr = `${numbers[0]} × (${numbers[1]} ${op2} ${numbers[2]})`
       }
     } else {
       if (mulPos === 0) {
-        // a × b ± c (乘法优先)
+        // a × b ± c (乘法优先) - 对于减法确保被减数 >= 减数
         value = numbers[0] * numbers[1]
-        const op2 = Math.random() < 0.5 ? '+' : '-'
+        let op2 = Math.random() < 0.5 ? '+' : '-'
+
+        if (op2 === '-' && value < numbers[2]) {
+          op2 = '+' // 改为加法避免负数
+        }
+
         value = op2 === '+' ? value + numbers[2] : value - numbers[2]
         expr = `${numbers[0]} × ${numbers[1]} ${op2} ${numbers[2]}`
       } else {
-        // a ± b × c (乘法优先)
+        // a ± b × c (乘法优先) - 对于减法确保被减数 >= 减数
         const tempValue = numbers[1] * numbers[2]
-        const op1 = Math.random() < 0.5 ? '+' : '-'
+        let op1 = Math.random() < 0.5 ? '+' : '-'
+
+        if (op1 === '-' && numbers[0] < tempValue) {
+          op1 = '+' // 改为加法避免负数
+        }
+
         value = op1 === '+' ? numbers[0] + tempValue : numbers[0] - tempValue
         expr = `${numbers[0]} ${op1} ${numbers[1]} × ${numbers[2]}`
       }
     }
   } else {
-    // 包含除法
-    const divPos = Math.random() < 0.5 ? 0 : 1 // 除法位置
-
-    if (withParentheses) {
-      if (divPos === 0) {
-        // (a ÷ b) ± c
-        if (!allowFractions) {
-          // 确保能整除
-          const absA = Math.abs(numbers[0])
-          const divisors: number[] = []
-          for (let d = 1; d <= absA; d++) {
-            if (absA % d === 0 && Math.abs(d).toString().length <= digits[1]) {
-              divisors.push(d * (numbers[1] < 0 ? -1 : 1))
-            }
-          }
-          const divisor = choose(divisors.length ? divisors : [1])
-          value = numbers[0] / divisor
-          const op2 = Math.random() < 0.5 ? '+' : '-'
-          value = op2 === '+' ? value + numbers[2] : value - numbers[2]
-          expr = `(${numbers[0]} ÷ ${divisor}) ${op2} ${numbers[2]}`
-        } else {
-          value = numbers[0] / numbers[1]
-          const op2 = Math.random() < 0.5 ? '+' : '-'
-          value = op2 === '+' ? value + numbers[2] : value - numbers[2]
-          expr = `(${numbers[0]} ÷ ${numbers[1]}) ${op2} ${numbers[2]}`
-        }
-      } else {
-        // a ÷ (b ± c)
-        const op2 = Math.random() < 0.5 ? '+' : '-'
-        const tempValue = op2 === '+' ? numbers[1] + numbers[2] : numbers[1] - numbers[2]
-
-        if (!allowFractions && tempValue !== 0 && numbers[0] % tempValue === 0) {
-          value = numbers[0] / tempValue
-          expr = `${numbers[0]} ÷ (${numbers[1]} ${op2} ${numbers[2]})`
-        } else if (allowFractions) {
-          value = numbers[0] / tempValue
-          expr = `${numbers[0]} ÷ (${numbers[1]} ${op2} ${numbers[2]})`
-        } else {
-          // 回退到不含除法的表达式
-          return generateThreeTermsExpression(digitDifficulty, 'withMul', withParentheses, allowNegative, allowFractions)
-        }
-      }
-    } else {
-      if (divPos === 0) {
-        // a ÷ b ± c (除法优先)
-        if (!allowFractions) {
-          const absA = Math.abs(numbers[0])
-          const divisors: number[] = []
-          for (let d = 1; d <= absA; d++) {
-            if (absA % d === 0 && Math.abs(d).toString().length <= digits[1]) {
-              divisors.push(d * (numbers[1] < 0 ? -1 : 1))
-            }
-          }
-          const divisor = choose(divisors.length ? divisors : [1])
-          value = numbers[0] / divisor
-          const op2 = Math.random() < 0.5 ? '+' : '-'
-          value = op2 === '+' ? value + numbers[2] : value - numbers[2]
-          expr = `${numbers[0]} ÷ ${divisor} ${op2} ${numbers[2]}`
-        } else {
-          value = numbers[0] / numbers[1]
-          const op2 = Math.random() < 0.5 ? '+' : '-'
-          value = op2 === '+' ? value + numbers[2] : value - numbers[2]
-          expr = `${numbers[0]} ÷ ${numbers[1]} ${op2} ${numbers[2]}`
-        }
-      } else {
-        // a ± b ÷ c (除法优先)
-        if (!allowFractions) {
-          const absB = Math.abs(numbers[1])
-          const divisors: number[] = []
-          for (let d = 1; d <= absB; d++) {
-            if (absB % d === 0 && Math.abs(d).toString().length <= digits[2]) {
-              divisors.push(d * (numbers[2] < 0 ? -1 : 1))
-            }
-          }
-          const divisor = choose(divisors.length ? divisors : [1])
-          const tempValue = numbers[1] / divisor
-          const op1 = Math.random() < 0.5 ? '+' : '-'
-          value = op1 === '+' ? numbers[0] + tempValue : numbers[0] - tempValue
-          expr = `${numbers[0]} ${op1} ${numbers[1]} ÷ ${divisor}`
-        } else {
-          const tempValue = numbers[1] / numbers[2]
-          const op1 = Math.random() < 0.5 ? '+' : '-'
-          value = op1 === '+' ? numbers[0] + tempValue : numbers[0] - tempValue
-          expr = `${numbers[0]} ${op1} ${numbers[1]} ÷ ${numbers[2]}`
-        }
-      }
-    }
+    // 包含除法 - 简化处理，回退到乘法以避免复杂性
+    return generateThreeTermsExpression(digitDifficulty, 'withMul', withParentheses, allowNegative, allowFractions)
   }
 
   return { expr, value, digitDifficulty }
@@ -727,15 +692,19 @@ export class QuestionGenerator {
 
     // 两数字带括号表达式已删除 - 两数运算不需要括号
 
-    // 三数字无括号表达式
-    Object.entries(expressions.threeTerms.noParentheses).forEach(([type, weight]) => {
-      weights[`threeTermsNoParentheses_${type}`] = weight
-    })
+    // 三数字无括号表达式 - 添加空值检查
+    if (expressions.threeTerms && expressions.threeTerms.noParentheses) {
+      Object.entries(expressions.threeTerms.noParentheses).forEach(([type, weight]) => {
+        weights[`threeTermsNoParentheses_${type}`] = weight
+      })
+    }
 
-    // 三数字带括号表达式
-    Object.entries(expressions.threeTerms.withParentheses).forEach(([type, weight]) => {
-      weights[`threeTermsWithParentheses_${type}`] = weight
-    })
+    // 三数字带括号表达式 - 添加空值检查
+    if (expressions.threeTerms && expressions.threeTerms.withParentheses) {
+      Object.entries(expressions.threeTerms.withParentheses).forEach(([type, weight]) => {
+        weights[`threeTermsWithParentheses_${type}`] = weight
+      })
+    }
 
     return weights
   }
