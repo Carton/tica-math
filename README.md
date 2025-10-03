@@ -1,23 +1,44 @@
 # Tica Detective Agency: Digital Mystery Cases
 
-📖 [中文版 README](docs/README_cn.md)
+[![GitHub release](https://img.shields.io/github/release/Carton/tica-math.svg)](https://github.com/Carton/tica-math/releases)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![GitHub stars](https://img.shields.io/github/stars/Carton/tica-math.svg?style=social&label=Star)](https://github.com/Carton/tica-math)
+
+📖 [中文版 README](docs/README_cn.md) | 🎮 [Play Demo](https://carton.github.io/tica-math/) | ⭐ [Give us a star!](https://github.com/Carton/tica-math/)
 
 ---
 
-A math learning game designed for children aged 8-10, teaching mathematical concepts through detective-themed interface and gamified design.
+🕵️ **A detective-themed math learning game that teaches children quick calculation verification techniques through engaging detective work!**
+
+Perfect for children aged 8-10, this game transforms mathematical learning into an exciting detective adventure where kids verify calculations using various mathematical reasoning skills.
+
+## 🎮 Screenshots
+
+### Main Menu & User Selection
+![Main Menu](screenshot0.png)
+*Choose your detective profile and jump into the world of mathematical mysteries!*
+
+### Detective Gameplay
+![Game Scene](screenshot1.png)
+*Solve math cases using detective tools and verification techniques!*
 
 **Core Educational Objective**: This game is primarily designed to teach children how to quickly verify calculations using different methods, which is the core purpose of the game. Through various mathematical verification techniques (such as digit verification, parity checking, rule of 9s, etc.), it cultivates children's mathematical thinking and calculation confidence.
 
 **🎭 Trivia**: Tica, the protagonist detective, is named after the developer's daughter!
 
-## Development
+## 🚀 Quick Start
 
-### Install Dependencies
+### 🎮 Play Online
+Visit [https://carton.github.io/tica-math/](https://carton.github.io/tica-math/) to play the game directly in your browser!
+
+### 💻 Local Development
+
+#### Install Dependencies
 ```bash
 npm install
 ```
 
-### Start Development Server
+#### Start Development Server
 ```bash
 npm run dev
 ```
@@ -63,23 +84,54 @@ git checkout main
 
 Add CNAME record in GitHub Pages settings, or modify the `cname` field in `.github/workflows/deploy.yml`.
 
-## Game Features
+## 🌟 Key Features
 
-- 🕵️‍♀️ Detective-themed math learning game
-- 📚 Suitable for children aged 8-10
-- 🎯 Multiple math question types and difficulty levels
-- 🏆 Achievement system and progress tracking
-- 📱 PWA support for offline use
+### 🧠 **6 Mathematical Reasoning Skills**
+- **Last Digit Tracking** - Verify calculations by checking the final digit
+- **Estimation Power** - Quick approximation techniques for fast validation
+- **Odd/Even Code** - Parity checking methods for calculation verification
+- **Casting Out Nines** - Classic digital root technique for error detection
+- **Carry/Borrow Detection** - Identify common arithmetic mistakes
+- **Special Digit Fingerprint** - Advanced divisibility rules (3s, 9s, etc.)
 
-## Technology Stack
+### 🎮 **Engaging Gameplay**
+- 🕵️‍♀️ Immersive detective storyline with character progression
+- 🔧 Three detective tools: Magnifying Glass, Pocket Watch, and Lightning Bolt
+- 🎯 Adaptive difficulty system with 100+ levels
+- ⏱️ Time-based challenges with combo rewards
+- 🏆 Comprehensive achievement system with badge collection
 
-- **Game Engine**: Phaser 3.90.0
-- **Build Tool**: Vite 4.x
-- **Programming Language**: TypeScript
-- **Testing Framework**: Jest
-- **Deployment**: GitHub Pages
+### 📱 **Modern Features**
+- 📱 PWA support - Play offline on any device
+- 👥 Multi-user profile system
+- 🌐 Full internationalization (English/Chinese)
+- 💾 Cloud save functionality
+- 🎵 Dynamic audio system with sound effects and background music
 
-**Development Approach**: The main development was completed using Claude Code + Cursor.
+## 🛠️ Technology Stack
+
+### 🎮 **Frontend & Game Engine**
+- **Phaser 3.90.0** - Modern HTML5 game framework
+- **TypeScript 5.0+** - Type-safe JavaScript development
+- **Vite 4.x** - Fast build tool and dev server
+
+### 🧪 **Testing & Quality**
+- **Jest** - Comprehensive testing framework
+- **ESLint** - Code quality and style enforcement
+- **191+ Unit Tests** - 100% test coverage for core logic
+
+### 🚀 **Deployment & Distribution**
+- **GitHub Pages** - Static hosting and CI/CD
+- **PWA** - Progressive Web App with offline support
+- **GitHub Actions** - Automated deployment pipeline
+
+### 🌐 **Internationalization**
+- **i18n System** - Full English/Chinese language support
+- **Dynamic Language Switching** - Runtime language changes
+
+---
+
+**🎯 Development Approach**: Built with modern web technologies and educational best practices, featuring a comprehensive test suite and maintainable codebase architecture.
 
 ## License
 
