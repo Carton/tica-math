@@ -1,4 +1,5 @@
 import type { ResultSummary } from '@/game/utils/types'
+import { DebugHelper } from '@/utils/debugHelper'
 
 const KEY = 'tica_math_game_save_v1'
 
@@ -19,14 +20,7 @@ export interface MultiSave {
 // 获取默认道具数，支持debug模式
 function getDefaultToolCounts(): { magnify: number; watch: number; light: number } {
   // 检查是否为debug模式
-  const isDebugMode = typeof window !== 'undefined' && (
-    (window as any).import_meta_env_DEV || // 兼容 import.meta.env.DEV
-    window.location.hostname === 'localhost' ||
-    window.location.hostname === '127.0.0.1' ||
-    window.location.search.includes('debug=true')
-  )
-
-  if (isDebugMode) {
+  if (DebugHelper.isDebugMode()) {
     return { magnify: 999, watch: 999, light: 999 }
   }
 
@@ -152,14 +146,7 @@ export class SaveManager {
     const user = data.users[data.currentUserId] ?? (data.users[data.currentUserId] = defaultUser())
 
     // 检查是否为debug模式，如果是则不消耗道具
-    const isDebugMode = typeof window !== 'undefined' && (
-      (window as any).import_meta_env_DEV || // 兼容 import.meta.env.DEV
-      window.location.hostname === 'localhost' ||
-      window.location.hostname === '127.0.0.1' ||
-      window.location.search.includes('debug=true')
-    )
-
-    if (isDebugMode) {
+    if (DebugHelper.isDebugMode()) {
       return true // debug模式下道具无限，不消耗
     }
 

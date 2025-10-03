@@ -516,12 +516,14 @@ export class QuestionGenerator {
     if (makeFalse) {
       for (let attempt = 0; attempt < 10; attempt++) {
         const candidate = makeStrategicError(result.expr, result.value, skill, digitParams.allowNegative)
-        if (digitParams.allowNegative || candidate >= 0) {
+        // 确保生成的错误答案确实不等于正确答案
+        if (candidate !== result.value && (digitParams.allowNegative || candidate >= 0)) {
           shownValue = candidate
           break
         }
         if (attempt === 9) {
-          shownValue = Math.abs(candidate)
+          // 如果所有尝试都失败了，手动创建一个不同的值
+          shownValue = result.value + 1
         }
       }
     }

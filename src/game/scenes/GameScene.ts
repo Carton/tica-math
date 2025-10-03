@@ -8,6 +8,7 @@ import { gradeByAccuracy } from '@/game/utils/scoring'
 import { SaveManager } from '@/game/managers/SaveManager'
 import { isPass, nextLevel } from '@/game/utils/gameFlow'
 import { AudioManager } from '@/game/managers/AudioManager'
+import { DebugHelper } from '@/utils/debugHelper'
 
 export default class GameScene extends Phaser.Scene {
   private questionIndex = 0
@@ -22,6 +23,7 @@ export default class GameScene extends Phaser.Scene {
 
   private choiceHandler = ({ choice }: { choice: boolean }) => this.handleChoice(choice)
   private timeoutHandler = () => this.handleTimeout()
+
 
   private questionContainer?: Phaser.GameObjects.Container
   private notePaper?: Phaser.GameObjects.Image
@@ -139,6 +141,24 @@ export default class GameScene extends Phaser.Scene {
   private handleChoice(choice: boolean) {
     if (!this.current) return
     const isCorrect = choice === this.current.isTrue
+
+    // 调试模式下的详细日志
+    if (DebugHelper.isDebugMode()) {
+      const userChoiceText = choice ? '真相(True)' : '伪证(False)'
+      const correctText = this.current.isTrue ? '真相(True)' : '伪证(False)'
+      const resultText = isCorrect ? '✅ 正确' : '❌ 错误'
+
+      console.log(`🧮 [DEBUG] 题目答案验证:`)
+      console.log(`   表达式: ${this.current.questionString}`)
+      console.log(`   数学表达式: ${this.current.metadata.expr}`)
+      console.log(`   正确答案: ${this.current.metadata.correctValue}`)
+      console.log(`   显示答案: ${this.current.metadata.shownValue}`)
+      console.log(`   期望判断: ${correctText}`)
+      console.log(`   用户选择: ${userChoiceText}`)
+      console.log(`   判断结果: ${resultText}`)
+      console.log(`   ----------------------------------------`)
+    }
+
     emit('ui:feedback', { type: isCorrect ? 'correct' : 'wrong' })
 
     if (isCorrect) {

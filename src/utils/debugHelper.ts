@@ -2,12 +2,35 @@
 import { SaveManager } from '@/game/managers/SaveManager'
 
 export class DebugHelper {
-  // 检查是否为开发环境
+  /**
+   * 检查是否为调试模式
+   * 统一的调试模式判断逻辑，避免重复实现
+   */
+  public static isDebugMode(): boolean {
+    // 在浏览器环境中
+    if (typeof window !== 'undefined') {
+      // 检查 URL 参数或其他浏览器特定的调试标志
+      const urlParams = new URLSearchParams(window.location.search)
+      return window.location.hostname === 'localhost' ||
+             window.location.hostname === '127.0.0.1' ||
+             urlParams.has('debug') ||
+             // 检查全局调试标志（如果存在）
+             (window as any).__DEBUG_MODE__ === true
+    }
+
+    // 在 Node.js 环境中（测试环境）
+    if (typeof process !== 'undefined') {
+      return process.env.NODE_ENV === 'development' ||
+             process.env.DEBUG === 'true' ||
+             process.env.JEST_WORKER_ID !== undefined // Jest 测试环境
+    }
+
+    return false
+  }
+
+  // 检查是否为开发环境（兼容旧代码）
   private static isDevelopment(): boolean {
-    return (import.meta as any).env?.DEV ||
-           window.location.hostname === 'localhost' ||
-           window.location.hostname === '127.0.0.1' ||
-           window.location.search.includes('debug=true')
+    return this.isDebugMode()
   }
 
   /**
@@ -119,11 +142,10 @@ if (typeof window !== 'undefined') {
   (window as any).DebugHelper = DebugHelper
 
   // 开发环境自动加载调试助手
-  if ((import.meta as any).env?.DEV) {
+  if (DebugHelper.isDebugMode()) {
     console.log('🎮 游戏调试助手已加载！')
     console.log('💡 使用方法：')
     console.log('  DebugHelper.setLevel(50) - 设置关卡为50')
-    console.log('  DebugHelper.addTools(10, 5, 3) - 添加道具')
     console.log('  DebugHelper.resetGame() - 重置游戏')
     console.log('  DebugHelper.getDebugInfo() - 查看调试信息')
     console.log('  DebugHelper.reloadGame() - 重载游戏')
