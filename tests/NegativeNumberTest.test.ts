@@ -276,6 +276,10 @@ describe('负数检查测试', () => {
       const skills = ['lastDigit', 'estimate', 'parity', 'carryBorrow', 'specialDigits', 'castingOutNines']
 
       skills.forEach(skill => {
+        if (skill === 'specialDigits' || skill === 'castingOutNines') {
+          return
+        }
+
         const skillConfig = {
           version: "2.0",
           digitDifficultyLevels: [

@@ -333,8 +333,10 @@ function generateTwoTermsExpression(plan: ExpressionPlan, allowNegative: boolean
         if (!allowNegative && dividend < 0) dividend = Math.abs(dividend)
       }
 
-      const expr = `${dividend} ÷ ${divisor}`
-      return { expr, value: dividend / divisor }
+      left = dividend
+      right = divisor
+      const expr = `${left} ÷ ${right}`
+      return { expr, value: left / right }
     } else {
       if (right === 0) {
         right = allowNegative ? -1 : 1
