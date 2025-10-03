@@ -53,15 +53,15 @@ export default class ManualScene extends Phaser.Scene {
     y += 40
 
     // 道具1：放大镜
-    this.addToolSection(Strings.t('tools.magnify'), y, Strings.t('manual.magnify_hint'))
+    this.addToolSection('magnify', Strings.t('tools.magnify'), y, Strings.t('manual.magnify_hint'))
     y += 80
 
     // 道具2：手表
-    this.addToolSection(Strings.t('tools.watch'), y, Strings.t('manual.watch_hint'))
+    this.addToolSection('watch', Strings.t('tools.watch'), y, Strings.t('manual.watch_hint'))
     y += 80
 
     // 道具3：灯泡
-    this.addToolSection(Strings.t('tools.flash'), y, Strings.t('manual.flash_hint'))
+    this.addToolSection('flash', Strings.t('tools.flash'), y, Strings.t('manual.flash_hint'))
     y += 80
 
     // === 答题技巧 ===
@@ -175,7 +175,7 @@ export default class ManualScene extends Phaser.Scene {
     this.scrollContainer.add(contentText)
   }
 
-  private addToolSection(toolName: string, y: number, description: string) {
+  private addToolSection(toolKey: string, toolName: string, y: number, description: string) {
     const { width } = this.scale
 
     // 工具图标（如果有的话）
@@ -183,9 +183,9 @@ export default class ManualScene extends Phaser.Scene {
 
     if (useIcons) {
       let iconKey = ''
-      if (toolName.includes('放大镜')) iconKey = 'icons_magnify'
-      else if (toolName.includes('怀表')) iconKey = 'icons_watch'
-      else if (toolName.includes('灯泡')) iconKey = 'icons_light'
+      if (toolKey === 'magnify') iconKey = 'icons_magnify'
+      else if (toolKey === 'watch') iconKey = 'icons_watch'
+      else if (toolKey === 'flash') iconKey = 'icons_light'
 
       if (iconKey) {
         const icon = this.add.image(100, y + 24, iconKey).setOrigin(0.5).setDisplaySize(48, 48)

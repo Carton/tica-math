@@ -1,12 +1,10 @@
 {
   "ui": {
     "back": "Return to Agency",
-    "true": "Truth",
+    "true": "True",
     "false": "False",
     "clue": "Clue",
-    "case_summary": "Case Concluded",
     "title": "Tica Detective Agency: Number Mystery",
-    "page_title": "Tica Detective Agency: Number Mystery",
     "switch_user": "Switch User",
     "detective_manual": "Detective Manual",
     "honor_wall": "Honor Wall",
@@ -44,9 +42,9 @@
     "title": "🕵️ Detective Manual 🕵️",
     "how_to_answer": "🎯 How to Answer",
     "mouse_operation": "🖱️ Mouse Operation:",
-    "mouse_hint": "Click 'Truth' stamp = Answer is correct\nClick 'False' stamp = Answer is wrong",
+    "mouse_hint": "Click 'True' stamp = Answer is correct\nClick 'False' stamp = Answer is wrong",
     "keyboard_operation": "⌨️ Keyboard Operation:",
-    "keyboard_hint": "Press T key or → key = Select Truth\nPress F key or ← key = Select False",
+    "keyboard_hint": "Press T key or → key = Select True\nPress F key or ← key = Select False",
     "detective_tools": "🔧 Detective Tools",
     "magnify_hint": "Magnifying Glass: Carefully observe question clues for hints!",
     "watch_hint": "Pocket Watch: Add 10 seconds to time, think slowly~",
@@ -91,7 +89,7 @@
     "user_id_exists": "User ID already exists"
   },
   "user": {
-    "truth_button": "✅ Truth (T/→)",
+    "truth_button": "✅ True (T/→)",
     "false_button": "❌ False (F/←)",
     "pause": "Pause",
     "sfx_on": "SFX: On",
