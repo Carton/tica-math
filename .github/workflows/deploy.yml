@@ -8,7 +8,9 @@ on:
 
 # 设置GITHUB_TOKEN的权限
 permissions:
-  contents: write
+  contents: read
+  pages: write
+  id-token: write
 
 jobs:
   test-and-deploy:
