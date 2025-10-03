@@ -8,6 +8,8 @@ A math learning game designed for children aged 8-10, teaching mathematical conc
 
 **Core Educational Objective**: This game is primarily designed to teach children how to quickly verify calculations using different methods, which is the core purpose of the game. Through various mathematical verification techniques (such as digit verification, parity checking, rule of 9s, etc.), it cultivates children's mathematical thinking and calculation confidence.
 
+**🎭 Trivia**: Tica, the protagonist detective, is named after the developer's daughter!
+
 ## Development
 
 ### Install Dependencies
