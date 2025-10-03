@@ -82,6 +82,9 @@ export default class GameScene extends Phaser.Scene {
       }
     }
 
+    // 开始播放游戏界面背景音乐
+    AudioManager.tryStartBgm('bgm_game')
+
     this.nextQuestion()
   }
 

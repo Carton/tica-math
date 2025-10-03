@@ -23,6 +23,7 @@ export default class PreloadScene extends Phaser.Scene {
     this.load.image('icons_watch', 'images/icons_watch.png')
     this.load.image('icons_light', 'images/icons_light.png')
     this.load.audio('bgm_main', ['audio/bgm_main.ogg'])
+    this.load.audio('bgm_game', ['audio/bgm_game.ogg'])
     this.load.audio('sfx_click', ['audio/sfx_click.mp3'])
     this.load.audio('sfx_stamp', ['audio/sfx_stamp.mp3'])
     this.load.audio('sfx_wrong', ['audio/sfx_wrong.mp3'])
