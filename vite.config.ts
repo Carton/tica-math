@@ -60,16 +60,22 @@ export default defineConfig({
           fs.mkdirSync(targetDir, { recursive: true });
         }
 
-        // 复制 JSON 配置文件
-        const jsonFiles = ['digit-difficulty.json', 'strings.zh-CN.json'];
-        jsonFiles.forEach(file => {
-          const srcPath = path.join(configDir, file);
-          const destPath = path.join(targetDir, file);
-          if (fs.existsSync(srcPath)) {
-            fs.copyFileSync(srcPath, destPath);
-            console.log(`✅ 复制配置文件: ${file}`);
-          }
-        });
+        // 复制所有配置文件（自动检测目录中的所有文件）
+        try {
+          const files = fs.readdirSync(configDir);
+          files.forEach(file => {
+            // 只复制文件（跳过目录）
+            const srcPath = path.join(configDir, file);
+            const stat = fs.statSync(srcPath);
+            if (stat.isFile()) {
+              const destPath = path.join(targetDir, file);
+              fs.copyFileSync(srcPath, destPath);
+              console.log(`✅ 复制配置文件: ${file}`);
+            }
+          });
+        } catch (error) {
+          console.error('❌ 复制配置文件时出错:', error);
+        }
       }
     }
   ]
