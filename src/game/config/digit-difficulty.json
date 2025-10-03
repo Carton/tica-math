@@ -13,7 +13,7 @@
       "level": 5,
       "digitRange": { "min": 3, "max": 4 },
       "skills": { "lastDigit": 60, "estimate": 30, "parity": 10, "castingOutNines": 0, "carryBorrow": 0, "specialDigits": 0 },
-      "expressions": { "twoTerms": { "simple": {"plus": 50, "minus": 50, "mul": 0, "div": 0 } }, "threeTerms": { "noParentheses": {}, "withParentheses": {}}},
+      "expressions": { "twoTerms": { "simple": {"plus": 50, "minus": 45, "mul": 5, "div": 0 } }, "threeTerms": { "noParentheses": {}, "withParentheses": {}}},
       "allowNegative": false, "allowFractions": false,
       "timePerQuestionMs": 15000, "minTimeMs": 8000, "questionCount": 10
     },
@@ -21,17 +21,17 @@
       "level": 10,
       "digitRange": { "min": 3, "max": 5 },
       "skills": { "lastDigit": 40, "estimate": 40, "parity": 5, "castingOutNines": 0, "carryBorrow": 15, "specialDigits": 0 },
-      "expressions": { "twoTerms": { "simple": {"plus": 40, "minus": 40, "mul": 20, "div": 0 } }, "threeTerms": { "noParentheses": {}, "withParentheses": {}}},
+      "expressions": { "twoTerms": { "simple": {"plus": 40, "minus": 40, "mul": 15, "div": 5 } }, "threeTerms": { "noParentheses": {}, "withParentheses": {}}},
       "allowNegative": false, "allowFractions": false,
       "timePerQuestionMs": 15000, "minTimeMs": 8000, "questionCount": 10
     },
     {
       "level": 15,
-      "digitRange": { "min": 3, "max": 6 },
+      "digitRange": { "min": 4, "max": 5 },
       "skills": { "lastDigit": 40, "estimate": 40, "parity": 5, "castingOutNines": 0, "carryBorrow": 15, "specialDigits": 0 },
       "expressions": {
-          "twoTerms": { "simple": {"plus": 40, "minus": 40, "mul": 20, "div": 0 } },
-          "threeTerms": { "noParentheses": {}, "withParentheses": {}}},
+        "twoTerms": { "simple": {"plus": 35, "minus": 35, "mul": 20, "div": 10 } },
+        "threeTerms": { "noParentheses": {}, "withParentheses": {}}},
       "allowNegative": false, "allowFractions": false,
       "timePerQuestionMs": 15000, "minTimeMs": 7500, "questionCount": 10
     },
@@ -74,7 +74,7 @@
     {
       "level": 85,
       "digitRange": { "min": 6, "max": 7 },
-      "skills": { "lastDigit": 18, "estimate": 18, "parity": 12, "carryBorrow": 12, "specialDigits": 12, "castingOutNines": 28 },
+      "skills": { "lastDigit": 20, "estimate": 20, "parity": 15, "carryBorrow": 15, "specialDigits": 15, "castingOutNines": 15 },
       "expressions": {
         "twoTerms": { "simple": { "plus": 10, "minus": 10, "mul": 10, "div": 10 } },
         "threeTerms": {
