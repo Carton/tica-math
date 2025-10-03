@@ -1,5 +1,6 @@
 import Phaser from 'phaser'
 import { Strings } from '@/game/managers/Strings'
+import type { SkillTag } from '@/game/utils/types'
 
 export default class ManualScene extends Phaser.Scene {
   private scrollContainer!: Phaser.GameObjects.Container
@@ -67,12 +68,11 @@ export default class ManualScene extends Phaser.Scene {
     this.addSectionTitle(Strings.t('manual.detective_techniques'), y)
     y += 40
 
-    const tips = [
-      Strings.t('manual.estimate_tip'),
-      Strings.t('manual.last_digit_tip'),
-      Strings.t('manual.parity_tip'),
-      Strings.t('manual.casting_out_nines_tip'),
-    ]
+    const skillTags: SkillTag[] = ['estimate', 'lastDigit', 'parity', 'castingOutNines', 'carryBorrow', 'specialDigits']
+    const tips = skillTags.map(tag => {
+      const skill = Strings.skills[tag]
+      return skill ? `${skill.name}：${skill.hint}` : Strings.skillHint(tag)
+    })
 
     tips.forEach(tip => {
       this.addContentText(`• ${tip}`, y, 'normal')
