@@ -53,6 +53,10 @@
     "watch_hint": "Pocket Watch: Add 10 seconds to time, think slowly~",
     "flash_hint": "Lightbulb: Shows correct answer directly! But only three times~",
     "detective_techniques": "🧠 Detective Techniques",
+    "estimate_tip": "Estimation Magic: Round to whole numbers, estimate roughly, wrong answers move fast!",
+    "last_digit_tip": "Last Digit Tracking: No matter how complex, first check the tail!",
+    "parity_tip": "Parity Code: Odd×odd=odd, even×even=even, odd×even=odd, any even factor in multiplication makes result even!",
+    "casting_out_nines_tip": "Casting Out Nines: Digits add up, add until one digit remains!",
     "achievement_system": "🏆 Achievement System",
     "exp_title": "💰 EXP Points:",
     "exp_hint": "Gain experience points by solving cases!\nMore accurate answers = more EXP~",
@@ -90,6 +94,17 @@
     "user_id_empty": "User ID cannot be empty",
     "user_id_invalid": "User ID can only contain letters, numbers and underscores",
     "user_id_exists": "User ID already exists"
+  },
+  "user": {
+    "truth_button": "✅ Truth (T/→)",
+    "false_button": "❌ False (F/←)",
+    "pause": "Pause",
+    "sfx_on": "SFX: On",
+    "sfx_off": "SFX: Off",
+    "bgm_on": "BGM: On",
+    "bgm_off": "BGM: Off",
+    "resume_game": "Resume Game",
+    "status_bar": "User: {0}  Level: {1}  Clue {2}/{3}"
   },
   "debug": {
     "panel_title": "🎮 Game Debug Panel",

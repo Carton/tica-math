@@ -207,17 +207,17 @@ export default class UserScene extends Phaser.Scene {
     const id = this.inputText.trim()
 
     if (!id) {
-      this.showError('用户ID不能为空')
+      this.showError(Strings.t('errors.user_id_empty'))
       return
     }
 
     if (!/^[a-zA-Z0-9_]+$/.test(id)) {
-      this.showError('用户ID只能包含字母、数字和下划线')
+      this.showError(Strings.t('errors.user_id_invalid'))
       return
     }
 
     if (SaveManager.getAllUsers().some(user => user.id === id)) {
-      this.showError('用户ID已存在')
+      this.showError(Strings.t('errors.user_id_exists'))
       return
     }
 

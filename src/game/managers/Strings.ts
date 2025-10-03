@@ -8,6 +8,7 @@ export type StringsSchema = {
   results: Record<string, string>
   errors: Record<string, string>
   debug: Record<string, string>
+  user: Record<string, string>
 }
 
 type LanguageCode = 'zh-CN' | 'en-US'
@@ -68,4 +69,5 @@ export class Strings {
   static get results() { return this.data?.results ?? {} }
   static get errors() { return this.data?.errors ?? {} }
   static get debug() { return this.data?.debug ?? {} }
+  static get user() { return this.data?.user ?? {} }
 }

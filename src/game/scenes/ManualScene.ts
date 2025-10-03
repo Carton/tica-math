@@ -1,4 +1,5 @@
 import Phaser from 'phaser'
+import { Strings } from '@/game/managers/Strings'
 
 export default class ManualScene extends Phaser.Scene {
   private scrollContainer!: Phaser.GameObjects.Container
@@ -17,7 +18,7 @@ export default class ManualScene extends Phaser.Scene {
     const { width, height } = this.scale
 
     // 标题
-    this.add.text(width / 2, 40, '🕵️ 侦探手册 🕵️', { fontFamily: 'sans-serif', fontSize: '32px', color: '#ffffff' }).setOrigin(0.5)
+    this.add.text(width / 2, 40, Strings.t('manual.title'), { fontFamily: 'sans-serif', fontSize: '32px', color: '#ffffff' }).setOrigin(0.5)
 
     // 创建可滚动的内容容器
     this.scrollContainer = this.add.container(0, 80)
@@ -25,12 +26,12 @@ export default class ManualScene extends Phaser.Scene {
     let y = 20  // 从20开始，给第一个标题留出空间
 
     // === 答题操作说明 ===
-    this.addSectionTitle('🎯 如何答题', y)
+    this.addSectionTitle(Strings.t('manual.how_to_answer'), y)
     y += 40
 
-    this.addContentText('🖱️ 鼠标操作：', y, 'bold')
+    this.addContentText(Strings.t('manual.mouse_operation'), y, 'bold')
     y += 30
-    this.addContentText('点击"真相"印章 = 题目是对的\n点击"伪证"印章 = 题目是错的', y, 'normal')
+    this.addContentText(Strings.t('manual.mouse_hint'), y, 'normal')
     y += 60
 
     // 添加印章图标
@@ -41,36 +42,36 @@ export default class ManualScene extends Phaser.Scene {
       y += 100
     }
 
-    this.addContentText('⌨️ 键盘操作：', y, 'bold')
+    this.addContentText(Strings.t('manual.keyboard_operation'), y, 'bold')
     y += 30
-    this.addContentText('按 T 键或 → 键 = 选择真相\n按 F 键或 ← 键 = 选择伪证', y, 'normal')
+    this.addContentText(Strings.t('manual.keyboard_hint'), y, 'normal')
     y += 80
 
     // === 道具说明 ===
-    this.addSectionTitle('🔧 侦探道具', y)
+    this.addSectionTitle(Strings.t('manual.detective_tools'), y)
     y += 40
 
     // 道具1：放大镜
-    this.addToolSection('放大镜', y, '仔细观察题目线索，获得提示！')
+    this.addToolSection(Strings.t('tools.magnify'), y, Strings.t('manual.magnify_hint'))
     y += 80
 
     // 道具2：手表
-    this.addToolSection('怀表', y, '时间增加10秒，慢慢思考~')
+    this.addToolSection(Strings.t('tools.watch'), y, Strings.t('manual.watch_hint'))
     y += 80
 
     // 道具3：灯泡
-    this.addToolSection('灯泡', y, '直接显示正确答案！但只能用三次哦~')
+    this.addToolSection(Strings.t('tools.flash'), y, Strings.t('manual.flash_hint'))
     y += 80
 
     // === 答题技巧 ===
-    this.addSectionTitle('🧠 侦探技巧', y)
+    this.addSectionTitle(Strings.t('manual.detective_techniques'), y)
     y += 40
 
     const tips = [
-      '估算神功：凑个整，估个大概，跑偏的答案快走开！',
-      '尾数追踪术：先看尾巴抓一抓！',
-      '奇偶密码：乘法有偶便是偶！',
-      '弃九验算法：数字加加加，加到一位查一查！',
+      Strings.t('manual.estimate_tip'),
+      Strings.t('manual.last_digit_tip'),
+      Strings.t('manual.parity_tip'),
+      Strings.t('manual.casting_out_nines_tip'),
     ]
 
     tips.forEach(tip => {
@@ -80,17 +81,17 @@ export default class ManualScene extends Phaser.Scene {
 
     // === EXP和徽章说明（放到最后） ===
     y += 40  // 额外的间距
-    this.addSectionTitle('🏆 成就系统', y)
+    this.addSectionTitle(Strings.t('manual.achievement_system'), y)
     y += 40
 
-    this.addContentText('💰 EXP经验值：', y, 'bold')
+    this.addContentText(Strings.t('manual.exp_title'), y, 'bold')
     y += 30
-    this.addContentText('成功破案就能获得经验值！\n答得越准，经验越多~', y, 'normal')
+    this.addContentText(Strings.t('manual.exp_hint'), y, 'normal')
     y += 60
 
-    this.addContentText('🎖️ 徽章：', y, 'bold')
+    this.addContentText(Strings.t('manual.badge_title'), y, 'bold')
     y += 30
-    this.addContentText('获得S级评价就能得到徽章！\n每个关卡的S徽章都可以收集哦~', y, 'normal')
+    this.addContentText(Strings.t('manual.badge_hint'), y, 'normal')
     y += 80
 
     this.contentHeight = y + 50
@@ -138,7 +139,7 @@ export default class ManualScene extends Phaser.Scene {
     }
 
     // 返回按钮
-    const back = this.add.text(width / 2, height - 40, '返回', {
+    const back = this.add.text(width / 2, height - 40, Strings.t('ui.return'), {
       fontFamily: 'sans-serif',
       fontSize: '22px',
       color: '#0b1021',

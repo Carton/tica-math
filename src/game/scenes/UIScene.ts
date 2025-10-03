@@ -3,6 +3,7 @@ import { on, off, emit } from '@/game/managers/EventBus'
 import { ToolManager, type ToolType } from '@/game/managers/ToolManager'
 import { SaveManager } from '@/game/managers/SaveManager'
 import { AudioManager } from '@/game/managers/AudioManager'
+import { Strings } from '@/game/managers/Strings'
 
 export default class UIScene extends Phaser.Scene {
   private headerLeftText?: Phaser.GameObjects.Text
@@ -123,10 +124,10 @@ export default class UIScene extends Phaser.Scene {
       btnTrue = sTrue
       btnFalse = sFalse
     } else {
-      const tTrue = this.add.text(width / 2 - 120, height - 80, '✅ 真相 (T/→)', {
+      const tTrue = this.add.text(width / 2 - 120, height - 80, Strings.t('user.truth_button'), {
         fontFamily: 'sans-serif', fontSize: '24px', color: '#0b1021', backgroundColor: '#2de1c2', padding: { x: 14, y: 8 }
       }).setOrigin(0.5).setInteractive({ useHandCursor: true })
-      const tFalse = this.add.text(width / 2 + 120, height - 80, '❌ 伪证 (F/←)', {
+      const tFalse = this.add.text(width / 2 + 120, height - 80, Strings.t('user.false_button'), {
         fontFamily: 'sans-serif', fontSize: '24px', color: '#0b1021', backgroundColor: '#ff6b6b', padding: { x: 14, y: 8 }
       }).setOrigin(0.5).setInteractive({ useHandCursor: true })
       btnTrue = tTrue
@@ -209,28 +210,28 @@ export default class UIScene extends Phaser.Scene {
     this.pausedDialog = this.add.container(width / 2, height / 2)
 
     const bg = this.add.rectangle(0, 0, 420, 280, 0x1e2746, 0.95).setOrigin(0.5)
-    const txt = this.add.text(0, -80, '暂停', { fontFamily: 'sans-serif', fontSize: '26px', color: '#ffffff' }).setOrigin(0.5)
+    const txt = this.add.text(0, -80, Strings.t('user.pause'), { fontFamily: 'sans-serif', fontSize: '26px', color: '#ffffff' }).setOrigin(0.5)
 
     // 音效开关按钮
-    const btnSfx = this.add.text(-80, -30, '音效: 开', {
+    const btnSfx = this.add.text(-80, -30, Strings.t('user.sfx_on'), {
       fontFamily: 'sans-serif', fontSize: '16px', color: '#0b1021',
       backgroundColor: '#a9ffea', padding: { x: 12, y: 6 }
     }).setOrigin(0.5).setInteractive({ useHandCursor: true })
 
     // BGM开关按钮
-    const btnBgm = this.add.text(80, -30, '音乐: 开', {
+    const btnBgm = this.add.text(80, -30, Strings.t('user.bgm_on'), {
       fontFamily: 'sans-serif', fontSize: '16px', color: '#0b1021',
       backgroundColor: '#a9ffea', padding: { x: 12, y: 6 }
     }).setOrigin(0.5).setInteractive({ useHandCursor: true })
 
     // 主按钮 - 继续游戏
-    const btnResume = this.add.text(0, 30, '继续游戏', {
+    const btnResume = this.add.text(0, 30, Strings.t('user.resume_game'), {
       fontFamily: 'sans-serif', fontSize: '20px', color: '#0b1021',
       backgroundColor: '#2de1c2', padding: { x: 16, y: 8 }
     }).setOrigin(0.5).setInteractive({ useHandCursor: true })
 
     // 主按钮 - 返回事务所
-    const btnBack = this.add.text(0, 80, '返回事务所', {
+    const btnBack = this.add.text(0, 80, Strings.t('ui.back'), {
       fontFamily: 'sans-serif', fontSize: '18px', color: '#0b1021',
       backgroundColor: '#a9ffea', padding: { x: 16, y: 8 }
     }).setOrigin(0.5).setInteractive({ useHandCursor: true })
@@ -239,8 +240,8 @@ export default class UIScene extends Phaser.Scene {
     const updateButtonTexts = () => {
       const sfxEnabled = AudioManager.sfxEnabled
       const bgmEnabled = AudioManager.bgmEnabled
-      btnSfx.setText(`音效: ${sfxEnabled ? '开' : '关'}`)
-      btnBgm.setText(`音乐: ${bgmEnabled ? '开' : '关'}`)
+      btnSfx.setText(sfxEnabled ? Strings.t('user.sfx_on') : Strings.t('user.sfx_off'))
+      btnBgm.setText(bgmEnabled ? Strings.t('user.bgm_on') : Strings.t('user.bgm_off'))
 
       // 更新按钮颜色
       btnSfx.setBackgroundColor(sfxEnabled ? '#a9ffea' : '#ff6b6b')
@@ -492,6 +493,7 @@ export default class UIScene extends Phaser.Scene {
     const total = this.clueTotal > 0 ? this.clueTotal : 0
     const index = Math.max(0, this.clueIndex)
     const user = this.userId || '未知'
-    this.headerLeftText.setText(`用户: ${user}  关卡: ${this.currentLevel}  线索 ${index}/${total}`)
+    const statusText = Strings.t('user.status_bar').replace('{0}', user).replace('{1}', this.currentLevel.toString()).replace('{2}', index.toString()).replace('{3}', total.toString())
+    this.headerLeftText.setText(statusText)
   }
 }
