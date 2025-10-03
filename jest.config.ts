@@ -11,7 +11,9 @@ const config: Config = {
     '**/?(*.)+(spec|test).ts'
   ],
   transform: {
-    '^.+\\.ts$': 'ts-jest',
+    '^.+\\.ts$': ['ts-jest', {
+      tsconfig: 'tsconfig.json',
+    }],
   },
   collectCoverageFrom: [
     'src/**/*.ts',
@@ -28,11 +30,6 @@ const config: Config = {
   setupFilesAfterEnv: ['<rootDir>/tests/setup.ts'],
   testTimeout: 10000,
   moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json', 'node'],
-  globals: {
-    'ts-jest': {
-      tsconfig: 'tsconfig.json',
-    },
-  },
 }
 
 export default config
