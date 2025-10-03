@@ -10,8 +10,6 @@ export class AudioManager {
   private static _sfxEnabled = true
   private static _bgmEnabled = true
   private static defaultBgmKey = 'bgm_main' // 记录默认BGM
-  private static hasUserInteracted = false // 记录用户是否已交互
-  private static pendingBgmKey: string | null = null // 待播放的BGM
 
   static init(scene: Phaser.Scene) {
     this.scene = scene
@@ -20,33 +18,6 @@ export class AudioManager {
     on('audio:play', ({ key }) => {
       this.playSfx(key)
     })
-
-    // 添加全局点击事件监听器来检测用户交互
-    if (typeof window !== 'undefined') {
-      const handleFirstInteraction = () => {
-        if (!this.hasUserInteracted) {
-          this.hasUserInteracted = true
-          console.log('✅ 检测到用户交互，启用音频播放')
-
-          // 如果有待播放的BGM，现在开始播放
-          if (this.pendingBgmKey) {
-            setTimeout(() => {
-              this.playBgmNow(this.pendingBgmKey!, { loop: true, volume: 0.25 })
-            }, 100)
-          }
-
-          // 移除事件监听器
-          window.removeEventListener('click', handleFirstInteraction)
-          window.removeEventListener('touchstart', handleFirstInteraction)
-          window.removeEventListener('keydown', handleFirstInteraction)
-        }
-      }
-
-      // 监听多种用户交互事件
-      window.addEventListener('click', handleFirstInteraction, { once: true })
-      window.addEventListener('touchstart', handleFirstInteraction, { once: true })
-      window.addEventListener('keydown', handleFirstInteraction, { once: true })
-    }
   }
 
   static preloadAssets(scene: Phaser.Scene) {
@@ -58,33 +29,15 @@ export class AudioManager {
 
   static tryStartBgm(key: string, config: Phaser.Types.Sound.SoundConfig = { loop: true, volume: 0.25 }) {
     if (!this.scene || !this._bgmEnabled) return
-
-    this.pendingBgmKey = key
     const snd = this.getOrCreateSound(key)
     if (!snd) return
     if (this.currentBgmKey === key && snd.isPlaying) return
-
-    // 如果用户还未交互，设置音频上下文但暂不播放
-    if (!this.hasUserInteracted) {
-      console.log('等待用户交互后播放背景音乐...')
-      return
-    }
-
-    this.playBgmNow(key, config)
-  }
-
-  private static playBgmNow(key: string, config: Phaser.Types.Sound.SoundConfig) {
-    const snd = this.getOrCreateSound(key)
-    if (!snd) return
-
     // 停掉旧BGM
     if (this.currentBgmKey && this.sounds[this.currentBgmKey]?.isPlaying) {
       this.sounds[this.currentBgmKey].stop()
     }
-
     this.currentBgmKey = key
     snd.play(config)
-    console.log(`🎵 播放背景音乐: ${key}`)
   }
 
   static stopBgm() {
@@ -137,20 +90,6 @@ export class AudioManager {
 
   static playSfx(key: string, config: Phaser.Types.Sound.SoundConfig = { volume: 0.6 }) {
     if (!this.scene || !this._sfxEnabled) return
-
-    // 第一次播放音效时，标记用户已交互
-    if (!this.hasUserInteracted) {
-      this.hasUserInteracted = true
-      console.log('✅ 检测到用户交互，启用音频播放')
-
-      // 如果有待播放的BGM，现在开始播放
-      if (this.pendingBgmKey) {
-        setTimeout(() => {
-          this.playBgmNow(this.pendingBgmKey!, { loop: true, volume: 0.25 })
-        }, 100) // 稍微延迟以确保音频上下文已就绪
-      }
-    }
-
     const snd = this.getOrCreateSound(key)
     if (!snd) return
     // 快速音效并行播放
