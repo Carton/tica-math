@@ -15,12 +15,12 @@ const server = http.createServer((req, res) => {
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 
-  // 处理路径 - 支持 /math-game/ 基础路径
+  // 处理路径 - 支持 /tica-math/ 基础路径
   let requestPath = req.url;
 
-  // 移除 /math-game/ 前缀（如果存在）
-  if (requestPath.startsWith('/math-game/')) {
-    requestPath = requestPath.substring('/math-game'.length);
+  // 移除 /tica-math/ 前缀（如果存在）
+  if (requestPath.startsWith('/tica-math/')) {
+    requestPath = requestPath.substring('/tica-math'.length);
   }
 
   // 处理根路径

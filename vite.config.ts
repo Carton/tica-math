@@ -7,7 +7,7 @@ import path from 'path'
 export default defineConfig({
   root: 'src',
   publicDir: 'assets',
-  base: process.env.NODE_ENV === 'production' ? '/math-game/' : '/', // GitHub Pages路径
+  base: process.env.NODE_ENV === 'production' ? '/tica-math/' : '/', // GitHub Pages路径
   build: {
     outDir: '../dist',
     emptyOutDir: true,
