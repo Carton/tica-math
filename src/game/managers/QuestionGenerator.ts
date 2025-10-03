@@ -278,6 +278,17 @@ function generateTwoTermsExpression(plan: ExpressionPlan, allowNegative: boolean
   let right = generateIntegerWithDigits(rightPlan.digits, allowNegative)
   const operator = plan.structure.kind === 'twoTerms' ? plan.structure.operator : 'plus'
 
+  // 对于乘法，避免乘数为1（对儿童来说太简单）
+  if (operator === 'mul') {
+    // 确保1位数的乘数不小于2
+    if (rightPlan.digits === 1 && right === 1) {
+      right = randomInt(2, 9)
+    }
+    if (leftPlan.digits === 1 && left === 1) {
+      left = randomInt(2, 9)
+    }
+  }
+
   if (operator === 'minus' && !allowNegative && left < right) {
     [left, right] = [right, left]
   }
