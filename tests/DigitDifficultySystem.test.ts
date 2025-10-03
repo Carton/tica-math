@@ -30,7 +30,6 @@ const testDigitDifficultyConfig = {
       allowFractions: false,
       allowDecimals: false,
       timePerQuestionMs: 15000,
-      minTimeMs: 8000,
       questionCount: 10
     },
     {
@@ -57,7 +56,6 @@ const testDigitDifficultyConfig = {
       allowFractions: false,
       allowDecimals: false,
       timePerQuestionMs: 12000,
-      minTimeMs: 7000,
       questionCount: 12
     },
     {
@@ -88,7 +86,6 @@ const testDigitDifficultyConfig = {
       allowFractions: false,
       allowDecimals: false,
       timePerQuestionMs: 10000,
-      minTimeMs: 6000,
       questionCount: 15
     }
   ] as DigitDifficultyLevel[]
@@ -150,9 +147,7 @@ describe('数位难度系统测试', () => {
       const midLevel = DifficultyManager.getDigitParams(5)
       // timePerQuestionMs: 15000 + (12000-15000)*4/9 ≈ 13667
       expect(midLevel.timePerQuestionMs).toBeCloseTo(13667, 0)
-      // minTimeMs: 8000 + (7000-8000)*4/9 ≈ 7556
-      expect(midLevel.minTimeMs).toBeCloseTo(7556, 0)
-      // questionCount: 10 + (12-10)*4/9 ≈ 11
+            // questionCount: 10 + (12-10)*4/9 ≈ 11
       expect(midLevel.questionCount).toBeCloseTo(11, 0)
     })
 
@@ -304,8 +299,7 @@ describe('数位难度系统测试', () => {
 
       // 时间应该是整数
       expect(Number.isInteger(level15.timePerQuestionMs)).toBe(true)
-      expect(Number.isInteger(level15.minTimeMs)).toBe(true)
-      expect(Number.isInteger(level15.questionCount)).toBe(true)
+            expect(Number.isInteger(level15.questionCount)).toBe(true)
 
       // 权重应该是数字
       Object.values(level15.skills).forEach(weight => {

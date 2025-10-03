@@ -23,7 +23,6 @@ export interface DigitDifficultyLevel {
   allowNegative: boolean
   allowFractions: boolean // TODO: 当前版本仍按整数题目处理，保留接口以便未来支持分数
   timePerQuestionMs: number
-  minTimeMs: number
   questionCount: number
 }
 
@@ -58,7 +57,6 @@ export interface DifficultyParams {
   threeTermsProbability: number
   allowParentheses: boolean
   timePerQuestionMs: number
-  minTimeMs: number
   questionCount: number
 }
 

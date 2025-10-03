@@ -77,7 +77,6 @@ export class DifficultyManager {
       allowNegative: lerpBool(low.allowNegative, high.allowNegative, t),
       allowFractions: lerpBool(low.allowFractions, high.allowFractions, t),
       timePerQuestionMs: Math.round(lerp(low.timePerQuestionMs, high.timePerQuestionMs, t)),
-      minTimeMs: Math.round(lerp(low.minTimeMs, high.minTimeMs, t)),
       questionCount: Math.round(lerp(low.questionCount, high.questionCount, t))
     }
   }

@@ -10,7 +10,7 @@ const diff = {
       skills: { "lastDigit": 70, "estimate": 30, "parity": 0, "castingOutNines": 0, "carryBorrow": 0, "specialDigits": 0 },
       expressions: { "twoTerms": { "simple": {"plus": 70, "minus": 30, "mul": 0, "div": 0 } }, "threeTerms": { "noParentheses": {}, "withParentheses": {}}},
       allowNegative: false, "allowFractions": false, "allowDecimals": false,
-      timePerQuestionMs: 15000, "minTimeMs": 8000, "questionCount": 10
+      timePerQuestionMs: 15000, "questionCount": 10
     },
     {
       level: 20,
@@ -21,7 +21,7 @@ const diff = {
         "threeTerms": { "noParentheses": { "plusMinus": 35 }, "withParentheses": {} }
       },
       allowNegative: false, "allowFractions": false, "allowDecimals": false,
-      timePerQuestionMs: 11000, "minTimeMs": 6000, "questionCount": 10
+      timePerQuestionMs: 11000, "questionCount": 10
     }
   ]
 }

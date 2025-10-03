@@ -109,7 +109,7 @@ function createConfigForSkill(skill: string): any {
           threeTerms: { noParentheses: {}, }
         },
         allowNegative: false, allowFractions: false, allowDecimals: false,
-        timePerQuestionMs: 14000, minTimeMs: 7500, questionCount: 10
+        timePerQuestionMs: 14000, questionCount: 10
       }
     ]
   }

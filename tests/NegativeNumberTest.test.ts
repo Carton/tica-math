@@ -19,7 +19,6 @@ describe('负数检查测试', () => {
         allowFractions: false,
         allowDecimals: false,
         timePerQuestionMs: 15000,
-        minTimeMs: 8000,
         questionCount: 10
       }
     ]
@@ -41,7 +40,6 @@ describe('负数检查测试', () => {
         allowFractions: false,
         allowDecimals: false,
         timePerQuestionMs: 15000,
-        minTimeMs: 8000,
         questionCount: 10
       }
     ]
@@ -94,7 +92,6 @@ describe('负数检查测试', () => {
             allowFractions: false,
             allowDecimals: false,
             timePerQuestionMs: 15000,
-            minTimeMs: 8000,
             questionCount: 10
           }
         ]
@@ -129,7 +126,6 @@ describe('负数检查测试', () => {
             allowFractions: false,
             allowDecimals: false,
             timePerQuestionMs: 15000,
-            minTimeMs: 8000,
             questionCount: 10
           }
         ]
@@ -208,7 +204,6 @@ describe('负数检查测试', () => {
             allowFractions: false,
             allowDecimals: false,
             timePerQuestionMs: 15000,
-            minTimeMs: 8000,
             questionCount: 10
           }
         ]
@@ -240,7 +235,6 @@ describe('负数检查测试', () => {
             allowFractions: false,
             allowDecimals: false,
             timePerQuestionMs: 15000,
-            minTimeMs: 8000,
             questionCount: 10
           }
         ]
@@ -295,7 +289,6 @@ describe('负数检查测试', () => {
               allowFractions: false,
               allowDecimals: false,
               timePerQuestionMs: 15000,
-              minTimeMs: 8000,
               questionCount: 10
             }
           ]
