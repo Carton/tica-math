@@ -261,7 +261,7 @@ export default class GameScene extends Phaser.Scene {
     const comboText = combo >= 6 ? `${combo}${Strings.t('ui.combo_super')}` : `${combo}${Strings.t('ui.combo')}！`
 
     // 创建连击文字，位置在左下方
-    const comboDisplay = this.add.text(120, height - 150, comboText, {
+    const comboDisplay = this.add.text(150, height - 100, comboText, {
       fontFamily: 'sans-serif',
       fontSize: combo >= 6 ? '36px' : '32px',
       color: combo >= 6 ? '#ff6b35' : '#ffd166',
