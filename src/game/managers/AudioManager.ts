@@ -7,6 +7,8 @@ export class AudioManager {
   private static scene: Phaser.Scene | null = null
   private static sounds: SoundCache = {}
   private static currentBgmKey: string | null = null
+  private static pendingBgm: { key: string, config: Phaser.Types.Sound.SoundConfig } | null = null
+  private static waitingForUnlock = false
   private static _sfxEnabled = true
   private static _bgmEnabled = true
   private static defaultBgmKey = 'bgm_main' // 记录默认BGM
@@ -29,6 +31,24 @@ export class AudioManager {
 
   static tryStartBgm(key: string, config: Phaser.Types.Sound.SoundConfig = { loop: true, volume: 0.25 }) {
     if (!this.scene || !this._bgmEnabled) return
+    const soundManager = this.scene.sound
+    if (!soundManager) return
+
+    if (soundManager.locked) {
+      this.pendingBgm = { key, config }
+      if (!this.waitingForUnlock) {
+        this.waitingForUnlock = true
+        soundManager.once(Phaser.Sound.Events.UNLOCKED, () => {
+          this.waitingForUnlock = false
+          const pending = this.pendingBgm
+          this.pendingBgm = null
+          if (!pending || !this._bgmEnabled) return
+          this.tryStartBgm(pending.key, pending.config)
+        })
+      }
+      return
+    }
+
     const snd = this.getOrCreateSound(key)
     if (!snd) return
     if (this.currentBgmKey === key && snd.isPlaying) return
