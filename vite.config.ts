@@ -60,17 +60,18 @@ export default defineConfig({
           fs.mkdirSync(targetDir, { recursive: true });
         }
 
-        // 复制所有配置文件（自动检测目录中的所有文件）
+        // 复制所有 JSON 配置文件（自动检测目录中的 *.json 文件）
         try {
           const files = fs.readdirSync(configDir);
           files.forEach(file => {
-            // 只复制文件（跳过目录）
-            const srcPath = path.join(configDir, file);
-            const stat = fs.statSync(srcPath);
-            if (stat.isFile()) {
+            // 只复制 .json 文件
+            if (file.endsWith('.json')) {
+              const srcPath = path.join(configDir, file);
               const destPath = path.join(targetDir, file);
-              fs.copyFileSync(srcPath, destPath);
-              console.log(`✅ 复制配置文件: ${file}`);
+              if (fs.existsSync(srcPath)) {
+                fs.copyFileSync(srcPath, destPath);
+                console.log(`✅ 复制配置文件: ${file}`);
+              }
             }
           });
         } catch (error) {
