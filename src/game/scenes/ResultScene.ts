@@ -33,17 +33,17 @@ export default class ResultScene extends Phaser.Scene {
       const comboBonus = SaveManager.calculateComboEXPBonus(sum?.comboMax ?? 0, baseEXP)
       const totalEXP = baseEXP + comboBonus
 
-      expDetail = `EXP获得：${totalEXP} (基础${baseEXP}`
+      expDetail = `${Strings.t('results.exp_gained')}${totalEXP} (${Strings.t('results.exp_base')}${baseEXP}`
       if (comboBonus > 0) {
-        expDetail += ` + 连击加成${comboBonus}`
+        expDetail += ` + ${Strings.t('results.exp_combo_bonus')}${comboBonus}`
       }
       expDetail += ')\n'
     }
 
-    const detail = this.add.text(width / 2, title.y + 70,
-      `${expDetail}正确率：${Math.round((sum?.accuracy ?? 0) * 100)}%\n评级：${sum?.grade ?? 'C'}\n连击：${sum?.comboMax ?? 0}，道具使用：${sum?.toolsUsed ?? 0}`,
-      { fontFamily: 'sans-serif', fontSize: '20px', color: '#a9ffea', align: 'center' }
-    ).setOrigin(0.5)
+    const detailText = `${expDetail}${Strings.t('results.accuracy')}${Math.round((sum?.accuracy ?? 0) * 100)}%\n${Strings.t('results.grade')}${sum?.grade ?? 'C'}\n${Strings.t('results.combo')}${sum?.comboMax ?? 0}，${Strings.t('results.tools_used')}${sum?.toolsUsed ?? 0}`
+    const detail = this.add.text(width / 2, title.y + 70, detailText, {
+      fontFamily: 'sans-serif', fontSize: '20px', color: '#a9ffea', align: 'center'
+    }).setOrigin(0.5)
 
     // 如果有连击加成，给连击数字添加特殊效果
     if (sum?.pass && (sum?.comboMax ?? 0) >= 3) {
@@ -51,7 +51,7 @@ export default class ResultScene extends Phaser.Scene {
       if (comboBonus > 0) {
         // 创建连击加成的提示文字
         const bonusText = this.add.text(width / 2, detail.y + 80,
-          `🔥 连击加成 +${comboBonus} EXP！`, {
+          Strings.t('results.combo_bonus_text').replace('{0}', comboBonus.toString()), {
           fontFamily: 'sans-serif',
           fontSize: '24px',
           color: '#ffd166',

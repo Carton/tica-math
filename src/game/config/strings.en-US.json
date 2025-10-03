@@ -7,6 +7,7 @@
     "case_cleared": "Case Solved!",
     "case_summary": "Case Concluded",
     "title": "Tica Detective Agency: Number Mystery",
+    "page_title": "Tica Detective Agency: Number Mystery",
     "switch_user": "Switch User",
     "detective_manual": "Detective Manual",
     "honor_wall": "Honor Wall",
@@ -37,7 +38,8 @@
     "honor_title": "Honor Wall",
     "start_game": "Start Investigation",
     "language_english": "English",
-    "language_chinese": "中文"
+    "language_chinese": "中文",
+    "select_user": "Select User"
   },
   "manual": {
     "title": "🕵️ Detective Manual 🕵️",
@@ -74,7 +76,15 @@
   },
   "results": {
     "case_cleared": "Case Solved!",
-    "professor_escaped": "Professor Escaped!"
+    "professor_escaped": "Professor Escaped!",
+    "exp_gained": "EXP Gained:",
+    "exp_base": "Base",
+    "exp_combo_bonus": "Combo Bonus",
+    "accuracy": "Accuracy:",
+    "grade": "Grade:",
+    "combo": "Combo:",
+    "tools_used": "Tools Used:",
+    "combo_bonus_text": "🔥 Combo Bonus +{0} EXP!"
   },
   "errors": {
     "user_id_empty": "User ID cannot be empty",

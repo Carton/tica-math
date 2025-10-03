@@ -7,6 +7,7 @@
     "case_cleared": "案件告破！",
     "case_summary": "案件告一段落",
     "title": "Tica侦探事务所：数字谜案",
+    "page_title": "Tica侦探事务所：数字谜案",
     "switch_user": "切换用户",
     "detective_manual": "侦探手册",
     "honor_wall": "荣誉墙",
@@ -37,7 +38,8 @@
     "honor_title": "荣誉墙",
     "start_game": "开始破案",
     "language_english": "English",
-    "language_chinese": "中文"
+    "language_chinese": "中文",
+    "select_user": "选择用户"
   },
   "manual": {
     "title": "🕵️ 侦探手册 🕵️",
@@ -74,7 +76,15 @@
   },
   "results": {
     "case_cleared": "案件告破！",
-    "professor_escaped": "让教授逃跑了！"
+    "professor_escaped": "让教授逃跑了！",
+    "exp_gained": "EXP获得：",
+    "exp_base": "基础",
+    "exp_combo_bonus": "连击加成",
+    "accuracy": "正确率：",
+    "grade": "评级：",
+    "combo": "连击：",
+    "tools_used": "道具使用：",
+    "combo_bonus_text": "🔥 连击加成 +{0} EXP！"
   },
   "errors": {
     "user_id_empty": "用户ID不能为空",
