@@ -24,8 +24,19 @@ type ExpressionPlan = {
 }
 
 const MAX_DIGIT_SPREAD = 2
-const MAX_ATTEMPTS = 10
+const MAX_ATTEMPTS = 20
 const FRACTIONS_ENABLED = false
+
+function adjustUnitMultiplier(value: number, digits: number, allowNegative: boolean): number {
+  if (digits === 1 && Math.abs(value) === 1) {
+    const replacement = randomInt(2, 9)
+    if (allowNegative && value < 0) {
+      return -replacement
+    }
+    return replacement
+  }
+  return value
+}
 
 function distributeDigits(totalDigits: number, operandCount: number): number[] {
   if (operandCount <= 0) return []
@@ -213,14 +224,14 @@ function makeStrategicError(expr: string, correctValue: number, skill: SkillTag,
           const highestPlace = Math.pow(10, digits - 1)
         const change = Math.random() < 0.5 ? -1 : 1
         result += change * highestPlace
-      } else {
+        } else {
         const str = abs.toString()
         if (str.length > 1) {
           const insertPos = randomInt(1, str.length - 1)
           const insertDigit = randomInt(0, 9)
           const mutated = str.slice(0, insertPos) + insertDigit + str.slice(insertPos)
           result = parseInt(mutated, 10) * Math.sign(correctValue)
-        } else {
+      } else {
           result += Math.random() < 0.5 ? -1 : 1
         }
       }
@@ -278,6 +289,11 @@ function generateTwoTermsExpression(plan: ExpressionPlan, allowNegative: boolean
   let right = generateIntegerWithDigits(rightPlan.digits, allowNegative)
   const operator = plan.structure.kind === 'twoTerms' ? plan.structure.operator : 'plus'
 
+  if (operator === 'mul') {
+    left = adjustUnitMultiplier(left, leftPlan.digits, allowNegative)
+    right = adjustUnitMultiplier(right, rightPlan.digits, allowNegative)
+  }
+
   // 对于乘法，避免乘数为1（对儿童来说太简单）
   if (operator === 'mul') {
     // 确保1位数的乘数不小于2
@@ -322,8 +338,8 @@ function generateTwoTermsExpression(plan: ExpressionPlan, allowNegative: boolean
         if (allowNegative && Math.random() < 0.5) {
           dividend = -dividend
         }
-        break
-      }
+              break
+            }
 
       if (dividend === null || divisor === null) {
         const fallbackDivisor = Math.max(2, minDivisor)
@@ -364,16 +380,21 @@ function generateThreeTermsExpression(plan: ExpressionPlan, allowNegative: boole
       return { expr, value }
     }
     case 'withMul': {
+      const adjustedNumbers = numbers.slice()
+      adjustedNumbers[0] = adjustUnitMultiplier(adjustedNumbers[0], plan.operands[0].digits, allowNegative)
+      adjustedNumbers[1] = adjustUnitMultiplier(adjustedNumbers[1], plan.operands[1].digits, allowNegative)
+      adjustedNumbers[2] = adjustUnitMultiplier(adjustedNumbers[2], plan.operands[2].digits, allowNegative)
+      const [adjA, adjB, adjC] = adjustedNumbers
       const mulFirst = Math.random() < 0.5
       if (mulFirst) {
         const op = Math.random() < 0.5 ? 'plus' : 'minus'
-        const expr = `${a} × ${b} ${symbolForOperator(op)} ${c}`
-        const value = executeBinary(op, a * b, c)
+        const expr = `${adjA} × ${adjB} ${symbolForOperator(op)} ${adjC}`
+        const value = executeBinary(op, adjA * adjB, adjC)
         return { expr, value }
       }
       const op = Math.random() < 0.5 ? 'plus' : 'minus'
-      const expr = `${a} ${symbolForOperator(op)} ${b} × ${c}`
-      const value = executeBinary(op, a, b * c)
+      const expr = `${adjA} ${symbolForOperator(op)} ${adjB} × ${adjC}`
+      const value = executeBinary(op, adjA, adjB * adjC)
       return { expr, value }
     }
     case 'withDiv': {

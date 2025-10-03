@@ -244,23 +244,24 @@ describe('技能集成测试套件', () => {
   })
 
   test('所有技能的组合测试', () => {
-    // 使用默认配置进行综合测试
     const defaultConfig = require('@/game/config/digit-difficulty.json')
     DifficultyManager.init(defaultConfig)
 
+    const aggregateLevel = 50
     const results: { [key: string]: { valid: number, total: number, questions: any[] } } = {}
 
     skills.forEach(skill => {
       results[skill] = { valid: 0, total: 0, questions: [] }
     })
 
-    // 生成100个随机题目
     const totalTestCount = 100
-    for (let i = 0; i < totalTestCount; i++) {
-      const question = QuestionGenerator.createQuestion(testLevel)
+    const maxAttempts = 300
+    let attempts = 0
+
+    while (attempts < maxAttempts && Object.values(results).some(res => res.total === 0)) {
+      const question = QuestionGenerator.createQuestion(aggregateLevel)
       const validation = validateSkill(question)
 
-      // 统计每种技能的出现和成功情况
       question.targetSkills.forEach((skill: string) => {
         if (results[skill]) {
           results[skill].total++
@@ -270,9 +271,10 @@ describe('技能集成测试套件', () => {
           results[skill].questions.push(question)
         }
       })
+
+      attempts++
     }
 
-    // 计算总体成功率
     let totalValid = 0
     let totalQuestions = 0
 
@@ -287,6 +289,8 @@ describe('技能集成测试套件', () => {
         console.log(`${skill}: 0/0 (0%) - 未生成该技能题目`)
       }
     })
+
+    expect(Object.values(results).every(res => res.total > 0)).toBe(true)
 
     if (totalQuestions > 0) {
       const overallSuccessRate = (totalValid / totalQuestions) * 100
