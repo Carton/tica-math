@@ -254,11 +254,11 @@ describe('技能集成测试套件', () => {
       results[skill] = { valid: 0, total: 0, questions: [] }
     })
 
-    const totalTestCount = 100
-    const maxAttempts = 300
+    const minSamplesPerSkill = 5
+    const maxAttempts = 500
     let attempts = 0
 
-    while (attempts < maxAttempts && Object.values(results).some(res => res.total === 0)) {
+    while (attempts < maxAttempts && Object.values(results).some(res => res.total < minSamplesPerSkill)) {
       const question = QuestionGenerator.createQuestion(aggregateLevel)
       const validation = validateSkill(question)
 
