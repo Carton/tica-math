@@ -12,7 +12,8 @@ export default class PreloadScene extends Phaser.Scene {
 
   preload() {
     this.load.json('difficulty', 'game/config/digit-difficulty.json')
-    this.load.json('strings', 'game/config/strings.zh-CN.json')
+    this.load.json('strings-zh', 'game/config/strings.zh-CN.json')
+    this.load.json('strings-en', 'game/config/strings.en-US.json')
     // 音频与图片占位符可在此处预加载（文件到位后放开注释）
     this.load.image('bg_office', 'images/bg_office.png')
     this.load.image('bg_desk', 'images/bg_desk.png')
@@ -42,8 +43,23 @@ export default class PreloadScene extends Phaser.Scene {
       DifficultyManager.init(diff)
     }
 
-    const lang = this.cache.json.get('strings')
-    if (lang) Strings.init(lang)
+    // 加载所有语言的字符串
+    const zhStrings = this.cache.json.get('strings-zh')
+    const enStrings = this.cache.json.get('strings-en')
+
+    if (zhStrings) {
+      Strings.init(zhStrings)
+      // 加载英文字符串
+      if (enStrings) {
+        Strings.loadLanguage('en-US', enStrings)
+      }
+    } else {
+      // 如果没有加载到中文，尝试加载旧格式的字符串
+      const oldStrings = this.cache.json.get('strings')
+      if (oldStrings) {
+        Strings.init(oldStrings)
+      }
+    }
 
     ToolManager.resetToDefault()
 

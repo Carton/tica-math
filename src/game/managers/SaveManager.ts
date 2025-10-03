@@ -16,10 +16,6 @@ export interface MultiSave {
   users: Record<string, SaveData>
 }
 
-function defaultUser(): SaveData {
-  return { bestLevel: 1, currentLevel: 1, badges: [], exp: 0, toolCounts: getDefaultToolCounts() }
-}
-
 // 获取默认道具数，支持debug模式
 function getDefaultToolCounts(): { magnify: number; watch: number; light: number } {
   // 检查是否为debug模式
@@ -31,10 +27,14 @@ function getDefaultToolCounts(): { magnify: number; watch: number; light: number
   )
 
   if (isDebugMode) {
-    return { magnify: 999, watch: 999, light: 999 } // debug模式下道具无限
+    return { magnify: 999, watch: 999, light: 999 }
   }
 
-  return { magnify: 3, watch: 3, light: 3 } // 正常模式默认道具数
+  return { magnify: 3, watch: 2, light: 1 }
+}
+
+function defaultUser(): SaveData {
+  return { bestLevel: 1, currentLevel: 1, badges: [], exp: 0, toolCounts: getDefaultToolCounts() }
 }
 
 export class SaveManager {

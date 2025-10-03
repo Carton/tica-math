@@ -2,6 +2,8 @@ import Phaser from 'phaser'
 import { SaveManager } from '@/game/managers/SaveManager'
 import { ToolManager } from '@/game/managers/ToolManager'
 import { AudioManager } from '@/game/managers/AudioManager'
+import { Strings } from '@/game/managers/Strings'
+import type { LanguageCode } from '@/game/managers/Strings'
 
 export default class MainMenuScene extends Phaser.Scene {
   constructor() {
@@ -31,7 +33,7 @@ export default class MainMenuScene extends Phaser.Scene {
       }
     } catch {}
 
-    const title = this.add.text(width / 2, titleY, 'Tica 侦探事务所：数字谜案', {
+    const title = this.add.text(width / 2, titleY, Strings.t('ui.title'), {
       fontFamily: 'sans-serif',
       fontSize: '32px',
       color: '#ffffff',
@@ -107,18 +109,71 @@ export default class MainMenuScene extends Phaser.Scene {
         return rect
       }
 
-      createHotspot(0.41, 0.68, 0.35, 0.12, '开始破案', () => {
+      createHotspot(0.41, 0.68, 0.35, 0.12, Strings.t('ui.start'), () => {
         const level = user.currentLevel || 1
         ToolManager.resetToDefault()
         this.scene.launch('UIScene', { level })
         this.scene.start('GameScene', { level })
       })
 
-      createHotspot(0.255, 0.37, 0.05, 0.12, '切换用户', () => this.scene.start('UserScene'))
+      createHotspot(0.255, 0.37, 0.05, 0.12, Strings.t('ui.switch_user'), () => this.scene.start('UserScene'))
 
-      createHotspot(0.81, 0.48, 0.17, 0.37, '侦探手册', () => this.scene.start('ManualScene'))
+      createHotspot(0.81, 0.48, 0.17, 0.37, Strings.t('ui.detective_manual'), () => this.scene.start('ManualScene'))
 
-      createHotspot(0.71, 0.01, 0.38, 0.55, '荣誉墙', () => this.scene.start('HonorScene'), 0.1)
+      createHotspot(0.71, 0.01, 0.38, 0.55, Strings.t('ui.honor_wall'), () => this.scene.start('HonorScene'), 0.1)
+
+      // 语言切换按钮
+      const createLanguageButton = () => {
+        const currentLang = Strings.getLanguage()
+        const nextLang = currentLang === 'zh-CN' ? 'English' : '中文'
+        const langRect = this.add.rectangle(width - 80, 40, 120, 40, 0xffffff, 0.1)
+          .setOrigin(0.5)
+          .setInteractive({ useHandCursor: true })
+          .setDepth(10)
+
+        const langText = this.add.text(langRect.x, langRect.y, nextLang, {
+          fontFamily: 'sans-serif',
+          fontSize: '16px',
+          color: '#f8f0c8'
+        }).setOrigin(0.5).setDepth(11)
+
+        langText.setStroke('#382b18', 2).setShadow(0, 2, '#050608', 4, false, true)
+
+        langRect.on('pointerover', () => {
+          langRect.setFillStyle(0xffffff, 0.3)
+          this.tweens.add({
+            targets: langText,
+            scaleX: 1.1,
+            scaleY: 1.1,
+            duration: 150,
+            ease: 'Sine.easeOut'
+          })
+        })
+
+        langRect.on('pointerout', () => {
+          langRect.setFillStyle(0xffffff, 0.1)
+          this.tweens.add({
+            targets: langText,
+            scaleX: 1,
+            scaleY: 1,
+            duration: 150,
+            ease: 'Sine.easeOut'
+          })
+        })
+
+        langRect.on('pointerup', () => {
+          AudioManager.playSfx('sfx_click')
+          // 切换语言
+          const newLang = currentLang === 'zh-CN' ? 'en-US' : 'zh-CN'
+          Strings.setLanguage(newLang)
+          // 重新加载场景以应用新语言
+          this.scene.restart()
+        })
+
+        return { rect: langRect, text: langText }
+      }
+
+      createLanguageButton()
     } else {
       // 按钮模式 - 只有在背景无法加载时显示
       const buttonStyle = {
@@ -133,17 +188,29 @@ export default class MainMenuScene extends Phaser.Scene {
       const spacing = 60
       const buttonWidth = 110  // 统一按钮宽度
 
-      const startBtn = this.add.text(width / 2, startY, '开始破案', buttonStyle)
+      const startBtn = this.add.text(width / 2, startY, Strings.t('ui.start'), buttonStyle)
         .setOrigin(0.5).setInteractive({ useHandCursor: true })
 
-      const manualBtn = this.add.text(width / 2, startY + spacing, '侦探手册', buttonStyle)
+      const manualBtn = this.add.text(width / 2, startY + spacing, Strings.t('ui.detective_manual'), buttonStyle)
         .setOrigin(0.5).setInteractive({ useHandCursor: true })
 
-      const honorBtn = this.add.text(width / 2, startY + spacing * 2, '荣誉墙', buttonStyle)
+      const honorBtn = this.add.text(width / 2, startY + spacing * 2, Strings.t('ui.honor_wall'), buttonStyle)
         .setOrigin(0.5).setInteractive({ useHandCursor: true })
 
-      const manageBtn = this.add.text(width / 2, startY + spacing * 3, '切换用户', buttonStyle)
+      const manageBtn = this.add.text(width / 2, startY + spacing * 3, Strings.t('ui.switch_user'), buttonStyle)
         .setOrigin(0.5).setInteractive({ useHandCursor: true })
+
+      // 语言切换按钮
+      const currentLang = Strings.getLanguage()
+      const nextLang = currentLang === 'zh-CN' ? 'English' : '中文'
+      const langBtn = this.add.text(width / 2, startY + spacing * 4, nextLang, {
+        fontFamily: 'sans-serif',
+        fontSize: '16px',
+        color: '#0b1021',
+        backgroundColor: '#ff9f43',
+        padding: { x: 12, y: 8 }
+      }).setOrigin(0.5).setInteractive({ useHandCursor: true })
+      langBtn.setFixedSize(buttonWidth, 0)
 
       // 设置所有按钮为统一宽度
       startBtn.setFixedSize(buttonWidth, 0)
@@ -171,6 +238,15 @@ export default class MainMenuScene extends Phaser.Scene {
       manageBtn.on('pointerup', () => {
         AudioManager.playSfx('sfx_click')
         this.scene.start('UserScene')
+      })
+
+      langBtn.on('pointerup', () => {
+        AudioManager.playSfx('sfx_click')
+        // 切换语言
+        const newLang = currentLang === 'zh-CN' ? 'en-US' : 'zh-CN'
+        Strings.setLanguage(newLang)
+        // 重新加载场景以应用新语言
+        this.scene.restart()
       })
 
       this.input.keyboard?.once('keydown-ENTER', () => startBtn.emit('pointerup'))

@@ -1,0 +1,72 @@
+{
+  "ui": {
+    "start": "Start Investigation",
+    "back": "Return to Agency",
+    "true": "Truth",
+    "false": "False",
+    "clue": "Clue",
+    "case_cleared": "Case Solved!",
+    "case_summary": "Case Concluded",
+    "title": "Tica Detective Agency: Number Mystery",
+    "switch_user": "Switch User",
+    "detective_manual": "Detective Manual",
+    "honor_wall": "Honor Wall",
+    "return": "Return",
+    "next_page": "Next Page ▶",
+    "prev_page": "◀ Previous",
+    "new_user": "New User",
+    "create": "Create",
+    "cancel": "Cancel",
+    "create_user": "New User",
+    "enter_user_id": "Enter User ID (letters, numbers, underscore)",
+    "pause": "Pause",
+    "resume_game": "Resume Game",
+    "sfx": "Sound Effects",
+    "bgm": "Background Music",
+    "on": "On",
+    "off": "Off",
+    "unknown": "Unknown"
+  },
+  "manual": {
+    "title": "🕵️ Detective Manual 🕵️",
+    "how_to_answer": "🎯 How to Answer",
+    "mouse_operation": "🖱️ Mouse Operation:",
+    "mouse_hint": "Click 'Truth' stamp = Answer is correct\nClick 'False' stamp = Answer is wrong",
+    "keyboard_operation": "⌨️ Keyboard Operation:",
+    "keyboard_hint": "Press T key or → key = Select Truth\nPress F key or ← key = Select False",
+    "detective_tools": "🔧 Detective Tools",
+    "magnify_hint": "Magnifying Glass: Carefully observe question clues for hints!",
+    "watch_hint": "Pocket Watch: Add 10 seconds to time, think slowly~",
+    "flash_hint": "Lightbulb: Shows correct answer directly! But only three times~",
+    "detective_techniques": "🧠 Detective Techniques",
+    "achievement_system": "🏆 Achievement System",
+    "exp_title": "💰 EXP Points:",
+    "exp_hint": "Gain experience points by solving cases!\nMore accurate answers = more EXP~",
+    "badge_title": "🎖️ Badges:",
+    "badge_hint": "Get S-rank evaluation to earn badges!\nEach level's S-badge can be collected~"
+  },
+  "skills": {
+    "estimate": { "name": "Estimation Magic", "hint": "Round to whole numbers, estimate roughly, wrong answers move fast!" },
+    "lastDigit": { "name": "Last Digit Tracking", "hint": "No matter how complex, first check the tail!" },
+    "parity": { "name": "Parity Code", "hint": "Odd×odd=odd, even×even=even, odd×even=odd, any even factor in multiplication makes result even!" },
+    "castingOutNines": { "name": "Casting Out Nines", "hint": "Digits add up, add until one digit remains!" },
+    "carryBorrow": { "name": "Carry/Borrow Trap", "hint": "Watch ten's place changes, don't lose carries and borrows." },
+    "specialDigits": { "name": "Special Digit Fingerprint", "hint": "5 and 10, check the tail; 3 and 9, check the belly (digit sum)!" },
+    "inverseOp": { "name": "Inverse Operation Magic", "hint": "Plus becomes minus, times becomes divide, reverse tracking wins!" },
+    "times11": { "name": "Making Friends with 11", "hint": "Pull both ends, add the middle!" }
+  },
+  "tools": {
+    "magnify": "Truth Magnifying Glass",
+    "watch": "Time-Slowing Pocket Watch",
+    "flash": "Thinking Lightning"
+  },
+  "results": {
+    "case_cleared": "Case Solved!",
+    "professor_escaped": "Professor Escaped!"
+  },
+  "errors": {
+    "user_id_empty": "User ID cannot be empty",
+    "user_id_invalid": "User ID can only contain letters, numbers and underscores",
+    "user_id_exists": "User ID already exists"
+  }
+}
