@@ -41,7 +41,7 @@ export default class MainMenuScene extends Phaser.Scene {
 
     const userId = SaveManager.getCurrentUserId()
     const user = SaveManager.getCurrent()
-    this.add.text(width / 2, title.y + 40, `当前用户: ${userId}  最高关: ${user.bestLevel}  徽章:${user.badges.length}`, { fontFamily: 'monospace', fontSize: '14px', color: '#a9ffea' }).setOrigin(0.5)
+    this.add.text(width / 2, title.y + 40, `${Strings.t('ui.current_user')}: ${userId}  ${Strings.t('ui.highest_level')}: ${user.bestLevel}  ${Strings.t('ui.badges_count')}:${user.badges.length}`, { fontFamily: 'monospace', fontSize: '14px', color: '#a9ffea' }).setOrigin(0.5)
 
     // 如果有背景图，则创建沉浸式热区；否则显示文字按钮
     if (this.textures.exists('bg_office')) {

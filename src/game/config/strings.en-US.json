@@ -25,7 +25,17 @@
     "bgm": "Background Music",
     "on": "On",
     "off": "Off",
-    "unknown": "Unknown"
+    "unknown": "Unknown",
+    "current_user": "Current User",
+    "highest_level": "Highest Level",
+    "badges_count": "Badges",
+    "level_prefix": "Lv.",
+    "exp_prefix": "EXP:",
+    "combo": "Combo",
+    "combo_super": "Combo! 🔥",
+    "next_case": "Next Case",
+    "retry_case": "Retry This Case",
+    "honor_title": "Honor Wall"
   },
   "manual": {
     "title": "🕵️ Detective Manual 🕵️",

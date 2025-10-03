@@ -1,5 +1,6 @@
 import Phaser from 'phaser'
 import { SaveManager } from '@/game/managers/SaveManager'
+import { Strings } from '@/game/managers/Strings'
 
 export default class HonorScene extends Phaser.Scene {
   constructor() {
@@ -10,7 +11,7 @@ export default class HonorScene extends Phaser.Scene {
     const { width, height } = this.scale
 
     // 标题
-    this.add.text(width / 2, 60, '荣誉墙', { fontFamily: 'sans-serif', fontSize: '32px', color: '#ffffff' }).setOrigin(0.5)
+    this.add.text(width / 2, 60, Strings.t('ui.honor_title'), { fontFamily: 'sans-serif', fontSize: '32px', color: '#ffffff' }).setOrigin(0.5)
 
     // 获取所有用户并按exp分数排序
     const users = SaveManager.getAllUsers()
@@ -28,7 +29,7 @@ export default class HonorScene extends Phaser.Scene {
     sortedUsers.forEach(({ id, data }, index) => {
       const isCurrentUser = id === cur
       const prefix = isCurrentUser ? '→ ' : '  ' // 当前用户用箭头标识
-      const line = this.add.text(80, y, `${prefix}${index + 1}. ${id}  Lv.${data.bestLevel}  徽章:${data.badges.length}  EXP:${data.exp}`, {
+      const line = this.add.text(80, y, `${prefix}${index + 1}. ${id}  ${Strings.t('ui.level_prefix')}${data.bestLevel}  ${Strings.t('ui.badges_count')}:${data.badges.length}  ${Strings.t('ui.exp_prefix')}${data.exp}`, {
         fontFamily: 'monospace',
         fontSize: '18px',
         color: isCurrentUser ? '#2de1c2' : '#a9ffea'
@@ -38,7 +39,7 @@ export default class HonorScene extends Phaser.Scene {
     })
 
     // 返回按钮
-    const back = this.add.text(width / 2, height - 80, '返回', { fontFamily: 'sans-serif', fontSize: '22px', color: '#0b1021', backgroundColor: '#a9ffea', padding: { x: 16, y: 8 } }).setOrigin(0.5).setInteractive({ useHandCursor: true })
+    const back = this.add.text(width / 2, height - 80, Strings.t('ui.return'), { fontFamily: 'sans-serif', fontSize: '22px', color: '#0b1021', backgroundColor: '#a9ffea', padding: { x: 16, y: 8 } }).setOrigin(0.5).setInteractive({ useHandCursor: true })
     back.on('pointerup', () => this.scene.start('MainMenuScene'))
 
     this.input.keyboard?.on('keydown-ESC', () => this.scene.start('MainMenuScene'))

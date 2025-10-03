@@ -258,7 +258,7 @@ export default class GameScene extends Phaser.Scene {
     if (combo < 3) return // 只有3次及以上连击才显示
 
     const { width, height } = this.scale
-    const comboText = combo >= 6 ? `${combo}连击！🔥` : `${combo}连击！`
+    const comboText = combo >= 6 ? `${combo}${Strings.t('ui.combo_super')}` : `${combo}${Strings.t('ui.combo')}！`
 
     // 创建连击文字，位置在左下方
     const comboDisplay = this.add.text(120, height - 150, comboText, {

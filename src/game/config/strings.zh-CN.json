@@ -25,7 +25,17 @@
     "bgm": "音乐",
     "on": "开",
     "off": "关",
-    "unknown": "未知"
+    "unknown": "未知",
+    "current_user": "当前用户",
+    "highest_level": "最高关",
+    "badges_count": "徽章",
+    "level_prefix": "Lv.",
+    "exp_prefix": "EXP:",
+    "combo": "连击",
+    "combo_super": "连击！🔥",
+    "next_case": "下个案件",
+    "retry_case": "重新分析此案件",
+    "honor_title": "荣誉墙"
   },
   "manual": {
     "title": "🕵️ 侦探手册 🕵️",
