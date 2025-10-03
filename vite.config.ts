@@ -1,6 +1,8 @@
 import { defineConfig } from 'vite'
 import { resolve } from 'path'
 import { VitePWA } from 'vite-plugin-pwa'
+import fs from 'fs'
+import path from 'path'
 
 export default defineConfig({
   root: 'src',
@@ -45,6 +47,30 @@ export default defineConfig({
         theme_color: '#0b1021',
         icons: []
       }
-    })
+    }),
+    {
+      name: 'copy-game-config',
+      closeBundle() {
+        // 复制游戏配置文件
+        const configDir = path.join(__dirname, 'src/game/config');
+        const targetDir = path.join(__dirname, 'dist/game/config');
+
+        // 确保目标目录存在
+        if (!fs.existsSync(targetDir)) {
+          fs.mkdirSync(targetDir, { recursive: true });
+        }
+
+        // 复制 JSON 配置文件
+        const jsonFiles = ['digit-difficulty.json', 'strings.zh-CN.json'];
+        jsonFiles.forEach(file => {
+          const srcPath = path.join(configDir, file);
+          const destPath = path.join(targetDir, file);
+          if (fs.existsSync(srcPath)) {
+            fs.copyFileSync(srcPath, destPath);
+            console.log(`✅ 复制配置文件: ${file}`);
+          }
+        });
+      }
+    }
   ]
 })

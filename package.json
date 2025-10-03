@@ -8,6 +8,8 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
+    "serve": "node start-server.js",
+    "serve:8000": "node start-server.js 8000",
     "test": "jest",
     "test:watch": "jest --watch",
     "lint": "eslint src --ext .ts,.js",
