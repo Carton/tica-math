@@ -85,9 +85,12 @@ function flattenExpressionWeights(expressions: ExpressionConfig): Record<Structu
     weights[`twoTermsSimple_${op}` as StructureKey] = weight
   })
 
-  Object.entries(expressions.threeTerms.noParentheses).forEach(([variant, weight]) => {
-    weights[`threeTermsNoParentheses_${variant}` as StructureKey] = weight
-  })
+  // 处理可能为空的 threeTerms.noParentheses
+  if (expressions.threeTerms && expressions.threeTerms.noParentheses) {
+    Object.entries(expressions.threeTerms.noParentheses).forEach(([variant, weight]) => {
+      weights[`threeTermsNoParentheses_${variant}` as StructureKey] = weight
+    })
+  }
 
   return weights as Record<StructureKey, number>
 }
@@ -281,17 +284,52 @@ function generateTwoTermsExpression(plan: ExpressionPlan, allowNegative: boolean
 
   if (operator === 'div') {
     if (!allowFractions) {
-      const absLeft = Math.abs(left)
-      const divisors: number[] = []
-      for (let i = 1; i <= absLeft; i++) {
-        if (absLeft % i === 0) {
-          divisors.push(i)
+      const leftDigits = Math.max(1, leftPlan.digits)
+      const rightDigits = Math.max(1, rightPlan.digits)
+      const minDividend = Math.pow(10, leftDigits - 1)
+      const maxDividend = Math.pow(10, leftDigits) - 1
+      const minDivisor = Math.max(2, Math.pow(10, rightDigits - 1))
+      const maxDivisor = Math.pow(10, rightDigits) - 1
+
+      let dividend: number | null = null
+      let divisor: number | null = null
+
+      for (let attempt = 0; attempt < 25; attempt++) {
+        let candidateDivisor = randomInt(minDivisor, maxDivisor)
+        if (candidateDivisor < 2) candidateDivisor = 2
+
+        const minQuotient = Math.ceil(minDividend / candidateDivisor)
+        const maxQuotient = Math.floor(maxDividend / candidateDivisor)
+        if (minQuotient > maxQuotient) {
+          continue
         }
+
+        const quotient = randomInt(minQuotient, maxQuotient)
+        dividend = candidateDivisor * quotient
+        divisor = candidateDivisor
+
+        if (allowNegative && Math.random() < 0.5) {
+          dividend = -dividend
+        }
+        break
       }
-      const divisor = choose(divisors.length ? divisors : [1])
-      const value = absLeft / divisor
-      const expr = `${Math.sign(left) < 0 ? '-' : ''}${Math.abs(left)} ÷ ${divisor}`
-      return { expr, value }
+
+      if (dividend === null || divisor === null) {
+        const fallbackDivisor = Math.max(2, minDivisor)
+        const fallbackQuotient = Math.max(2, Math.floor(maxDividend / fallbackDivisor))
+        dividend = fallbackDivisor * fallbackQuotient
+        divisor = fallbackDivisor
+        if (!allowNegative && dividend < 0) dividend = Math.abs(dividend)
+      }
+
+      const expr = `${dividend} ÷ ${divisor}`
+      return { expr, value: dividend / divisor }
+    } else {
+      if (right === 0) {
+        right = allowNegative ? -1 : 1
+      }
+      const expr = `${left} ÷ ${right}`
+      return { expr, value: left / right }
     }
   }
 
@@ -332,6 +370,14 @@ function generateThreeTermsExpression(plan: ExpressionPlan, allowNegative: boole
       const op = Math.random() < 0.5 ? 'plus' : 'minus'
       const expr = `${a} ${symbolForOperator(op)} ${b} ÷ ${c}`
       const value = executeBinary(op, a, b / c)
+      return { expr, value }
+    }
+    default: {
+      // 处理未定义的 variant，默认使用 plusMinus
+      const op1 = Math.random() < 0.5 ? 'plus' : 'minus'
+      const op2 = Math.random() < 0.5 ? 'plus' : 'minus'
+      const expr = `${a} ${symbolForOperator(op1)} ${b} ${symbolForOperator(op2)} ${c}`
+      const value = executeBinary(op2, executeBinary(op1, a, b), c)
       return { expr, value }
     }
   }

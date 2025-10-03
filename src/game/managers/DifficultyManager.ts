@@ -23,9 +23,9 @@ function lerpExpressionConfig(a: ExpressionConfig, b: ExpressionConfig, t: numbe
     },
     threeTerms: {
       noParentheses: {
-        plusMinus: lerp(a.threeTerms.noParentheses.plusMinus, b.threeTerms.noParentheses.plusMinus, t),
-        withMul: lerp(a.threeTerms.noParentheses.withMul, b.threeTerms.noParentheses.withMul, t),
-        withDiv: lerp(a.threeTerms.noParentheses.withDiv, b.threeTerms.noParentheses.withDiv, t)
+        plusMinus: lerp(a.threeTerms.noParentheses?.plusMinus || 0, b.threeTerms.noParentheses?.plusMinus || 0, t),
+        withMul: lerp(a.threeTerms.noParentheses?.withMul || 0, b.threeTerms.noParentheses?.withMul || 0, t),
+        withDiv: lerp(a.threeTerms.noParentheses?.withDiv || 0, b.threeTerms.noParentheses?.withDiv || 0, t)
       },
       withParentheses: {
         plusMinus: lerp(a.threeTerms.withParentheses?.plusMinus || 0, b.threeTerms.withParentheses?.plusMinus || 0, t),

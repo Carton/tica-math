@@ -51,7 +51,7 @@ describe('数字范围限制验证测试', () => {
       // 检查每个除法题目的位数
       const violations = []
       divisionQuestions.forEach((q, index) => {
-        const numbers = q.questionString.match(/\d+/g)
+        const numbers = q.metadata.expr.match(/\d+/g)
         if (numbers) {
           const totalDigits = numbers.reduce((sum, num) => sum + num.replace(/^0+/, '').length, 0)
           if (totalDigits < digitParams.digitRange.min || totalDigits > digitParams.digitRange.max) {
