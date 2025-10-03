@@ -11,6 +11,7 @@ test('next level logic', () => {
 })
 
 test('primary action label', () => {
-  expect(resultPrimaryActionLabel(true)).toBe('下个案件')
-  expect(resultPrimaryActionLabel(false)).toBe('重新分析此案件')
+  const mockT = (key: string) => key === 'ui.next_case' ? '下个案件' : '重新分析此案件'
+  expect(resultPrimaryActionLabel(true, mockT)).toBe('下个案件')
+  expect(resultPrimaryActionLabel(false, mockT)).toBe('重新分析此案件')
 })

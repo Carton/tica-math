@@ -15,17 +15,17 @@
 
     <!-- 开发环境调试面板 -->
     <div id="debug-panel" style="display:none; position:fixed; top:10px; right:10px; background:rgba(0,0,0,0.8); color:white; padding:15px; border-radius:8px; font-family:monospace; font-size:12px; z-index:9999; min-width:200px;">
-      <h4 style="margin:0 0 10px 0; color:#4CAF50;">🎮 游戏调试面板</h4>
+      <h4 id="debug-panel-title" style="margin:0 0 10px 0; color:#4CAF50;">🎮 游戏调试面板</h4>
       <div style="margin-bottom:10px;">
-        <label style="display:block; margin-bottom:5px;">设置关卡:</label>
+        <label id="debug-set-level" style="display:block; margin-bottom:5px;">设置关卡:</label>
         <input type="number" id="debug-level" value="1" min="1" max="100" style="width:100%; padding:5px;">
-        <button onclick="applyDebugLevel()" style="width:100%; margin-top:5px; padding:5px; background:#4CAF50; color:white; border:none; border-radius:3px; cursor:pointer;">应用</button>
+        <button id="debug-apply" onclick="applyDebugLevel()" style="width:100%; margin-top:5px; padding:5px; background:#4CAF50; color:white; border:none; border-radius:3px; cursor:pointer;">应用</button>
       </div>
             <div style="margin-bottom:10px;">
-        <button onclick="resetDebugGame()" style="width:100%; padding:5px; background:#f44336; color:white; border:none; border-radius:3px; cursor:pointer;">重置游戏</button>
+        <button id="debug-reset" onclick="resetDebugGame()" style="width:100%; padding:5px; background:#f44336; color:white; border:none; border-radius:3px; cursor:pointer;">重置游戏</button>
       </div>
       <div>
-        <button onclick="toggleDebugPanel()" style="width:100%; padding:5px; background:#666; color:white; border:none; border-radius:3px; cursor:pointer;">隐藏面板</button>
+        <button id="debug-hide" onclick="toggleDebugPanel()" style="width:100%; padding:5px; background:#666; color:white; border:none; border-radius:3px; cursor:pointer;">隐藏面板</button>
       </div>
     </div>
 
@@ -41,7 +41,8 @@
       // addDebugTools已移除 - 调试模式下道具无限
 
       function resetDebugGame() {
-        if (confirm('确定要重置游戏吗？')) {
+        const confirmText = window.Strings ? window.Strings.debug.confirm_reset : '确定要重置游戏吗？';
+        if (confirm(confirmText)) {
           if (window.DebugHelper && window.DebugHelper.resetGame()) {
             setTimeout(() => window.location.reload(), 100);
           }
@@ -53,10 +54,25 @@
         panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
       }
 
+      // 更新调试面板文本为当前语言
+      function updateDebugPanelText() {
+        if (!window.Strings) return;
+
+        const debug = window.Strings.debug;
+        document.getElementById('debug-panel-title').textContent = debug.panel_title;
+        document.getElementById('debug-set-level').textContent = debug.set_level;
+        document.getElementById('debug-apply').textContent = debug.apply;
+        document.getElementById('debug-reset').textContent = debug.reset_game;
+        document.getElementById('debug-hide').textContent = debug.hide_panel;
+      }
+
       // 开发环境自动显示调试面板
       if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
         document.getElementById('debug-panel').style.display = 'block';
       }
+
+      // 延迟更新调试面板文本，等待 Strings 类初始化
+      setTimeout(updateDebugPanelText, 1000);
 
       // 快捷键支持
       document.addEventListener('keydown', (e) => {
@@ -68,7 +84,8 @@
         // Ctrl+Shift+L 快速设置关卡
         if (e.ctrlKey && e.shiftKey && e.key === 'L') {
           e.preventDefault();
-          const level = prompt('输入关卡数 (1-100):');
+          const promptText = window.Strings ? window.Strings.debug.enter_level : '输入关卡数 (1-100):';
+          const level = prompt(promptText);
           if (level && !isNaN(level)) {
             document.getElementById('debug-level').value = parseInt(level);
             applyDebugLevel();

@@ -1,6 +1,5 @@
 {
   "ui": {
-    "start": "Start Investigation",
     "back": "Return to Agency",
     "true": "Truth",
     "false": "False",
@@ -35,7 +34,10 @@
     "combo_super": "Combo! 🔥",
     "next_case": "Next Case",
     "retry_case": "Retry This Case",
-    "honor_title": "Honor Wall"
+    "honor_title": "Honor Wall",
+    "start_game": "Start Investigation",
+    "language_english": "English",
+    "language_chinese": "中文"
   },
   "manual": {
     "title": "🕵️ Detective Manual 🕵️",
@@ -78,5 +80,14 @@
     "user_id_empty": "User ID cannot be empty",
     "user_id_invalid": "User ID can only contain letters, numbers and underscores",
     "user_id_exists": "User ID already exists"
+  },
+  "debug": {
+    "panel_title": "🎮 Game Debug Panel",
+    "set_level": "Set Level:",
+    "apply": "Apply",
+    "reset_game": "Reset Game",
+    "hide_panel": "Hide Panel",
+    "confirm_reset": "Are you sure you want to reset the game?",
+    "enter_level": "Enter level number (1-100):"
   }
 }

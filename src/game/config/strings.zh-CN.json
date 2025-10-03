@@ -1,6 +1,5 @@
 {
   "ui": {
-    "start": "开始破案",
     "back": "返回事务所",
     "true": "真相",
     "false": "伪证",
@@ -35,7 +34,10 @@
     "combo_super": "连击！🔥",
     "next_case": "下个案件",
     "retry_case": "重新分析此案件",
-    "honor_title": "荣誉墙"
+    "honor_title": "荣誉墙",
+    "start_game": "开始破案",
+    "language_english": "English",
+    "language_chinese": "中文"
   },
   "manual": {
     "title": "🕵️ 侦探手册 🕵️",
@@ -78,5 +80,14 @@
     "user_id_empty": "用户ID不能为空",
     "user_id_invalid": "用户ID只能包含字母、数字和下划线",
     "user_id_exists": "用户ID已存在"
+  },
+  "debug": {
+    "panel_title": "🎮 游戏调试面板",
+    "set_level": "设置关卡:",
+    "apply": "应用",
+    "reset_game": "重置游戏",
+    "hide_panel": "隐藏面板",
+    "confirm_reset": "确定要重置游戏吗？",
+    "enter_level": "输入关卡数 (1-100):"
   }
 }

@@ -4,6 +4,7 @@ import { resultPrimaryActionLabel } from '@/game/utils/gameFlow'
 import { AudioManager } from '@/game/managers/AudioManager'
 import { ToolManager } from '@/game/managers/ToolManager'
 import { SaveManager } from '@/game/managers/SaveManager'
+import { Strings } from '@/game/managers/Strings'
 
 export default class ResultScene extends Phaser.Scene {
   constructor() {
@@ -21,7 +22,7 @@ export default class ResultScene extends Phaser.Scene {
       AudioManager.playSfx('sfx_lose_level') // 闯关失败播放失败音效
     }
 
-    const title = this.add.text(width / 2, height / 2 - 140, sum?.pass ? '案件告破！' : '让教授逃跑了！', {
+    const title = this.add.text(width / 2, height / 2 - 140, sum?.pass ? Strings.t('results.case_cleared') : Strings.t('results.professor_escaped'), {
       fontFamily: 'sans-serif', fontSize: '36px', color: '#ffffff'
     }).setOrigin(0.5)
 
@@ -84,11 +85,11 @@ export default class ResultScene extends Phaser.Scene {
     // 计算按钮位置，如果有连击加成提示则向下移动
     const buttonStartY = detail.y + (sum?.pass && (sum?.comboMax ?? 0) >= 3 && SaveManager.calculateComboEXPBonus(sum?.comboMax ?? 0, Math.round((sum?.accuracy ?? 0) * 100)) > 0 ? 160 : 120)
 
-    const back = this.add.text(width / 2, buttonStartY, '返回事务所', {
+    const back = this.add.text(width / 2, buttonStartY, Strings.t('ui.back'), {
       fontFamily: 'sans-serif', fontSize: '24px', color: '#0b1021', backgroundColor: '#a9ffea', padding: { x: 16, y: 8 }
     }).setOrigin(0.5).setInteractive({ useHandCursor: true })
 
-    const primaryLabel = resultPrimaryActionLabel(!!sum?.pass)
+    const primaryLabel = resultPrimaryActionLabel(!!sum?.pass, Strings.t.bind(Strings))
     const primary = this.add.text(width / 2, back.y + 60, primaryLabel, {
       fontFamily: 'sans-serif', fontSize: '22px', color: '#0b1021', backgroundColor: '#2de1c2', padding: { x: 16, y: 8 }
     }).setOrigin(0.5).setInteractive({ useHandCursor: true })

@@ -66,6 +66,9 @@ export default class PreloadScene extends Phaser.Scene {
     // 初始化音频管理器（即使资源未就绪也不会报错）
     AudioManager.init(this)
 
+    // 将 Strings 类暴露到全局，供 HTML 调试面板使用
+    ;(window as any).Strings = Strings
+
     // 统一音频事件映射（不同事件使用不同音效键）
     on('ui:feedback', ({ type }) => {
       if (type === 'correct') AudioManager.playSfx('sfx_stamp') // 答题正确使用印章音效

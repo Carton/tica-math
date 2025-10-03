@@ -99,7 +99,7 @@ export default class MainMenuScene extends Phaser.Scene {
         rect.on('pointerup', () => {
         onPointerUp()
         // 为不同的热点设置不同的音效
-        if (labelText === '开始破案') {
+        if (labelText === Strings.t('ui.start_game')) {
           AudioManager.playSfx('sfx_stamp')
         } else {
           AudioManager.playSfx('sfx_click')
@@ -109,7 +109,7 @@ export default class MainMenuScene extends Phaser.Scene {
         return rect
       }
 
-      createHotspot(0.41, 0.68, 0.35, 0.12, Strings.t('ui.start'), () => {
+      createHotspot(0.41, 0.68, 0.35, 0.12, Strings.t('ui.start_game'), () => {
         const level = user.currentLevel || 1
         ToolManager.resetToDefault()
         this.scene.launch('UIScene', { level })
@@ -125,7 +125,7 @@ export default class MainMenuScene extends Phaser.Scene {
       // 语言切换按钮
       const createLanguageButton = () => {
         const currentLang = Strings.getLanguage()
-        const nextLang = currentLang === 'zh-CN' ? 'English' : '中文'
+        const nextLang = currentLang === 'zh-CN' ? Strings.t('ui.language_english') : Strings.t('ui.language_chinese')
         const langRect = this.add.rectangle(width - 80, 40, 120, 40, 0xffffff, 0.1)
           .setOrigin(0.5)
           .setInteractive({ useHandCursor: true })
@@ -188,7 +188,7 @@ export default class MainMenuScene extends Phaser.Scene {
       const spacing = 60
       const buttonWidth = 110  // 统一按钮宽度
 
-      const startBtn = this.add.text(width / 2, startY, Strings.t('ui.start'), buttonStyle)
+      const startBtn = this.add.text(width / 2, startY, Strings.t('ui.start_game'), buttonStyle)
         .setOrigin(0.5).setInteractive({ useHandCursor: true })
 
       const manualBtn = this.add.text(width / 2, startY + spacing, Strings.t('ui.detective_manual'), buttonStyle)
@@ -202,7 +202,7 @@ export default class MainMenuScene extends Phaser.Scene {
 
       // 语言切换按钮
       const currentLang = Strings.getLanguage()
-      const nextLang = currentLang === 'zh-CN' ? 'English' : '中文'
+      const nextLang = currentLang === 'zh-CN' ? Strings.t('ui.language_english') : Strings.t('ui.language_chinese')
       const langBtn = this.add.text(width / 2, startY + spacing * 4, nextLang, {
         fontFamily: 'sans-serif',
         fontSize: '16px',
