@@ -21,8 +21,7 @@ export interface DigitDifficultyLevel {
   skills: Record<SkillTag, number>
   expressions: ExpressionConfig
   allowNegative: boolean
-  allowFractions: boolean
-  allowDecimals: boolean
+  allowFractions: boolean // TODO: 当前版本仍按整数题目处理，保留接口以便未来支持分数
   timePerQuestionMs: number
   minTimeMs: number
   questionCount: number

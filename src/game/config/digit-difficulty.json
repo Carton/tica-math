@@ -6,7 +6,7 @@
       "digitRange": { "min": 2, "max": 3 },
       "skills": { "lastDigit": 70, "estimate": 30, "parity": 0, "castingOutNines": 0, "carryBorrow": 0, "specialDigits": 0 },
       "expressions": { "twoTerms": { "simple": {"plus": 60, "minus": 40, "mul": 0, "div": 0 } }, "threeTerms": { "noParentheses": {}, "withParentheses": {}}},
-      "allowNegative": false, "allowFractions": false, "allowDecimals": false,
+      "allowNegative": false, "allowFractions": false,
       "timePerQuestionMs": 15000, "minTimeMs": 8000, "questionCount": 10
     },
     {
@@ -14,7 +14,7 @@
       "digitRange": { "min": 3, "max": 4 },
       "skills": { "lastDigit": 60, "estimate": 30, "parity": 10, "castingOutNines": 0, "carryBorrow": 0, "specialDigits": 0 },
       "expressions": { "twoTerms": { "simple": {"plus": 50, "minus": 50, "mul": 0, "div": 0 } }, "threeTerms": { "noParentheses": {}, "withParentheses": {}}},
-      "allowNegative": false, "allowFractions": false, "allowDecimals": false,
+      "allowNegative": false, "allowFractions": false,
       "timePerQuestionMs": 15000, "minTimeMs": 8000, "questionCount": 10
     },
     {
@@ -22,7 +22,7 @@
       "digitRange": { "min": 3, "max": 5 },
       "skills": { "lastDigit": 40, "estimate": 40, "parity": 5, "castingOutNines": 0, "carryBorrow": 15, "specialDigits": 0 },
       "expressions": { "twoTerms": { "simple": {"plus": 40, "minus": 40, "mul": 20, "div": 0 } }, "threeTerms": { "noParentheses": {}, "withParentheses": {}}},
-      "allowNegative": false, "allowFractions": false, "allowDecimals": false,
+      "allowNegative": false, "allowFractions": false,
       "timePerQuestionMs": 15000, "minTimeMs": 8000, "questionCount": 10
     },
     {
@@ -32,7 +32,7 @@
       "expressions": {
           "twoTerms": { "simple": {"plus": 40, "minus": 40, "mul": 20, "div": 0 } },
           "threeTerms": { "noParentheses": {}, "withParentheses": {}}},
-      "allowNegative": false, "allowFractions": false, "allowDecimals": false,
+      "allowNegative": false, "allowFractions": false,
       "timePerQuestionMs": 14000, "minTimeMs": 7500, "questionCount": 10
     },
     {
@@ -43,7 +43,7 @@
         "twoTerms": { "simple": { "plus": 20, "minus": 20, "mul": 30, "div": 10 } },
         "threeTerms": { "noParentheses": { "plusMinus": 20, "withMul": 0, "withDiv": 0 }, "withParentheses": {} }
       },
-      "allowNegative": false, "allowFractions": false, "allowDecimals": false,
+      "allowNegative": false, "allowFractions": false,
       "timePerQuestionMs": 14000, "minTimeMs": 7000, "questionCount": 10
     },
     {
@@ -54,7 +54,7 @@
         "twoTerms": { "simple": { "plus": 20, "minus": 20, "mul": 10, "div": 10 } },
         "threeTerms": { "noParentheses": { "plusMinus": 10, "withMul": 10, "withDiv": 0 }, "withParentheses": {"plusMinus": 10, "withMul": 10, "withDiv": 0 } }
       },
-      "allowNegative": false, "allowFractions": false, "allowDecimals": false,
+      "allowNegative": false, "allowFractions": false,
       "timePerQuestionMs": 13000, "minTimeMs": 6500, "questionCount": 10
     },
     {
@@ -65,7 +65,7 @@
         "twoTerms": { "simple": { "plus": 25, "minus": 20, "mul": 20, "div": 15 } },
         "threeTerms": { "noParentheses": { "plusMinus": 15, "withMul": 10, "withDiv": 5 }, "withParentheses": { "plusMinus": 5, "mul": 5, "div": 5 }}
       },
-      "allowNegative": false, "allowFractions": true, "allowDecimals": false,
+      "allowNegative": false, "allowFractions": true,
       "timePerQuestionMs": 13000, "minTimeMs": 6000, "questionCount": 10
     },
     {
@@ -81,7 +81,7 @@
           "withParentheses": { "plusMinus": 5, "mul": 5, "div": 5 }
         }
       },
-      "allowNegative": true, "allowFractions": true, "allowDecimals": false,
+      "allowNegative": true, "allowFractions": true,
       "timePerQuestionMs": 13000, "minTimeMs": 5500, "questionCount": 10
     },
     {
@@ -97,7 +97,7 @@
           "withParentheses": { "plusMinus": 10, "mul": 8, "div": 12 }
         }
       },
-      "allowNegative": true, "allowFractions": true, "allowDecimals": false,
+      "allowNegative": true, "allowFractions": true,
       "timePerQuestionMs": 13000, "minTimeMs": 5000, "questionCount": 10
     }
   ]

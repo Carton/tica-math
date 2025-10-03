@@ -1,835 +1,428 @@
 import { randomInt, sampleByWeights, choose } from '@/game/utils/mathUtils'
-import type { DigitDifficultyLevel, Question, SkillTag, Operator, ExpressionConfig } from '@/game/utils/types'
+import type { DigitDifficultyLevel, ExpressionConfig, Operator, Question, SkillTag } from '@/game/utils/types'
 import { DifficultyManager } from '@/game/managers/DifficultyManager'
 
-function lastDigit(n: number) { return Math.abs(n) % 10 }
-function digitSumMod9(n: number) {
-  let s = 0; const abs = Math.abs(n)
-  let x = abs
-  while (x > 0) { s += x % 10; x = Math.floor(x / 10) }
-  return s % 9
-}
-function digitSum(n: number) {
-  let s = 0; const abs = Math.abs(n)
-  let x = abs
-  while (x > 0) { s += x % 10; x = Math.floor(x / 10) }
-  return s
-}
+type StructureKey =
+  | 'twoTermsSimple_plus'
+  | 'twoTermsSimple_minus'
+  | 'twoTermsSimple_mul'
+  | 'twoTermsSimple_div'
+  | 'threeTermsNoParentheses_plusMinus'
+  | 'threeTermsNoParentheses_withMul'
+  | 'threeTermsNoParentheses_withDiv'
 
-// 计算表达式的数字位数难度
-function calculateDigitDifficulty(expr: string): number {
-  const numbers = expr.match(/\d+/g)
-  if (!numbers) return 0
+type ExpressionStructure =
+  | { kind: 'twoTerms'; operator: Operator }
+  | { kind: 'threeTerms'; variant: 'plusMinus' | 'withMul' | 'withDiv' }
 
-  return numbers.reduce((total, num) => {
-    // 移除前导零来计算位数
-    const cleanNum = num.replace(/^0+/, '') || '0'
-    return total + cleanNum.length
-  }, 0)
+type OperandPlan = { digits: number }
+
+type ExpressionPlan = {
+  structure: ExpressionStructure
+  digitDifficulty: number
+  operands: OperandPlan[]
 }
 
-// 生成指定位数的随机数
-function generateNumberWithDigitCount(digits: number, allowNegative: boolean = false): number {
-  if (digits <= 0) return 1
+const MAX_DIGIT_SPREAD = 2
+const MAX_ATTEMPTS = 10
+const FRACTIONS_ENABLED = false
 
+function distributeDigits(totalDigits: number, operandCount: number): number[] {
+  if (operandCount <= 0) return []
+  if (operandCount === 1) return [totalDigits]
+
+  const base = Math.floor(totalDigits / operandCount)
+  const remainder = totalDigits - base * operandCount
+
+  const result = Array.from({ length: operandCount }, (_, idx) => base + (idx < remainder ? 1 : 0))
+
+  for (let i = 1; i < result.length; i++) {
+    const spread = Math.abs(result[i] - result[i - 1])
+    if (spread > MAX_DIGIT_SPREAD) {
+      const adjust = Math.floor((spread - MAX_DIGIT_SPREAD) / 2)
+      if (result[i] > result[i - 1]) {
+        result[i] -= adjust
+        result[i - 1] += adjust
+      } else {
+        result[i] += adjust
+        result[i - 1] -= adjust
+      }
+    }
+  }
+
+  return result
+}
+
+function generateIntegerWithDigits(digits: number, allowNegative: boolean): number {
   const min = Math.pow(10, digits - 1)
   const max = Math.pow(10, digits) - 1
-  let num = randomInt(min, max)
+  let value = randomInt(min, max)
 
   if (allowNegative && Math.random() < 0.3) {
-    num = -num
+    value = -value
   }
 
-  return num
+  return value
 }
 
-// 分配数字位数到多个操作数 - 改进版本，更均匀的分配
-function distributeDigits(totalDigits: number, count: number): number[] {
-  if (count <= 0) return []
-  if (count === 1) return [totalDigits]
-
-  const digits: number[] = []
-  let remaining = totalDigits
-
-  // 计算平均值和最小/最大位数
-  const averageDigits = Math.floor(totalDigits / count)
-  const minDigits = Math.max(1, averageDigits - 1)
-  const maxDigits = Math.min(totalDigits - (count - 1), averageDigits + 1)
-
-  // 给前count-1个数分配位数，尽量接近平均值
-  for (let i = 0; i < count - 1; i++) {
-    // 根据剩余位数和剩余个数调整范围
-    const remainingCount = count - i
-    const currentMin = Math.max(minDigits, remaining - (remainingCount - 1) * maxDigits)
-    const currentMax = Math.min(maxDigits, remaining - (remainingCount - 1))
-
-    const assignedDigits = randomInt(currentMin, currentMax)
-    digits.push(assignedDigits)
-    remaining -= assignedDigits
+function isStructureAllowedForSkill(structure: StructureKey, skill: SkillTag): boolean {
+  switch (skill) {
+    case 'carryBorrow':
+      return structure.includes('plus') || structure.includes('minus')
+    case 'specialDigits':
+      return structure.includes('withMul') || structure === 'twoTermsSimple_mul'
+    case 'castingOutNines':
+      return structure.includes('plus')
+    default:
+      return true
   }
-
-  // 最后一个数得到剩余位数
-  digits.push(remaining)
-
-  return digits
 }
 
-// 生成两数字表达式
-function generateTwoTermsExpression(
+function flattenExpressionWeights(expressions: ExpressionConfig): Record<StructureKey, number> {
+  const weights: Partial<Record<StructureKey, number>> = {}
+
+  Object.entries(expressions.twoTerms.simple).forEach(([op, weight]) => {
+    weights[`twoTermsSimple_${op}` as StructureKey] = weight
+  })
+
+  Object.entries(expressions.threeTerms.noParentheses).forEach(([variant, weight]) => {
+    weights[`threeTermsNoParentheses_${variant}` as StructureKey] = weight
+  })
+
+  return weights as Record<StructureKey, number>
+}
+
+function buildExpressionPlan(
   digitDifficulty: number,
-  operator: Operator,
-  withParentheses: boolean,
-  allowNegative: boolean,
-  allowFractions: boolean
-): { expr: string; value: number; digitDifficulty: number } {
-  const digits = distributeDigits(digitDifficulty, 2)
+  config: DigitDifficultyLevel,
+  skill: SkillTag
+): ExpressionPlan {
+  const weights = flattenExpressionWeights(config.expressions)
+  const filtered: Record<string, number> = {}
 
-  // 当不允许负数时，强制所有数字为正数
-  const allowNegativeNumbers = allowNegative
+  Object.entries(weights).forEach(([structure, weight]) => {
+    if (weight <= 0) return
+    if (isStructureAllowedForSkill(structure as StructureKey, skill)) {
+      filtered[structure] = weight
+    }
+  })
 
-  let a = generateNumberWithDigitCount(digits[0], allowNegativeNumbers)
-  let b = generateNumberWithDigitCount(digits[1], allowNegativeNumbers)
-
-  // 对于减法，确保被减数 >= 减数（如果不允许负数）
-  if (operator === 'minus' && !allowNegative && a < b) {
-    [a, b] = [b, a] // 交换
+  let selected = sampleByWeights(filtered)
+  if (!selected) {
+    console.warn(`[QuestionGenerator] 未找到符合技能 ${skill} 的表达式结构，使用 threeTermsPlusMinus 兜底`)
+    selected = 'threeTermsNoParentheses_plusMinus'
   }
 
-  const op = operator === 'plus' ? '+' : operator === 'minus' ? '-' : operator === 'mul' ? '*' : '/'
+  if (selected.startsWith('twoTermsSimple')) {
+    const operator = selected.split('_')[1] as Operator
+    return {
+      structure: { kind: 'twoTerms', operator },
+      digitDifficulty,
+      operands: distributeDigits(digitDifficulty, 2).map(d => ({ digits: d }))
+    }
+  }
 
-  let value: number
-  if (op === '/') {
-    // 确保除法结果为整数（如果不允许分数）
+  const variant = selected.split('_')[1] as 'plusMinus' | 'withMul' | 'withDiv'
+  return {
+    structure: { kind: 'threeTerms', variant },
+    digitDifficulty,
+    operands: distributeDigits(digitDifficulty, 3).map(d => ({ digits: d }))
+  }
+}
+
+function ensureSkillCompatibility(expr: string, skill: SkillTag): boolean {
+  switch (skill) {
+    case 'specialDigits': {
+      const numbers = expr.match(/-?\d+/g)
+      if (!numbers) return false
+      return numbers.some(n => {
+        const value = parseInt(n, 10)
+        if (value === 0) return false
+        return value % 3 === 0 || value % 9 === 0
+      })
+    }
+    case 'castingOutNines':
+      return expr.includes('+')
+    default:
+      return true
+  }
+}
+
+function executeBinary(operator: Operator, a: number, b: number): number {
+  switch (operator) {
+    case 'plus':
+      return a + b
+    case 'minus':
+      return a - b
+    case 'mul':
+      return a * b
+    case 'div':
+      return a / b
+  }
+}
+
+function symbolForOperator(operator: Operator): string {
+  switch (operator) {
+    case 'plus':
+      return '+'
+    case 'minus':
+      return '-'
+    case 'mul':
+      return '×'
+    case 'div':
+      return '÷'
+  }
+}
+
+function digitSum(value: number): number {
+  let sum = 0
+  let current = Math.abs(value)
+  while (current > 0) {
+    sum += current % 10
+    current = Math.floor(current / 10)
+  }
+  return sum
+}
+
+function digitSumMod9(value: number): number {
+  const sum = digitSum(value)
+  return sum % 9
+}
+
+function makeStrategicError(expr: string, correctValue: number, skill: SkillTag, allowNegative: boolean): number {
+  switch (skill) {
+    case 'lastDigit': {
+      let delta = 0
+      while (delta === 0) {
+        delta = randomInt(-5, 5)
+      }
+      let result = correctValue + delta
+      if (!allowNegative && result < 0) {
+        result = Math.abs(result)
+      }
+      return result
+    }
+    case 'estimate': {
+      const abs = Math.abs(correctValue)
+      const digits = abs.toString().length
+      let result = correctValue
+      if (digits > 1 && Math.random() < 0.5) {
+          const highestPlace = Math.pow(10, digits - 1)
+        const change = Math.random() < 0.5 ? -1 : 1
+        result += change * highestPlace
+      } else {
+        const str = abs.toString()
+        if (str.length > 1) {
+          const insertPos = randomInt(1, str.length - 1)
+          const insertDigit = randomInt(0, 9)
+          const mutated = str.slice(0, insertPos) + insertDigit + str.slice(insertPos)
+          result = parseInt(mutated, 10) * Math.sign(correctValue)
+        } else {
+          result += Math.random() < 0.5 ? -1 : 1
+        }
+      }
+      const preservedLast = Math.floor(Math.abs(result) / 10) * 10 + Math.abs(correctValue % 10)
+      return correctValue < 0 ? -preservedLast : preservedLast
+    }
+    case 'parity':
+      return correctValue + (correctValue % 2 === 0 ? 1 : -1)
+    case 'carryBorrow': {
+      if (!(expr.includes('+') || expr.includes('-'))) return correctValue
+      const step = Math.random() < 0.5 ? 10 : 20
+      const direction = Math.random() < 0.5 ? -1 : 1
+      let result = correctValue + step * direction
+      if (!allowNegative && result < 0) {
+        result = Math.abs(result)
+      }
+      return result
+    }
+    case 'specialDigits': {
+      const base = correctValue
+      for (let i = 0; i < 20; i++) {
+        const delta = randomInt(1, 9) * 10 * (Math.random() < 0.5 ? -1 : 1)
+        const candidate = base + delta
+        if (Math.abs(candidate % 10) !== Math.abs(base % 10)) continue
+        const sum = digitSum(candidate)
+        const original = digitSum(base)
+        if (sum % 3 !== original % 3 || sum % 9 !== original % 9) {
+          return candidate
+        }
+      }
+      return base + 10
+    }
+    case 'castingOutNines': {
+      const base = correctValue
+      const options = [9, 18, 27, 36, 45]
+      for (const step of options) {
+        let candidate = base + step
+        if (Math.abs(candidate % 10) !== Math.abs(base % 10)) {
+          candidate = Math.floor(candidate / 10) * 10 + Math.abs(base % 10)
+        }
+        if (digitSumMod9(candidate) !== digitSumMod9(base)) {
+          return candidate
+        }
+      }
+      return base + 9
+    }
+    default:
+      return correctValue + 1
+  }
+}
+
+function generateTwoTermsExpression(plan: ExpressionPlan, allowNegative: boolean, allowFractions: boolean): { expr: string; value: number } {
+  const [leftPlan, rightPlan] = plan.operands
+  let left = generateIntegerWithDigits(leftPlan.digits, allowNegative)
+  let right = generateIntegerWithDigits(rightPlan.digits, allowNegative)
+  const operator = plan.structure.kind === 'twoTerms' ? plan.structure.operator : 'plus'
+
+  if (operator === 'minus' && !allowNegative && left < right) {
+    [left, right] = [right, left]
+  }
+
+  if (operator === 'div') {
     if (!allowFractions) {
-      const absA = Math.abs(a)
+      const absLeft = Math.abs(left)
       const divisors: number[] = []
-      for (let d = 1; d <= absA; d++) {
-        if (absA % d === 0) {
-          const candidate = Math.abs(d)
-          if (candidate.toString().length <= digits[1]) {
-            divisors.push(d)
-          }
+      for (let i = 1; i <= absLeft; i++) {
+        if (absLeft % i === 0) {
+          divisors.push(i)
         }
       }
       const divisor = choose(divisors.length ? divisors : [1])
-      value = absA / divisor
-
-      const expr = `${Math.abs(a)} ÷ ${divisor}`
-      return { expr, value, digitDifficulty }
-    } else {
-      value = a / b
+      const value = absLeft / divisor
+      const expr = `${Math.sign(left) < 0 ? '-' : ''}${Math.abs(left)} ÷ ${divisor}`
+      return { expr, value }
     }
-  } else {
-    value = op === '+' ? a + b : op === '-' ? a - b : a * b
   }
 
-  const expr = withParentheses ? `(${a} ${op} ${b})` : `${a} ${op} ${b}`
-
-  return { expr, value, digitDifficulty }
+  const expr = `${left} ${symbolForOperator(operator)} ${right}`
+  return { expr, value: executeBinary(operator, left, right) }
 }
 
-// 生成三数字表达式
-function generateThreeTermsExpression(
-  digitDifficulty: number,
-  expressionType: 'plusMinus' | 'withMul' | 'withDiv',
-  withParentheses: boolean,
+function generateThreeTermsExpression(plan: ExpressionPlan, allowNegative: boolean, allowFractions: boolean): { expr: string; value: number } {
+  const [firstPlan, secondPlan, thirdPlan] = plan.operands
+  const numbers = [firstPlan, secondPlan, thirdPlan].map(op => generateIntegerWithDigits(op.digits, allowNegative))
+  const [a, b, c] = numbers
+
+  switch (plan.structure.kind === 'threeTerms' ? plan.structure.variant : 'plusMinus') {
+    case 'plusMinus': {
+      const op1 = Math.random() < 0.5 ? 'plus' : 'minus'
+      const op2 = Math.random() < 0.5 ? 'plus' : 'minus'
+      const expr = `${a} ${symbolForOperator(op1)} ${b} ${symbolForOperator(op2)} ${c}`
+      const value = executeBinary(op2, executeBinary(op1, a, b), c)
+      return { expr, value }
+    }
+    case 'withMul': {
+      const mulFirst = Math.random() < 0.5
+      if (mulFirst) {
+        const op = Math.random() < 0.5 ? 'plus' : 'minus'
+        const expr = `${a} × ${b} ${symbolForOperator(op)} ${c}`
+        const value = executeBinary(op, a * b, c)
+        return { expr, value }
+      }
+      const op = Math.random() < 0.5 ? 'plus' : 'minus'
+      const expr = `${a} ${symbolForOperator(op)} ${b} × ${c}`
+      const value = executeBinary(op, a, b * c)
+      return { expr, value }
+    }
+    case 'withDiv': {
+      if (!allowFractions) {
+        return generateThreeTermsExpression({ ...plan, structure: { kind: 'threeTerms', variant: 'withMul' } }, allowNegative, allowFractions)
+      }
+      const op = Math.random() < 0.5 ? 'plus' : 'minus'
+      const expr = `${a} ${symbolForOperator(op)} ${b} ÷ ${c}`
+      const value = executeBinary(op, a, b / c)
+      return { expr, value }
+    }
+  }
+}
+
+function generateExpression(plan: ExpressionPlan, allowNegative: boolean, allowFractions: boolean): { expr: string; value: number } {
+  return plan.structure.kind === 'twoTerms'
+    ? generateTwoTermsExpression(plan, allowNegative, allowFractions)
+    : generateThreeTermsExpression(plan, allowNegative, allowFractions)
+}
+
+function tryGenerateExpression(
+  plan: ExpressionPlan,
   allowNegative: boolean,
-  allowFractions: boolean
-): { expr: string; value: number; digitDifficulty: number } {
-  const digits = distributeDigits(digitDifficulty, 3)
-
-  // 当不允许负数时，强制所有数字为正数
-  const allowNegativeNumbers = allowNegative
-  let numbers = digits.map(d => generateNumberWithDigitCount(d, allowNegativeNumbers))
-
-  let expr: string
-  let value: number
-
-  if (expressionType === 'plusMinus') {
-    // 只有加减法
-    let op1 = Math.random() < 0.5 ? '+' : '-'
-    let op2 = Math.random() < 0.5 ? '+' : '-'
-
-    if (withParentheses) {
-      // (a ± b) ± c - 对于减法确保被减数 >= 减数
-      if (op1 === '-' && numbers[0] < numbers[1]) {
-        [numbers[0], numbers[1]] = [numbers[1], numbers[0]] // 交换
-      }
-
-      let tempValue = op1 === '+' ? numbers[0] + numbers[1] : numbers[0] - numbers[1]
-
-      // 对于第二个减法，确保被减数 >= 减数
-      if (op2 === '-' && tempValue < numbers[2]) {
-        op2 = '+' // 改为加法避免负数
-      }
-
-      value = op2 === '+' ? tempValue + numbers[2] : tempValue - numbers[2]
-      expr = `(${numbers[0]} ${op1} ${numbers[1]}) ${op2} ${numbers[2]}`
-    } else {
-      // a ± b ± c (按优先级计算) - 对于减法确保被减数 >= 减数
-      if (op1 === '-' && numbers[0] < numbers[1]) {
-        [numbers[0], numbers[1]] = [numbers[1], numbers[0]] // 交换
-      }
-
-      let tempValue = op1 === '+' ? numbers[0] + numbers[1] : numbers[0] - numbers[1]
-
-      // 对于第二个减法，确保被减数 >= 减数
-      if (op2 === '-' && tempValue < numbers[2]) {
-        op2 = '+' // 改为加法避免负数
-      }
-
-      value = op2 === '+' ? tempValue + numbers[2] : tempValue - numbers[2]
-      expr = `${numbers[0]} ${op1} ${numbers[1]} ${op2} ${numbers[2]}`
+  allowFractions: boolean,
+  skill: SkillTag
+): { expr: string; value: number } | null {
+  for (let attempt = 0; attempt < MAX_ATTEMPTS; attempt++) {
+    const candidate = generateExpression(plan, allowNegative, allowFractions)
+    if (!allowNegative && candidate.value < 0) {
+      continue
     }
-  } else if (expressionType === 'withMul') {
-    // 包含乘法
-    const mulPos = Math.random() < 0.5 ? 0 : 1 // 乘法位置
-
-    if (withParentheses) {
-      if (mulPos === 0) {
-        // (a × b) ± c - 对于减法确保被减数 >= 减数
-        value = numbers[0] * numbers[1]
-        let op2 = Math.random() < 0.5 ? '+' : '-'
-
-        if (op2 === '-' && value < numbers[2]) {
-          op2 = '+' // 改为加法避免负数
-        }
-
-        value = op2 === '+' ? value + numbers[2] : value - numbers[2]
-        expr = `(${numbers[0]} × ${numbers[1]}) ${op2} ${numbers[2]}`
-      } else {
-        // a × (b ± c) - 对于减法确保被减数 >= 减数
-        let op2 = Math.random() < 0.5 ? '+' : '-'
-
-        if (op2 === '-' && numbers[1] < numbers[2]) {
-          [numbers[1], numbers[2]] = [numbers[2], numbers[1]] // 交换
-        }
-
-        const tempValue = op2 === '+' ? numbers[1] + numbers[2] : numbers[1] - numbers[2]
-        value = numbers[0] * tempValue
-        expr = `${numbers[0]} × (${numbers[1]} ${op2} ${numbers[2]})`
-      }
-    } else {
-      if (mulPos === 0) {
-        // a × b ± c (乘法优先) - 对于减法确保被减数 >= 减数
-        value = numbers[0] * numbers[1]
-        let op2 = Math.random() < 0.5 ? '+' : '-'
-
-        if (op2 === '-' && value < numbers[2]) {
-          op2 = '+' // 改为加法避免负数
-        }
-
-        value = op2 === '+' ? value + numbers[2] : value - numbers[2]
-        expr = `${numbers[0]} × ${numbers[1]} ${op2} ${numbers[2]}`
-      } else {
-        // a ± b × c (乘法优先) - 对于减法确保被减数 >= 减数
-        const tempValue = numbers[1] * numbers[2]
-        let op1 = Math.random() < 0.5 ? '+' : '-'
-
-        if (op1 === '-' && numbers[0] < tempValue) {
-          op1 = '+' // 改为加法避免负数
-        }
-
-        value = op1 === '+' ? numbers[0] + tempValue : numbers[0] - tempValue
-        expr = `${numbers[0]} ${op1} ${numbers[1]} × ${numbers[2]}`
-      }
+    if (!ensureSkillCompatibility(candidate.expr, skill)) {
+      continue
     }
-  } else {
-    // 包含除法 - 简化处理，回退到乘法以避免复杂性
-    return generateThreeTermsExpression(digitDifficulty, 'withMul', withParentheses, allowNegative, allowFractions)
+    return candidate
   }
-
-  return { expr, value, digitDifficulty }
+  return null
 }
 
-// 根据技能类型制造策略性错误
-function makeStrategicError(correct: number, skill: SkillTag, allowNegative: boolean): number {
-  let v = correct
-  // 个位数计算：使用绝对值的个位数，符合用户的真实意图
-  const lastDigit = Math.abs(correct % 10)
-  const absCorrect = Math.abs(correct)
+function generateFallback(skill: SkillTag, digitDifficulty: number, allowNegative: boolean): { expr: string; value: number } {
+  const digitParams = DifficultyManager.getDigitParams(digitDifficulty)
+  const allowFractionsFlag = FRACTIONS_ENABLED && digitParams.allowFractions
+
+  const digits = distributeDigits(digitDifficulty, skill === 'specialDigits' ? 2 : 2)
 
   switch (skill) {
-    case 'lastDigit':
-      // 要求：给数值加减-5到+5，允许影响其他位数
-      let lastDigitChange
-      do {
-        lastDigitChange = Math.floor(Math.random() * 11) - 5 // -5 到 5
-      } while (lastDigitChange === 0)
-
-      // 确保变化不会导致符号反转
-      if (correct < 0) {
-        // 负数：只能加负方向的变化，或者小的正向变化
-        if (lastDigitChange > 0 && Math.abs(lastDigitChange) > Math.abs(correct)) {
-          lastDigitChange = -Math.floor(Math.random() * 5) - 1 // -1 到 -5
-        }
+    case 'specialDigits': {
+      const left = generateIntegerWithDigits(digits[0], allowNegative)
+      let right = generateIntegerWithDigits(digits[1], false)
+      if (right % 3 !== 0) {
+        right += (3 - (right % 3))
       }
-
-      v = correct + lastDigitChange
-      break
-
-    case 'estimate':
-      // 估算错误：首位±1（50%）或者中间位数插入/删除（50%）
-      if (Math.random() < 0.5) {
-        // 方案1：在最高位上±1
-        const digits = absCorrect.toString().length
-        if (digits >= 2) {
-          const highestPlace = Math.pow(10, digits - 1)
-          let change
-          do {
-            change = Math.floor(Math.random() * 3) - 1 // -1 到 1，排除0
-          } while (change === 0)
-          v = correct + change * highestPlace
-        } else {
-          // 一位数特殊处理：直接在个位数上变化，然后跳过个位数保持逻辑
-          let change
-          do {
-            change = Math.floor(Math.random() * 3) - 1 // -1 到 1，排除0
-          } while (change === 0)
-          v = correct + change
-          // 一位数不需要保持个位数，直接返回
-          break
-        }
-      } else {
-        // 方案2：在中间插入或删除一个数字
-        const digits = absCorrect.toString().length
-        const correctStr = absCorrect.toString()
-
-        if (Math.random() < 0.5) {
-          // 插入一个数字
-          if (digits >= 2) {
-            const insertPos = Math.floor(Math.random() * (digits - 1)) + 1 // 1到digits-1位（不在首位插入）
-            const insertDigit = Math.floor(Math.random() * 10) // 0-9
-            const newStr = correctStr.slice(0, insertPos) + insertDigit + correctStr.slice(insertPos)
-            v = parseInt(newStr) * (correct < 0 ? -1 : 1)
-          } else {
-            // 一位数，简单在后面加一位
-            const insertDigit = Math.floor(Math.random() * 10)
-            v = parseInt(correctStr + insertDigit) * (correct < 0 ? -1 : 1)
-          }
-        } else {
-          // 删除一个数字
-          if (digits >= 3) {
-            const deletePos = Math.floor(Math.random() * (digits - 1)) + 1 // 1到digits-1位（不删除首位）
-            const newStr = correctStr.slice(0, deletePos) + correctStr.slice(deletePos + 1)
-            v = parseInt(newStr) * (correct < 0 ? -1 : 1)
-          } else if (digits === 2) {
-            // 两位数，删除第二位
-            v = parseInt(correctStr[0]) * (correct < 0 ? -1 : 1)
-          } else {
-            // 一位数，只能变成0
-            v = 0
-          }
-        }
-      }
-      // 保持个位数正确：使用绝对值的个位数，符合用户真实意图
-      const originalLastDigit = Math.abs(correct % 10)
-      if (correct < 0) {
-        // 负数：先对绝对值进行调整，然后恢复负号
-        v = Math.floor(Math.abs(v) / 10) * 10 + originalLastDigit
-        v = -v  // 恢复负号
-      } else {
-        v = Math.floor(v / 10) * 10 + originalLastDigit
-      }
-      break
-
-    case 'parity':
-      // 破坏奇偶性
-      v = correct + (correct % 2 === 0 ? 1 : -1)
-      break
-
-    case 'carryBorrow':
-      // 个位正确但十位错误，通常是±10, ±20等
-      let carryError = (Math.random() < 0.5 ? 10 : 20) * (Math.random() < 0.5 ? 1 : -1)
-
-      // 确保变化不会导致符号反转
-      if (correct < 0) {
-        // 负数：只能加负方向的变化
-        if (carryError > 0) {
-          carryError = -carryError // 反转符号
-        }
-        // 确保不会超过数值的绝对值
-        if (Math.abs(carryError) > Math.abs(correct)) {
-          carryError = -10 // 使用最小的变化
-        }
-      }
-
-      v = correct + carryError
-      break
-
-    case 'specialDigits':
-      // 破坏3或9的整除性，但不修改个位数，支持更大的数值变化
-      const currentSum = digitSum(correct)
-      const targetMod3 = (currentSum % 3 + 1) % 3 // 确保不被3整除
-      const targetMod9 = (currentSum % 9 + 1) % 9 // 确保不被9整除
-      const modTarget = Math.random() < 0.7 ? targetMod3 : targetMod9
-
-      // 支持更大的数值变化：±10, ±100, ±1000等
-      const magnitudes = [10, 100, 1000]
-      let found = false
-
-      for (let attempt = 0; attempt < 50 && !found; attempt++) {
-        // 随机选择一个数量级
-        const magnitude = magnitudes[Math.floor(Math.random() * magnitudes.length)]
-        // 在该数量级内寻找合适的修改
-        for (let i = 1; i <= magnitude / 10 && i <= 100; i++) {
-          const testDiff = i * magnitude * (Math.random() < 0.5 ? 1 : -1)
-          const candidate = correct + testDiff
-          // 检查个位数是否保持（使用绝对值的个位数）
-          const candidateLastDigit = Math.abs(candidate % 10)
-          if (candidateLastDigit === lastDigit) {
-            const candidateSum = digitSum(candidate)
-            if ((modTarget === targetMod3 && candidateSum % 3 !== currentSum % 3) ||
-                (modTarget === targetMod9 && candidateSum % 9 !== currentSum % 9)) {
-              v = candidate
-              found = true
-              break
-            }
-          }
-        }
-      }
-
-      // 如果还没找到，尝试更大的变化（±5000等）
-      if (!found) {
-        for (let attempt = 0; attempt < 20 && !found; attempt++) {
-          const largeChange = (Math.random() < 0.5 ? 1 : -1) * (5000 + Math.floor(Math.random() * 5000))
-          const candidate = correct + largeChange
-          // 检查个位数是否保持（使用绝对值的个位数）
-          const candidateLastDigit = Math.abs(candidate % 10)
-          if (candidateLastDigit === lastDigit) {
-            const candidateSum = digitSum(candidate)
-            if ((modTarget === targetMod3 && candidateSum % 3 !== currentSum % 3) ||
-                (modTarget === targetMod9 && candidateSum % 9 !== currentSum % 9)) {
-              v = candidate
-              found = true
-            }
-          }
-        }
-      }
-
-      // 最后的回退方案：确保仍然满足技能要求
-      if (!found) {
-        // 尝试更直接的策略：直接修改一个位数来破坏整除性
-        for (let place = 10; place <= 10000; place *= 10) {
-          for (let change = 1; change <= 9; change++) {
-            const candidate1 = correct + place * change
-            const candidate2 = correct - place * change
-
-            const candidate1LastDigit = Math.abs(candidate1 % 10)
-            const candidate2LastDigit = Math.abs(candidate2 % 10)
-
-            if (candidate1LastDigit === lastDigit) {
-              const candidate1Sum = digitSum(candidate1)
-              if ((candidate1Sum % 3 !== currentSum % 3) || (candidate1Sum % 9 !== currentSum % 9)) {
-                v = candidate1
-                found = true
-                break
-              }
-            }
-
-            if (candidate2LastDigit === lastDigit) {
-              const candidate2Sum = digitSum(candidate2)
-              if ((candidate2Sum % 3 !== currentSum % 3) || (candidate2Sum % 9 !== currentSum % 9)) {
-                v = candidate2
-                found = true
-                break
-              }
-            }
-          }
-          if (found) break
-        }
-
-        // 如果还是找不到，使用智能回退
-        if (!found) {
-          // 根据当前数字的特性选择合适的修改
-          const isDivisibleBy3 = currentSum % 3 === 0
-          const isDivisibleBy9 = currentSum % 9 === 0
-
-          let targetDiff
-          if (isDivisibleBy3) {
-            targetDiff = 1 // 破坏3的整除性
-          } else if (isDivisibleBy9) {
-            targetDiff = 1 // 破坏9的整除性
-          } else {
-            targetDiff = 3 // 确保不被3整除
-          }
-
-          // 寻找最小的影响个位数的变化
-          let foundValid = false
-          for (let testDiff = 1; testDiff <= 100; testDiff++) {
-            const candidate1 = correct + testDiff
-            const candidate2 = correct - testDiff
-
-            const candidate1LastDigit = Math.abs(candidate1 % 10)
-            const candidate2LastDigit = Math.abs(candidate2 % 10)
-
-            if (candidate1LastDigit === lastDigit && digitSum(candidate1) % 3 !== currentSum % 3) {
-              v = candidate1
-              foundValid = true
-              break
-            }
-
-            if (candidate2LastDigit === lastDigit && digitSum(candidate2) % 3 !== currentSum % 3) {
-              v = candidate2
-              foundValid = true
-              break
-            }
-          }
-
-          if (!foundValid) {
-            // 最后的保险方案：修改百位数
-            v = correct + 100
-          }
-        }
-      }
-      break
-
+      return { expr: `${left} × ${right}`, value: left * right }
+    }
     case 'castingOutNines':
-      // 使数字和模9不一致，但保证个位数不变
-      const currentMod9_value = digitSumMod9(correct)
-      const wrongMod9_value = (currentMod9_value + 1) % 9 || 9
-
-      // 寻找合适的修改方案，确保个位数不变且弃九验算失效
-      let foundCasting = false
-
-      // 尝试不同的修改策略
-      const strategies = [
-        () => {
-          // 策略1：修改十位数，保持个位数不变
-          for (let tensChange = -9; tensChange <= 9; tensChange++) {
-            if (tensChange === 0) continue
-            const candidate = correct + tensChange * 10
-            // 检查个位数是否保持（使用绝对值的个位数）
-            const candidateLastDigit = Math.abs(candidate % 10)
-            if (candidateLastDigit === lastDigit && digitSumMod9(candidate) === wrongMod9_value) {
-              return candidate
-            }
-          }
-          return null
-        },
-        () => {
-          // 策略2：修改百位数
-          for (let hundredsChange = -9; hundredsChange <= 9; hundredsChange++) {
-            if (hundredsChange === 0) continue
-            const candidate = correct + hundredsChange * 100
-            // 检查个位数是否保持（使用绝对值的个位数）
-            const candidateLastDigit = Math.abs(candidate % 10)
-            if (candidateLastDigit === lastDigit && digitSumMod9(candidate) === wrongMod9_value) {
-              return candidate
-            }
-          }
-          return null
-        },
-        () => {
-          // 策略3：修改千位数
-          for (let thousandsChange = -9; thousandsChange <= 9; thousandsChange++) {
-            if (thousandsChange === 0) continue
-            const candidate = correct + thousandsChange * 1000
-            // 检查个位数是否保持（使用绝对值的个位数）
-            const candidateLastDigit = Math.abs(candidate % 10)
-            if (candidateLastDigit === lastDigit && digitSumMod9(candidate) === wrongMod9_value) {
-              return candidate
-            }
-          }
-          return null
-        },
-        () => {
-          // 策略4：组合修改多个位数
-          const baseChanges = [9, 18, 27, 36, 45, 54, 63, 72, 81]
-          for (let change of baseChanges) {
-            const candidate1 = correct + change
-            const candidate2 = correct - change
-            // 检查个位数是否保持（使用绝对值的个位数）
-            const candidate1LastDigit = Math.abs(candidate1 % 10)
-            const candidate2LastDigit = Math.abs(candidate2 % 10)
-            if (candidate1LastDigit === lastDigit && digitSumMod9(candidate1) === wrongMod9_value) {
-              return candidate1
-            }
-            if (candidate2LastDigit === lastDigit && digitSumMod9(candidate2) === wrongMod9_value) {
-              return candidate2
-            }
-          }
-          return null
-        }
-      ]
-
-      // 尝试所有策略
-      for (let strategy of strategies) {
-        const result = strategy()
-        if (result !== null) {
-          v = result
-          foundCasting = true
-          break
-        }
-      }
-
-      // 如果所有策略都失败，使用强制修改
-      if (!foundCasting) {
-        // 直接修改数字，然后调整以保持个位数
-        const baseChange = 9 // 9的倍数可以改变弃九验算结果
-        const attempts = 100
-        for (let i = 1; i <= attempts; i++) {
-          const multiplier = Math.floor(Math.random() * 10) + 1
-          const testChange = baseChange * multiplier * (Math.random() < 0.5 ? 1 : -1)
-          const candidate = correct + testChange
-          if (candidate % 10 === lastDigit && digitSumMod9(candidate) !== currentMod9_value) {
-            v = candidate
-            foundCasting = true
-            break
-          }
-        }
-
-        // 最后的回退
-        if (!foundCasting) {
-          // 强制调整：先改变数字，再调整回个位数
-          let finalCandidate = correct + 90 // 修改十位数
-          if (finalCandidate % 10 !== lastDigit) {
-            finalCandidate = Math.floor(finalCandidate / 10) * 10 + lastDigit
-          }
-          v = finalCandidate
-        }
-      }
-      break
-
-    
+      return { expr: `${digits[0]} + ${digits[1]}`, value: digits[0] + digits[1] }
     default:
-      v = correct + 1
-  }
-
-  if (!allowNegative && v < 0) v = Math.abs(v)
-  return v
-}
-
-// 检查题目是否符合特定技能的考察要求
-function isQuestionSuitableForSkill(expr: string, value: number, skill: SkillTag): boolean {
-  switch (skill) {
-    case 'specialDigits':
-      // 必须有乘数含3或9的倍数
-      const numbers = expr.match(/\d+/g)
-      if (!numbers) return false
-      return numbers.some(num => {
-        const n = parseInt(num)
-        return (n % 3 === 0 || n % 9 === 0) && n !== 0
-      })
-
-    case 'castingOutNines':
-      // 适合加法运算的弃九验算
-      return expr.includes('+')
-
-    default:
-      return true
+      return { expr: `${digits[0]} + ${digits[1]}`, value: digits[0] + digits[1] }
   }
 }
 
 export class QuestionGenerator {
   static createQuestion(level: number): Question {
     const digitParams = DifficultyManager.getDigitParams(level)
-    const targetDigitDifficulty = randomInt(digitParams.digitRange.min, digitParams.digitRange.max)
+    const digitDifficulty = randomInt(digitParams.digitRange.min, digitParams.digitRange.max)
 
-    // 获取技能权重并选择目标技能
-    const skillWeights = DifficultyManager.getSkillWeights(targetDigitDifficulty)
-    const targetSkill = this.selectSkillByWeights(skillWeights)
+    const skillWeights = DifficultyManager.getSkillWeights(digitDifficulty)
+    const skill = this.selectSkillByWeights(skillWeights)
 
-    // 尝试生成符合技能要求的题目
-    let attempts = 0
-    let result: { expr: string; value: number; digitDifficulty: number }
+    const allowFractionsFlag = FRACTIONS_ENABLED && digitParams.allowFractions
 
-    do {
-      result = this.generateExpression(targetDigitDifficulty, digitParams)
-      attempts++
-    } while (attempts < 10 && !isQuestionSuitableForSkill(result.expr, result.value, targetSkill))
+    const plan = buildExpressionPlan(digitDifficulty, digitParams, skill)
+    const attempt = tryGenerateExpression(plan, digitParams.allowNegative, allowFractionsFlag, skill)
 
-    // 如果多次尝试都不成功，使用备用策略
-    if (attempts >= 10) {
-      result = this.generateFallbackExpression(targetSkill, targetDigitDifficulty, digitParams)
-    }
+    const result = attempt ?? (() => {
+      console.warn(`[QuestionGenerator] 在 ${MAX_ATTEMPTS} 次尝试后仍未生成技能 ${skill} 的合适题目，使用兜底方案`)
+      return generateFallback(skill, digitDifficulty, digitParams.allowNegative)
+    })()
 
-    // 决定是否制造错误（50%概率）
     const makeFalse = Math.random() < 0.5
-    const shownValue = makeFalse ? makeStrategicError(result.value, targetSkill, digitParams.allowNegative) : result.value
-
-    const questionString = `${result.expr} = ${shownValue}`
+    const shownValue = makeFalse ? makeStrategicError(result.expr, result.value, skill, digitParams.allowNegative) : result.value
 
     return {
-      questionString,
+      questionString: `${result.expr} = ${shownValue}`,
       isTrue: !makeFalse,
-      targetSkills: [targetSkill],
-      digitDifficulty: result.digitDifficulty,
-      metadata: { expr: result.expr, correctValue: result.value, shownValue }
+      targetSkills: [skill],
+      digitDifficulty,
+      metadata: {
+        expr: result.expr,
+        correctValue: result.value,
+        shownValue
+      }
     }
   }
 
   private static selectSkillByWeights(weights: Record<SkillTag, number>): SkillTag {
-    const entries = Object.entries(weights) as [SkillTag, number][]
-    const filtered = entries.filter(([_, weight]) => weight > 0.001)
-
-    if (filtered.length === 0) {
-      return 'lastDigit' // 默认技能
+    const candidates = Object.entries(weights).filter(([_, weight]) => weight > 0.001)
+    if (candidates.length === 0) {
+      return 'lastDigit'
     }
-
-    const selectedKey = sampleByWeights(Object.fromEntries(filtered))
-    return selectedKey as SkillTag
-  }
-
-  private static generateExpression(
-    targetDifficulty: number,
-    params: DigitDifficultyLevel
-  ): { expr: string; value: number; digitDifficulty: number } {
-    const exprWeights = this.flattenExpressionWeights(params.expressions)
-    const exprType = sampleByWeights(exprWeights)
-
-    switch (exprType) {
-      case 'twoTermsSimple':
-        return this.generateTwoTermsSimple(targetDifficulty, params)
-      case 'threeTermsNoParentheses':
-        return this.generateThreeTermsNoParentheses(targetDifficulty, params)
-      case 'threeTermsWithParentheses':
-        return this.generateThreeTermsWithParentheses(targetDifficulty, params)
-      default:
-        return this.generateTwoTermsSimple(targetDifficulty, params)
-    }
-  }
-
-  private static flattenExpressionWeights(expressions: ExpressionConfig): Record<string, number> {
-    const weights: Record<string, number> = {}
-
-    // 两数字简单表达式
-    Object.entries(expressions.twoTerms.simple).forEach(([op, weight]) => {
-      weights[`twoTermsSimple_${op}`] = weight
-    })
-
-    // 两数字带括号表达式已删除 - 两数运算不需要括号
-
-    // 三数字无括号表达式 - 添加空值检查
-    if (expressions.threeTerms && expressions.threeTerms.noParentheses) {
-      Object.entries(expressions.threeTerms.noParentheses).forEach(([type, weight]) => {
-        weights[`threeTermsNoParentheses_${type}`] = weight
-      })
-    }
-
-    // 三数字带括号表达式 - 添加空值检查
-    if (expressions.threeTerms && expressions.threeTerms.withParentheses) {
-      Object.entries(expressions.threeTerms.withParentheses).forEach(([type, weight]) => {
-        weights[`threeTermsWithParentheses_${type}`] = weight
-      })
-    }
-
-    return weights
-  }
-
-  private static generateTwoTermsSimple(
-    targetDifficulty: number,
-    params: DigitDifficultyLevel
-  ): { expr: string; value: number; digitDifficulty: number } {
-    const operators = Object.entries(params.expressions.twoTerms.simple)
-      .filter(([_, weight]) => weight > 0.001) as [Operator, number][]
-    const operator = sampleByWeights(Object.fromEntries(operators)) as Operator
-
-    return generateTwoTermsExpression(
-      targetDifficulty,
-      operator,
-      false,
-      params.allowNegative,
-      params.allowFractions
-    )
-  }
-
-  // generateTwoTermsWithParentheses 函数已删除 - 两数运算不需要括号
-  private static generateThreeTermsNoParentheses(
-    targetDifficulty: number,
-    params: DigitDifficultyLevel
-  ): { expr: string; value: number; digitDifficulty: number } {
-    const types = Object.entries(params.expressions.threeTerms.noParentheses)
-      .filter(([_, weight]) => weight > 0.001)
-    const type = sampleByWeights(Object.fromEntries(types)) as 'plusMinus' | 'withMul' | 'withDiv'
-
-    return generateThreeTermsExpression(
-      targetDifficulty,
-      type,
-      false,
-      params.allowNegative,
-      params.allowFractions
-    )
-  }
-
-  private static generateThreeTermsWithParentheses(
-    targetDifficulty: number,
-    params: DigitDifficultyLevel
-  ): { expr: string; value: number; digitDifficulty: number } {
-    const types = Object.entries(params.expressions.threeTerms.withParentheses)
-      .filter(([_, weight]) => weight > 0.001)
-    const type = sampleByWeights(Object.fromEntries(types)) as 'plusMinus' | 'mul' | 'div'
-
-    if (type === 'plusMinus') {
-      return generateThreeTermsExpression(
-        targetDifficulty,
-        'plusMinus',
-        true,
-        params.allowNegative,
-        params.allowFractions
-      )
-    } else if (type === 'mul') {
-      return generateThreeTermsExpression(
-        targetDifficulty,
-        'withMul',
-        true,
-        params.allowNegative,
-        params.allowFractions
-      )
-    } else {
-      return generateThreeTermsExpression(
-        targetDifficulty,
-        'withDiv',
-        true,
-        params.allowNegative,
-        params.allowFractions
-      )
-    }
-  }
-
-  private static generateFallbackExpression(
-    skill: SkillTag,
-    targetDifficulty: number,
-    params: DigitDifficultyLevel
-  ): { expr: string; value: number; digitDifficulty: number } {
-    // 为特定技能生成备用表达式
-    switch (skill) {
-      case 'specialDigits':
-        // 生成包含3或9倍数的乘法
-        const digits = distributeDigits(targetDifficulty, 2)
-        const a = generateNumberWithDigitCount(digits[0], params.allowNegative)
-        let b = generateNumberWithDigitCount(digits[1], false)
-
-        // 确保b是3或9的倍数
-        if (b % 3 !== 0) {
-          b = b + (3 - (b % 3))
-        }
-
-        return {
-          expr: `${a} × ${b}`,
-          value: a * b,
-          digitDifficulty: targetDifficulty
-        }
-
-      case 'castingOutNines':
-        // 生成加法题目用于弃九验算
-        return generateTwoTermsExpression(
-          targetDifficulty,
-          'plus',
-          false,
-          params.allowNegative,
-          params.allowFractions
-        )
-
-      default:
-        // 默认生成简单的加法
-        return generateTwoTermsExpression(
-          targetDifficulty,
-          'plus',
-          false,
-          params.allowNegative,
-          params.allowFractions
-        )
-    }
+    return sampleByWeights(Object.fromEntries(candidates)) as SkillTag
   }
 }

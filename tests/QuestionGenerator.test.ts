@@ -35,3 +35,23 @@ test('generate question basic fields', () => {
   expect(Array.isArray(q.targetSkills)).toBe(true)
   expect(typeof q.digitDifficulty).toBe('number')
 })
+
+test('level 30 以上会生成三项加减题', () => {
+  const digitConfig = require('@/game/config/digit-difficulty.json')
+  DifficultyManager.init(digitConfig)
+
+  const samples = Array.from({ length: 200 }, () => QuestionGenerator.createQuestion(35))
+  const hasThreeTerms = samples.some(q => q.metadata.expr.split(/\+|\-|×|÷/).length >= 3)
+
+  expect(hasThreeTerms).toBe(true)
+})
+
+test('乘法表达式避免出现 × 1', () => {
+  const digitConfig = require('@/game/config/digit-difficulty.json')
+  DifficultyManager.init(digitConfig)
+
+  const samples = Array.from({ length: 200 }, () => QuestionGenerator.createQuestion(40))
+  const invalid = samples.some(q => /×\s*1(?![0-9])/u.test(q.metadata.expr))
+
+  expect(invalid).toBe(false)
+})
