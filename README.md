@@ -15,11 +15,11 @@ Perfect for children aged 8-10, this game transforms mathematical learning into 
 ## 🎮 Screenshots
 
 ### Main Menu & User Selection
-![Main Menu](screenshot0.png)
+![Main Menu](docs/images/screenshot0.png)
 *Choose your detective profile and jump into the world of mathematical mysteries!*
 
 ### Detective Gameplay
-![Game Scene](screenshot1.png)
+![Game Scene](docs/images/screenshot1.png)
 *Solve math cases using detective tools and verification techniques!*
 
 **Core Educational Objective**: This game is primarily designed to teach children how to quickly verify calculations using different methods, which is the core purpose of the game. Through various mathematical verification techniques (such as digit verification, parity checking, rule of 9s, etc.), it cultivates children's mathematical thinking and calculation confidence.
