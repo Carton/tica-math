@@ -5,6 +5,7 @@ import { VitePWA } from 'vite-plugin-pwa'
 export default defineConfig({
   root: 'src',
   publicDir: 'assets',
+  base: process.env.NODE_ENV === 'production' ? '/math-game/' : '/', // GitHub Pages路径
   build: {
     outDir: '../dist',
     emptyOutDir: true,

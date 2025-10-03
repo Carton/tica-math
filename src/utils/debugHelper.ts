@@ -4,7 +4,7 @@ import { SaveManager } from '@/game/managers/SaveManager'
 export class DebugHelper {
   // 检查是否为开发环境
   private static isDevelopment(): boolean {
-    return import.meta.env.DEV ||
+    return (import.meta as any).env?.DEV ||
            window.location.hostname === 'localhost' ||
            window.location.hostname === '127.0.0.1' ||
            window.location.search.includes('debug=true')
@@ -119,7 +119,7 @@ if (typeof window !== 'undefined') {
   (window as any).DebugHelper = DebugHelper
 
   // 开发环境自动加载调试助手
-  if (import.meta.env.DEV) {
+  if ((import.meta as any).env?.DEV) {
     console.log('🎮 游戏调试助手已加载！')
     console.log('💡 使用方法：')
     console.log('  DebugHelper.setLevel(50) - 设置关卡为50')

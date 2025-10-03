@@ -17,27 +17,26 @@ export interface MultiSave {
 }
 
 function defaultUser(): SaveData {
-  return { bestLevel: 1, currentLevel: 1, badges: [], exp: 0, toolCounts: getDefaultToolCounts() }
-}
-
-// 获取默认道具数，支持debug模式
-function getDefaultToolCounts(): { magnify: number; watch: number; light: number } {
-  // 检查是否为debug模式
-  const isDebugMode = typeof window !== 'undefined' && (
-    (window as any).import_meta_env_DEV || // 兼容 import.meta.env.DEV
-    window.location.hostname === 'localhost' ||
-    window.location.hostname === '127.0.0.1' ||
-    window.location.search.includes('debug=true')
-  )
-
-  if (isDebugMode) {
-    return { magnify: 999, watch: 999, light: 999 } // debug模式下道具无限
-  }
-
-  return { magnify: 3, watch: 3, light: 3 } // 正常模式默认道具数
+  return { bestLevel: 1, currentLevel: 1, badges: [], exp: 0, toolCounts: SaveManager.getDefaultToolCounts() }
 }
 
 export class SaveManager {
+  // 获取默认道具数，支持debug模式
+  static getDefaultToolCounts(): { magnify: number; watch: number; light: number } {
+    // 检查是否为debug模式
+    const isDebugMode = typeof window !== 'undefined' && (
+      (window as any).import_meta_env_DEV || // 兼容 import.meta.env.DEV
+      window.location.hostname === 'localhost' ||
+      window.location.hostname === '127.0.0.1' ||
+      window.location.search.includes('debug=true')
+    )
+
+    if (isDebugMode) {
+      return { magnify: 999, watch: 999, light: 999 } // debug模式下道具无限
+    }
+
+    return { magnify: 3, watch: 3, light: 3 } // 正常模式默认道具数
+  }
   static loadRaw(): MultiSave {
     try {
       const raw = localStorage.getItem(KEY)
@@ -49,7 +48,7 @@ export class SaveManager {
           ...defaultUser(),
           ...legacy,
           currentLevel: legacy.currentLevel ?? legacy.bestLevel ?? 1, // 兼容旧数据
-          toolCounts: legacy.toolCounts ?? getDefaultToolCounts()
+          toolCounts: legacy.toolCounts ?? SaveManager.getDefaultToolCounts()
         } } }
       }
       // 兼容现有用户数据中可能没有currentLevel的情况
@@ -140,7 +139,7 @@ export class SaveManager {
   }
 
   static resetToolCountsToDefault() {
-    this.setToolCounts(getDefaultToolCounts())
+    this.setToolCounts(SaveManager.getDefaultToolCounts())
   }
 
   static consumeTool(type: 'magnify'|'watch'|'light'): boolean {

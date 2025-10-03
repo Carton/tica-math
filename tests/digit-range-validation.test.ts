@@ -49,7 +49,7 @@ describe('数字范围限制验证测试', () => {
       console.log(`生成 ${divisionQuestions.length} 个除法题目`)
 
       // 检查每个除法题目的位数
-      const violations = []
+      const violations: any[] = []
       divisionQuestions.forEach((q, index) => {
         const numbers = q.metadata.expr.match(/\d+/g)
         if (numbers) {
@@ -117,7 +117,7 @@ describe('数字范围限制验证测试', () => {
       const level = 30
       const digitParams = DifficultyManager.getDigitParams(level)
 
-      const violations = []
+      const violations: any[] = []
       const sampleSize = 100
 
       for (let i = 0; i < sampleSize; i++) {

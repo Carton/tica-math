@@ -331,7 +331,13 @@ function generateTwoTermsExpression(plan: ExpressionPlan, allowNegative: boolean
           continue
         }
 
-        const quotient = randomInt(minQuotient, maxQuotient)
+        // 确保商至少为2，避免 A/A 这样的简单除法
+        const adjustedMinQuotient = Math.max(minQuotient, 2)
+        const adjustedMaxQuotient = Math.max(maxQuotient, 2)
+        if (adjustedMinQuotient > adjustedMaxQuotient) {
+          continue
+        }
+        const quotient = randomInt(adjustedMinQuotient, adjustedMaxQuotient)
         dividend = candidateDivisor * quotient
         divisor = candidateDivisor
 
