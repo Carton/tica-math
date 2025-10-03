@@ -1,4 +1,4 @@
-name: Deploy to GitHub Pages
+name: Test, Build and Deploy
 
 on:
   push:
@@ -7,7 +7,7 @@ on:
     branches: [ main, master ]
 
 jobs:
-  build-and-deploy:
+  test:
     runs-on: ubuntu-latest
 
     steps:
@@ -23,16 +23,42 @@ jobs:
     - name: Install dependencies
       run: npm ci
 
+    - name: Run ESLint
+      run: npm run lint
+
     - name: Run tests
-      run: npm test
+      run: npm test -- --coverage
+
+    - name: Upload coverage to Codecov
+      if: github.event_name == 'push'
+      uses: codecov/codecov-action@v3
+      with:
+        file: ./coverage/lcov.info
+
+  build-and-deploy:
+    needs: test
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+
+    - name: Install dependencies
+      run: npm ci
 
     - name: Build
       run: npm run build
 
     - name: Deploy to GitHub Pages
-      if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
-      uses: peaceiris/actions-gh-pages@v3
+      uses: peaceiris/actions-gh-pages@v4
       with:
         github_token: ${{ secrets.GITHUB_TOKEN }}
         publish_dir: ./dist
-        cname: math-game.tica-detective.com  # 可选：自定义域名
+        # cname: math-game.tica-detective.com  # 如果有自定义域名，取消注释这行
