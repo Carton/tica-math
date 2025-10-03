@@ -196,9 +196,14 @@ describe('除法题目验证测试', () => {
 
       const dividendDigits = dividend.toString().length
       const divisorDigits = divisor.toString().length
+      const totalDigits = dividendDigits + divisorDigits
 
-      // Level 30 应该是 4-6 位数
-      return dividendDigits < 4 || dividendDigits > 6 || divisorDigits < 4 || divisorDigits > 6
+      if (divisorDigits < 2 || dividendDigits < 2) {
+        return true
+      }
+
+      const levelParams = DifficultyManager.getDigitParams(30)
+      return totalDigits < levelParams.digitRange.min || totalDigits > levelParams.digitRange.max
     })
 
     console.log(`发现 ${invalidDigitQuestions.length} 个位数不符合要求的题目`)
@@ -208,7 +213,8 @@ describe('除法题目验证测试', () => {
         const parts = q.metadata.expr.split('÷')
         const dividend = Math.abs(parseInt(parts[0].trim()))
         const divisor = Math.abs(parseInt(parts[1].trim()))
-        return `${q.metadata.expr} (被除数:${dividend.toString().length}位, 除数:${divisor.toString().length}位)`
+        const totalDigits = dividend.toString().length + divisor.toString().length
+        return `${q.metadata.expr} (被除数:${dividend.toString().length}位, 除数:${divisor.toString().length}位, 总位数:${totalDigits})`
       }))
     }
 

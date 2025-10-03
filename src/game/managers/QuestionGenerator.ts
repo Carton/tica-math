@@ -321,7 +321,7 @@ function generateTwoTermsExpression(plan: ExpressionPlan, allowNegative: boolean
       let dividend: number | null = null
       let divisor: number | null = null
 
-      for (let attempt = 0; attempt < 25; attempt++) {
+      for (let attempt = 0; attempt < 40; attempt++) {
         let candidateDivisor = randomInt(minDivisor, maxDivisor)
         if (candidateDivisor < 2) candidateDivisor = 2
 
@@ -332,27 +332,50 @@ function generateTwoTermsExpression(plan: ExpressionPlan, allowNegative: boolean
         }
 
         // 确保商至少为2，避免 A/A 这样的简单除法
-        const adjustedMinQuotient = Math.max(minQuotient, 2)
-        const adjustedMaxQuotient = Math.max(maxQuotient, 2)
-        if (adjustedMinQuotient > adjustedMaxQuotient) {
+        if (maxQuotient < 2) {
           continue
         }
-        const quotient = randomInt(adjustedMinQuotient, adjustedMaxQuotient)
+        const adjustedMinQuotient = Math.max(minQuotient, 2)
+        if (adjustedMinQuotient > maxQuotient) {
+          continue
+        }
+        const quotient = randomInt(adjustedMinQuotient, maxQuotient)
         dividend = candidateDivisor * quotient
         divisor = candidateDivisor
 
         if (allowNegative && Math.random() < 0.5) {
           dividend = -dividend
         }
-              break
-            }
+
+        const dividendDigits = Math.abs(dividend).toString().length
+        const divisorDigits = Math.abs(candidateDivisor).toString().length
+        const totalDigits = dividendDigits + divisorDigits
+
+        const targetMin = Math.min(plan.operands[0].digits, plan.operands[1].digits)
+        const targetMax = Math.max(plan.operands[0].digits, plan.operands[1].digits)
+
+        const digitBalanceOk =
+          dividendDigits >= targetMax &&
+          divisorDigits >= Math.max(2, targetMin - 1) &&
+          divisorDigits <= targetMax
+
+        if (!digitBalanceOk || totalDigits < plan.digitDifficulty || totalDigits > plan.digitDifficulty + 1) {
+          continue
+        }
+
+        break
+      }
 
       if (dividend === null || divisor === null) {
-        const fallbackDivisor = Math.max(2, minDivisor)
-        const fallbackQuotient = Math.max(2, Math.floor(maxDividend / fallbackDivisor))
-        dividend = fallbackDivisor * fallbackQuotient
-        divisor = fallbackDivisor
-        if (!allowNegative && dividend < 0) dividend = Math.abs(dividend)
+        const fallbackDivisorDigits = Math.min(targetMax - 1, Math.max(2, targetMin))
+        const fallbackQuotientDigits = Math.max(targetMax + 1 - fallbackDivisorDigits, 2)
+        const divisorLower = Math.pow(10, fallbackDivisorDigits - 1)
+        const divisorUpper = Math.pow(10, fallbackDivisorDigits) - 1
+        divisor = randomInt(divisorLower, divisorUpper)
+        const quotientLower = Math.pow(10, fallbackQuotientDigits - 1)
+        const quotientUpper = Math.pow(10, fallbackQuotientDigits) - 1
+        const quotient = randomInt(quotientLower, quotientUpper)
+        dividend = divisor * quotient
       }
 
       left = dividend
@@ -489,7 +512,19 @@ export class QuestionGenerator {
     })()
 
     const makeFalse = Math.random() < 0.5
-    const shownValue = makeFalse ? makeStrategicError(result.expr, result.value, skill, digitParams.allowNegative) : result.value
+    let shownValue = result.value
+    if (makeFalse) {
+      for (let attempt = 0; attempt < 10; attempt++) {
+        const candidate = makeStrategicError(result.expr, result.value, skill, digitParams.allowNegative)
+        if (digitParams.allowNegative || candidate >= 0) {
+          shownValue = candidate
+          break
+        }
+        if (attempt === 9) {
+          shownValue = Math.abs(candidate)
+        }
+      }
+    }
 
     return {
       questionString: `${result.expr} = ${shownValue}`,
