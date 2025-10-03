@@ -244,7 +244,7 @@ assets/
   - `stamp_true.png` / `stamp_false.png`（可先用 Emoji ✅/❌ 文本渲染代替）
   - `icons_magnify.png`/`icons_watch.png`/`icons_light.png`（先用 🔍/⏱️/⚡）
 - audio/
-  - `bgm_loop.ogg` 低音量循环 BGM（卡通）
+  - `bgm_main.ogg` 低音量循环 BGM（卡通）
   - `sfx_click.mp3`, `sfx_stamp.mp3`, `sfx_wrong.mp3`, `sfx_success.mp3`, `sfx_combo.mp3`
 - fonts/
   - `UI_Sans_Placeholder.ttf`（占位）
