@@ -101,7 +101,7 @@ DebugHelper.addTools(5, 3, 2)
     watch: 6,
     light: 4
   },
-  isDevelopment: true  // 是否为开发环境
+  isDebugMode: true  // 是否为调试模式
 }
 ```
 

@@ -28,13 +28,9 @@ export class DebugHelper {
     return false
   }
 
-  // 检查是否为开发环境（兼容旧代码）
-  private static isDevelopment(): boolean {
-    return this.isDebugMode()
-  }
 
   /**
-   * 快速设置关卡（仅开发环境可用）
+   * 快速设置关卡（仅调试模式下可用）
    * @param level 目标关卡数
    * @param options 额外选项
    */
@@ -43,8 +39,8 @@ export class DebugHelper {
     keepBadges?: boolean
     enableInfiniteTools?: boolean
   } = {}): boolean {
-    if (!this.isDevelopment()) {
-      console.warn('DebugHelper.setLevel() 仅在开发环境中可用')
+    if (!this.isDebugMode()) {
+      console.warn('DebugHelper.setLevel() 仅在调试模式下可用')
       return false
     }
 
@@ -80,11 +76,11 @@ export class DebugHelper {
   // addTools方法已移除 - 调试模式下道具无限
 
   /**
-   * 完全重置游戏进度（仅开发环境可用）
+   * 完全重置游戏进度（仅调试模式下可用）
    */
   static resetGame(): boolean {
-    if (!this.isDevelopment()) {
-      console.warn('DebugHelper.resetGame() 仅在开发环境中可用')
+    if (!this.isDebugMode()) {
+      console.warn('DebugHelper.resetGame() 仅在调试模式下可用')
       return false
     }
 
@@ -118,8 +114,8 @@ export class DebugHelper {
    * 获取当前调试信息
    */
   static getDebugInfo(): any {
-    if (!this.isDevelopment()) {
-      return { error: '仅在开发环境中可用' }
+    if (!this.isDebugMode()) {
+      return { error: '仅在调试模式下可用' }
     }
 
     const data = SaveManager.loadRaw()
@@ -132,16 +128,16 @@ export class DebugHelper {
       exp: userData.exp,
       badges: userData.badges,
       tools: userData.toolCounts,
-      isDevelopment: this.isDevelopment()
+      isDebugMode: this.isDebugMode()
     }
   }
 }
 
-// 在开发环境中将DebugHelper暴露到全局，方便在控制台使用
+// 在调试模式下将DebugHelper暴露到全局，方便在控制台使用
 if (typeof window !== 'undefined') {
   (window as any).DebugHelper = DebugHelper
 
-  // 开发环境自动加载调试助手
+  // 调试模式自动加载调试助手
   if (DebugHelper.isDebugMode()) {
     console.log('🎮 游戏调试助手已加载！')
     console.log('💡 使用方法：')
