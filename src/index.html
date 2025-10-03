@@ -70,13 +70,15 @@
         document.getElementById('debug-hide').textContent = debug.hide_panel;
       }
 
-      // 开发环境自动显示调试面板
-      if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
-        document.getElementById('debug-panel').style.display = 'block';
-      }
+      // 延迟执行初始化任务，等待模块加载完成
+      setTimeout(() => {
+        updatePageText();
 
-      // 延迟更新页面文本，等待 Strings 类初始化
-      setTimeout(updatePageText, 1000);
+        // 调试模式下显示调试面板
+        if (window.DebugHelper && window.DebugHelper.isDebugMode()) {
+          document.getElementById('debug-panel').style.display = 'block';
+        }
+      }, 1000);
 
       // 快捷键支持
       document.addEventListener('keydown', (e) => {

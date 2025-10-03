@@ -11,18 +11,23 @@ export class DebugHelper {
     if (typeof window !== 'undefined') {
       // 检查 URL 参数或其他浏览器特定的调试标志
       const urlParams = new URLSearchParams(window.location.search)
-      return window.location.hostname === 'localhost' ||
-             window.location.hostname === '127.0.0.1' ||
-             urlParams.has('debug') ||
-             // 检查全局调试标志（如果存在）
-             (window as any).__DEBUG_MODE__ === true
+
+      return (window.location.hostname === 'localhost' ||
+               window.location.hostname === '127.0.0.1') &&
+               urlParams.has('debug')
     }
 
-    // 在 Node.js 环境中（测试环境）
-    if (typeof process !== 'undefined') {
-      return process.env.NODE_ENV === 'development' ||
-             process.env.DEBUG === 'true' ||
-             process.env.JEST_WORKER_ID !== undefined // Jest 测试环境
+    // 在测试环境中（Jest 会添加全局变量）
+    if (typeof globalThis !== 'undefined') {
+      // 检查 Jest 环境
+      const isJest = typeof (globalThis as any).jest !== 'undefined' ||
+                     typeof (globalThis as any).describe === 'function'
+
+      console.log('isJest', isJest)
+
+      if (isJest) {
+        return true
+      }
     }
 
     return false
