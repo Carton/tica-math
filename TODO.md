@@ -3,3 +3,4 @@
 - [x] 看看怎么界面翻译成英文
 - [x] 除法不允许出现 A / A 这样的简单除法，而是要找到确实是倍数关系的数，并从测试来保证
 - [x] 解决 npm run build 的报错
+- [ ] Try to store user level on web

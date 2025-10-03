@@ -120,7 +120,7 @@ export default class MainMenuScene extends Phaser.Scene {
 
       createHotspot(0.81, 0.48, 0.17, 0.37, Strings.t('ui.detective_manual'), () => this.scene.start('ManualScene'))
 
-      createHotspot(0.71, 0.01, 0.38, 0.55, Strings.t('ui.honor_wall'), () => this.scene.start('HonorScene'), 0.1)
+      createHotspot(0.71, 0.01, 0.38, 0.55, Strings.t('ui.honor_wall'), () => this.scene.start('HonorScene'), 0.17)
 
       // 语言切换按钮
       const createLanguageButton = () => {
