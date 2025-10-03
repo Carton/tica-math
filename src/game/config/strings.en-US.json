@@ -57,14 +57,38 @@
     "badge_hint": "Get S-rank evaluation to earn badges!\nEach level's S-badge can be collected~"
   },
   "skills": {
-    "estimate": { "name": "Estimation Magic", "hint": "Round to whole numbers, estimate roughly, wrong answers move fast!" },
-    "lastDigit": { "name": "Last Digit Tracking", "hint": "No matter how complex, first check the tail!" },
-    "parity": { "name": "Parity Code", "hint": "Odd×odd=odd, even×even=even, odd×even=odd, any even factor in multiplication makes result even!" },
-    "castingOutNines": { "name": "Casting Out Nines", "hint": "Digits add up, add until one digit remains!" },
-    "carryBorrow": { "name": "Carry/Borrow Trap", "hint": "Watch ten's place changes, don't lose carries and borrows." },
-    "specialDigits": { "name": "Special Digit Fingerprint", "hint": "5 and 10, check the tail; 3 and 9, check the belly (digit sum)!" },
-    "inverseOp": { "name": "Inverse Operation Magic", "hint": "Plus becomes minus, times becomes divide, reverse tracking wins!" },
-    "times11": { "name": "Making Friends with 11", "hint": "Pull both ends, add the middle!" }
+    "estimate": {
+      "name": "Estimation Power",
+      "hint": "Round it up or round it down, chase the silly answers out of town!"
+    },
+    "lastDigit": {
+      "name": "Last Digit Tracking",
+      "hint": "Don't mind the front, it's just a test, the final digit is the best!"
+    },
+    "parity": {
+      "name": "The Odd/Even Code",
+      "hint": "Odd times odd is an odd little prize. If an even's in the mix, an even answer will rise!"
+    },
+    "castingOutNines": {
+      "name": "Casting Out Nines",
+      "hint": "Add the digits in the sum, keep on adding 'til there's one!"
+    },
+    "carryBorrow": {
+      "name": "The Carry/Borrow Trap",
+      "hint": "When adding more, carry next door! When taking away, borrow and play!"
+    },
+    "specialDigits": {
+      "name": "Special Digit Fingerprint",
+      "hint": "To check for threes and nines, here's a secret sign: Add up the digits, it works every time!"
+    },
+    "inverseOp": {
+      "name": "Inverse Operation Magic",
+      "hint": "To check your math and make it true, do the opposite, it's the clue!"
+    },
+    "times11": {
+      "name": "Friend of 11",
+      "hint": "Pull the ends apart, put their sum in the heart!"
+    }
   },
   "tools": {
     "magnify": "Truth Magnifying Glass",

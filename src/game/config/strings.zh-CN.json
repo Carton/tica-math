@@ -61,8 +61,8 @@
     "lastDigit": { "name": "尾数追踪术", "hint": "别管前面多复杂，先看尾巴抓一抓！" },
     "parity": { "name": "奇偶密码", "hint": "奇奇变偶，偶偶还偶，奇偶得奇，乘法有偶便是偶！" },
     "castingOutNines": { "name": "弃九验算法", "hint": "数字加加加，加到一位查一查！" },
-    "carryBorrow": { "name": "进位/借位陷阱", "hint": "留心十位变化，进位借位别走丢。" },
-    "specialDigits": { "name": "特殊数字指纹", "hint": "5和10，看队尾；3和9，看肚里（各位相加）！" },
+    "carryBorrow": { "name": "进位/借位陷阱", "hint": "加法进位别忘记，减法借位要仔细！" },
+    "specialDigits": { "name": "特殊数字指纹", "hint": "乘以3或9倍数，验算就用位相加！" },
     "inverseOp": { "name": "逆运算大法", "hint": "加变减，乘变除，反向追踪不会输！" },
     "times11": { "name": "和11交朋友", "hint": "两头一拉，中间一加！" }
   },
