@@ -79,8 +79,6 @@ export default class UIScene extends Phaser.Scene {
       fontFamily: 'sans-serif',
       fontSize: `${pauseCfg.fontSize}px`,
       color: pauseCfg.textColor,
-      backgroundColor: pauseCfg.bgColor,
-      padding: { x: pauseCfg.paddingX, y: pauseCfg.paddingY },
     }).setOrigin(1, 0).setInteractive({ useHandCursor: true })
 
     this.pauseButton.on('pointerup', this.handleEscKey)
@@ -146,13 +144,13 @@ export default class UIScene extends Phaser.Scene {
     } else {
       const tTrue = createTextButton(this, width / 2 - 140, height - 90, {
         text: Strings.t('user.truth_button'),
-        style: { backgroundColor: '#2de1c2' },
         configKey: 'primaryButton',
+        backgroundColor: '#2de1c2',
       })
       const tFalse = createTextButton(this, width / 2 + 140, height - 90, {
         text: Strings.t('user.false_button'),
-        style: { backgroundColor: '#ff6b6b' },
         configKey: 'primaryButton',
+        backgroundColor: '#ff6b6b',
       })
       btnTrue = tTrue
       btnFalse = tFalse
@@ -239,28 +237,26 @@ export default class UIScene extends Phaser.Scene {
     // 音效开关按钮
     const btnSfx = createTextButton(this, -90, -30, {
       text: Strings.t('user.sfx_on'),
-      style: { backgroundColor: '#a9ffea', fontSize: '20px' },
       configKey: 'secondaryButton',
+      fontSize: 20,
     })
 
     // BGM开关按钮
     const btnBgm = createTextButton(this, 90, -30, {
       text: Strings.t('user.bgm_on'),
-      style: { backgroundColor: '#a9ffea', fontSize: '20px' },
       configKey: 'secondaryButton',
+      fontSize: 20,
     })
 
     // 主按钮 - 继续游戏
     const btnResume = createTextButton(this, 0, 40, {
       text: Strings.t('user.resume_game'),
-      style: { backgroundColor: '#2de1c2' },
       configKey: 'primaryButton',
     })
 
     // 主按钮 - 返回事务所
     const btnBack = createTextButton(this, 0, 110, {
       text: Strings.t('ui.back'),
-      style: { backgroundColor: '#a9ffea' },
       configKey: 'secondaryButton',
     })
 

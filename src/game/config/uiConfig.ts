@@ -4,6 +4,9 @@ export interface ButtonStyleConfig {
   readonly paddingX: number
   readonly paddingY: number
   readonly fontSize: number
+  readonly backgroundColor: string
+  readonly textColor: string
+  readonly verticalOffset?: number
 }
 
 export interface ToolDisplayConfig {
@@ -17,10 +20,7 @@ export interface PauseButtonConfig {
   readonly fontSize: number
   readonly marginRight: number
   readonly marginTop: number
-  readonly bgColor: string
   readonly textColor: string
-  readonly paddingX: number
-  readonly paddingY: number
 }
 
 export interface UiConfig {
@@ -36,22 +36,31 @@ export const uiConfig: UiConfig = {
     minWidth: 140,
     minHeight: 52,
     paddingX: 20,
-    paddingY: 12,
+    paddingY: 10,
     fontSize: 24,
+    backgroundColor: '#2de1c2',
+    textColor: '#0b1021',
+    verticalOffset: -4,
   },
   primaryButton: {
     minWidth: 160,
-    minHeight: 56,
-    paddingX: 24,
-    paddingY: 14,
-    fontSize: 26,
+    minHeight: 52,
+    paddingX: 22,
+    paddingY: 10,
+    fontSize: 24,
+    backgroundColor: '#2de1c2',
+    textColor: '#0b1021',
+    verticalOffset: -4,
   },
   secondaryButton: {
     minWidth: 140,
     minHeight: 52,
     paddingX: 18,
-    paddingY: 12,
+    paddingY: 10,
     fontSize: 22,
+    backgroundColor: '#a9ffea',
+    textColor: '#0b1021',
+    verticalOffset: -4,
   },
   toolDisplay: {
     headerIconSize: 32,
@@ -61,12 +70,9 @@ export const uiConfig: UiConfig = {
   },
   pauseButton: {
     fontSize: 36,
-    marginRight: 28,
-    marginTop: 26,
-    bgColor: '#2de1c2',
-    textColor: '#0b1021',
-    paddingX: 14,
-    paddingY: 8,
+    marginRight: 18,
+    marginTop: 12,
+    textColor: '#ffffff',
   },
 }
 

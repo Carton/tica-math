@@ -39,9 +39,10 @@ export default class UserScene extends Phaser.Scene {
     this.add.text(width / 2, 60, Strings.t('ui.select_user'), { fontFamily: 'sans-serif', fontSize: '32px', color: '#ffffff' }).setOrigin(0.5)
     const createBtnTop = createTextButton(this, width - 140, 40, {
       text: Strings.t('ui.new_user'),
-      style: { backgroundColor: '#ffd166', fontSize: '20px' },
       configKey: 'secondaryButton',
-    }).setOrigin(0.5, 0.5)
+      backgroundColor: '#ffd166',
+    })
+    createBtnTop.setOrigin(0.5, 0.5)
     createBtnTop.on('pointerup', () => this.openCreateDialog())
 
     // 用户列表（分页）
@@ -51,7 +52,6 @@ export default class UserScene extends Phaser.Scene {
     if (this.users.length > 0) {
       const backBtn = createTextButton(this, width / 2, height - 60, {
         text: Strings.t('ui.return'),
-        style: { backgroundColor: '#a9ffea' },
         configKey: 'button',
       })
       backBtn.on('pointerup', () => this.scene.start('MainMenuScene'))
@@ -133,9 +133,9 @@ export default class UserScene extends Phaser.Scene {
     const pagerY = y + 10
     this.pagePrevBtn = createTextButton(this, listLeft + 120, pagerY, {
       text: Strings.t('ui.prev_page'),
-      style: { backgroundColor: '#132235', color: '#a9ffea', fontSize: '18px' },
       configKey: 'secondaryButton',
-      useHandCursor: totalPages > 1,
+      backgroundColor: '#132235',
+      textColor: '#a9ffea',
     }).setOrigin(0.5)
       .on('pointerup', () => {
         if (this.pageIndex > 0) {
@@ -143,14 +143,18 @@ export default class UserScene extends Phaser.Scene {
           this.renderUserList()
         }
       })
+    if (totalPages <= 1) {
+      this.pagePrevBtn.disableInteractive()
+      this.pagePrevBtn.setAlpha(0.5)
+    }
 
     this.pageIndicator = this.add.text(listLeft + rowWidth / 2, pagerY, `${this.pageIndex + 1} / ${totalPages}`, { fontFamily: 'monospace', fontSize: '14px', color: '#a9ffea' }).setOrigin(0.5)
 
     this.pageNextBtn = createTextButton(this, listLeft + rowWidth - 120, pagerY, {
       text: Strings.t('ui.next_page'),
-      style: { backgroundColor: '#132235', color: '#a9ffea', fontSize: '18px' },
       configKey: 'secondaryButton',
-      useHandCursor: totalPages > 1,
+      backgroundColor: '#132235',
+      textColor: '#a9ffea',
     }).setOrigin(0.5)
       .on('pointerup', () => {
         if (this.pageIndex < totalPages - 1) {
@@ -158,6 +162,10 @@ export default class UserScene extends Phaser.Scene {
           this.renderUserList()
         }
       })
+    if (totalPages <= 1) {
+      this.pageNextBtn.disableInteractive()
+      this.pageNextBtn.setAlpha(0.5)
+    }
   }
 
   private openCreateDialog() {
@@ -181,13 +189,13 @@ export default class UserScene extends Phaser.Scene {
 
     const ok = createTextButton(this, cx - 100, cy + 80, {
       text: Strings.t('ui.create'),
-      style: { backgroundColor: '#2de1c2' },
       configKey: 'primaryButton',
     })
     const cancel = createTextButton(this, cx + 100, cy + 80, {
       text: Strings.t('ui.cancel'),
-      style: { backgroundColor: '#666666', color: '#ffffff' },
       configKey: 'secondaryButton',
+      backgroundColor: '#666666',
+      textColor: '#ffffff',
     })
 
     ok.on('pointerup', () => this.createUser())

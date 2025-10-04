@@ -182,25 +182,21 @@ export default class MainMenuScene extends Phaser.Scene {
 
       const startBtn = createTextButton(this, width / 2, startY, {
         text: Strings.t('ui.start_game'),
-        style: { backgroundColor: '#2de1c2' },
         configKey: 'primaryButton',
       })
 
       const manualBtn = createTextButton(this, width / 2, startY + spacing, {
         text: Strings.t('ui.detective_manual'),
-        style: { backgroundColor: '#2de1c2' },
         configKey: 'button',
       })
 
       const honorBtn = createTextButton(this, width / 2, startY + spacing * 2, {
         text: Strings.t('ui.honor_wall'),
-        style: { backgroundColor: '#2de1c2' },
         configKey: 'button',
       })
 
       const manageBtn = createTextButton(this, width / 2, startY + spacing * 3, {
         text: Strings.t('ui.switch_user'),
-        style: { backgroundColor: '#2de1c2' },
         configKey: 'button',
       })
 
@@ -209,7 +205,6 @@ export default class MainMenuScene extends Phaser.Scene {
       const nextLang = currentLang === 'zh-CN' ? Strings.t('ui.language_english') : Strings.t('ui.language_chinese')
       const langBtn = createTextButton(this, width / 2, startY + spacing * 4, {
         text: nextLang,
-        style: { backgroundColor: '#ff9f43', fontSize: '20px' },
         configKey: 'secondaryButton',
       })
 

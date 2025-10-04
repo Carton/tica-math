@@ -63,11 +63,14 @@ describe('uiFactory', () => {
     const button = createTextButton(scene, 0, 0, {
       text: '宽按钮',
       width: 220,
-      style: { backgroundColor: '#ff0000', fontSize: '32px' },
+      backgroundColor: '#ff0000',
+      fontSize: 32,
+      textColor: '#123456',
     })
 
     expect(button.fixedWidth).toBe(220)
     expect(button.style.backgroundColor).toBe('#ff0000')
+    expect(button.style.color).toBe('#123456')
     expect(button.style.fontSize).toBe('32px')
   })
 })
