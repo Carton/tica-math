@@ -75,10 +75,10 @@ export default class GameScene extends Phaser.Scene {
     // 创建便签纸背景（如果资源存在）- 直接添加到scene，设置更高层级
     if (this.textures.exists('paper_note')) {
       try {
-        this.notePaper = this.add.image(640, 360, 'paper_note').setOrigin(0.5)
+        this.notePaper = this.add.image(640, 340, 'paper_note')
         this.notePaper.setDepth(10)  // 便签纸在背景之上
-        // 调整便签纸大小，使用更适合的比例
-        this.notePaper.setDisplaySize(1024, 800)
+        // 保持原始比例，缩放到合适大小
+        this.notePaper.setDisplaySize(840, 470)
       } catch (error) {
         console.warn('Failed to create paper_note:', error)
       }
@@ -238,8 +238,8 @@ export default class GameScene extends Phaser.Scene {
     this.tweens.add({
       targets: stamp,
       alpha: 1,
-      scaleX: 0.25,  // 从1改为0.6，减小最终尺寸
-      scaleY: 0.25,  // 从1改为0.6，减小最终尺寸
+      scaleX: 0.8,
+      scaleY: 0.8,
       angle: 5, // 轻微旋转角度，模拟真实盖章效果
       duration: 300,
       ease: 'Back.out', // 弹性效果
