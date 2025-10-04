@@ -36,7 +36,8 @@
     "start_game": "Start Investigation",
     "language_english": "English",
     "language_chinese": "中文",
-    "select_user": "Select User"
+    "select_user": "Select User",
+    "tap_to_enter_user_id": "Tap to enter User ID (letters, numbers, underscore)"
   },
   "manual": {
     "title": "🕵️ Detective Manual 🕵️",

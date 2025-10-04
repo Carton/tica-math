@@ -36,7 +36,8 @@
     "start_game": "开始破案",
     "language_english": "English",
     "language_chinese": "中文",
-    "select_user": "选择用户"
+    "select_user": "选择用户",
+    "tap_to_enter_user_id": "点击输入用户ID (字母数字下划线)"
   },
   "manual": {
     "title": "🕵️ 侦探手册 🕵️",

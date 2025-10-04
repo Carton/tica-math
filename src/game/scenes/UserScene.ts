@@ -2,12 +2,14 @@ import Phaser from 'phaser'
 import { SaveManager } from '@/game/managers/SaveManager'
 import { Strings } from '@/game/managers/Strings'
 import { createTextButton } from '@/game/utils/uiFactory'
+import { MobileInputHelper } from '../../utils/mobileInputHelper'
 
 export default class UserScene extends Phaser.Scene {
   // 输入相关
   private inputField: Phaser.GameObjects.Text | null = null
   private inputText: string = ''
   private errorMessage: Phaser.GameObjects.Text | null = null
+  private mobileInputHelper: MobileInputHelper
 
   // 列表/分页
   private users: { id: string; data: any }[] = []
@@ -26,6 +28,7 @@ export default class UserScene extends Phaser.Scene {
 
   constructor() {
     super('UserScene')
+    this.mobileInputHelper = MobileInputHelper.getInstance()
   }
 
   create() {
@@ -64,9 +67,36 @@ export default class UserScene extends Phaser.Scene {
 
   private updateInputDisplay() {
     if (this.inputField) {
-      this.inputField.setText(this.inputText || '_')
+      this.inputField.setText(this.inputText || (this.mobileInputHelper.isMobile() ? '' : '_'))
     }
     this.clearError()
+  }
+
+  /**
+   * 显示移动端输入对话框
+   */
+  private async showMobileInputDialog(): Promise<void> {
+    try {
+      const result = await this.mobileInputHelper.showInput({
+        placeholder: Strings.t('ui.enter_user_id'),
+        maxLength: 20,
+        inputType: 'text',
+        autoCorrect: false,
+        autoCapitalize: false,
+        onComplete: (value) => {
+          this.inputText = value
+          this.updateInputDisplay()
+        }
+      })
+
+      // 用户点击了确认
+      this.inputText = result
+      this.updateInputDisplay()
+
+    } catch (error) {
+      // 用户取消了输入，不做任何处理
+      console.log('用户取消了输入')
+    }
   }
 
   private showError(message: string) {
@@ -182,9 +212,19 @@ export default class UserScene extends Phaser.Scene {
     const panel = this.add.rectangle(cx, cy, panelW, panelH, 0x1a2332).setStrokeStyle(2, 0x3a4a5c)
     const title = this.add.text(cx, cy - panelH / 2 + 16, Strings.t('ui.create_user'), { fontFamily: 'sans-serif', fontSize: '18px', color: '#ffffff' }).setOrigin(0.5, 0)
 
+    // 移动端友好的输入区域
     const inputBg = this.add.rectangle(cx, cy - 10, panelW - 80, 44, 0x0f1724).setStrokeStyle(1, 0x3a4a5c)
-    this.inputField = this.add.text(cx, cy - 10, '_', { fontFamily: 'monospace', fontSize: '18px', color: '#ffffff' }).setOrigin(0.5)
-    const hint = this.add.text(cx, cy + 20, Strings.t('ui.enter_user_id'), { fontFamily: 'sans-serif', fontSize: '14px', color: '#666666' }).setOrigin(0.5)
+    this.inputField = this.add.text(cx, cy - 10, '', { fontFamily: 'monospace', fontSize: '18px', color: '#ffffff' }).setOrigin(0.5)
+
+    // 创建可点击的输入区域
+    const inputZone = this.add.zone(cx, cy - 10, panelW - 80, 44).setInteractive({ useHandCursor: true })
+    inputZone.on('pointerdown', () => this.showMobileInputDialog())
+
+    const hint = this.add.text(cx, cy + 20,
+      this.mobileInputHelper.isMobile() ? Strings.t('ui.tap_to_enter_user_id') : Strings.t('ui.enter_user_id'),
+      { fontFamily: 'sans-serif', fontSize: '14px', color: '#666666' }
+    ).setOrigin(0.5)
+
     this.errorMessage = this.add.text(cx, cy + 44, '', { fontFamily: 'sans-serif', fontSize: '14px', color: '#ff4444' }).setOrigin(0.5)
 
     const ok = createTextButton(this, cx - 100, cy + 80, {
@@ -201,25 +241,27 @@ export default class UserScene extends Phaser.Scene {
     ok.on('pointerup', () => this.createUser())
     cancel.on('pointerup', () => this.closeCreateDialog())
 
-    this.modalContainer = this.add.container(0, 0, [overlay, panel, title, inputBg, this.inputField, hint, this.errorMessage, ok, cancel])
+    this.modalContainer = this.add.container(0, 0, [overlay, panel, title, inputBg, this.inputField, inputZone, hint, this.errorMessage, ok, cancel])
 
-    // 键盘处理（仅弹窗期间）
-    this.keyHandler = (event: KeyboardEvent) => {
-      if (event.key === 'Enter') {
-        this.createUser()
-      } else if (event.key === 'Escape') {
-        this.closeCreateDialog()
-      } else if (event.key === 'Backspace') {
-        this.inputText = this.inputText.slice(0, -1)
-        this.updateInputDisplay()
-      } else if (event.key.length === 1 && this.inputText.length < 20) {
-        if (/[a-zA-Z0-9_]/.test(event.key)) {
-          this.inputText += event.key
+    // 桌面端键盘处理（仅非移动设备）
+    if (!this.mobileInputHelper.isMobile()) {
+      this.keyHandler = (event: KeyboardEvent) => {
+        if (event.key === 'Enter') {
+          this.createUser()
+        } else if (event.key === 'Escape') {
+          this.closeCreateDialog()
+        } else if (event.key === 'Backspace') {
+          this.inputText = this.inputText.slice(0, -1)
           this.updateInputDisplay()
+        } else if (event.key.length === 1 && this.inputText.length < 20) {
+          if (/[a-zA-Z0-9_]/.test(event.key)) {
+            this.inputText += event.key
+            this.updateInputDisplay()
+          }
         }
       }
+      this.input.keyboard?.on('keydown', this.keyHandler)
     }
-    this.input.keyboard?.on('keydown', this.keyHandler)
   }
 
   private closeCreateDialog() {
