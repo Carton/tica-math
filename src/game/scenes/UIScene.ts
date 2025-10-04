@@ -73,7 +73,7 @@ export default class UIScene extends Phaser.Scene {
 
     this.pauseButton = this.add.text(pauseButtonX, pauseButtonY, '⏸', {
       fontFamily: 'sans-serif',
-      fontSize: headerAreaCfg.textStyles.countdownFontSize,
+      fontSize: headerAreaCfg.textStyles.pauseButtonFontSize,
       color: headerAreaCfg.textStyles.countdownColor,
     }).setOrigin(1, 0).setInteractive({ useHandCursor: true })
 
@@ -82,7 +82,7 @@ export default class UIScene extends Phaser.Scene {
     this.userId = SaveManager.getCurrentUserId() || ''
     this.clueIndex = 0
     this.clueTotal = 10
-    this.headerLeftText = this.add.text(40, headerY, '', {
+    this.headerLeftText = this.add.text(25, headerY, '', {
       fontFamily: 'sans-serif',
       fontSize: '20px',
       color: '#ffffff',

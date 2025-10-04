@@ -116,7 +116,7 @@ export default class GameScene extends Phaser.Scene {
     // 创建题目文字
     const text = this.add.text(640, 360, this.current.questionString, {
       fontFamily: 'monospace',
-      fontSize: '42px',
+      fontSize: '46px',
       color: '#0b1021',  // 回到原来的深色
       wordWrap: { width: 700 },  // 添加文字换行
       align: 'center'

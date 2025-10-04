@@ -34,6 +34,8 @@ export interface HeaderAreaConfig {
   }
   /** 右上角文本样式配置 */
   readonly textStyles: {
+    /** 暂停按钮字体大小 */
+    readonly pauseButtonFontSize: string
     /** 倒计时文本字体大小 */
     readonly countdownFontSize: string
     /** 倒计时文本颜色 */
@@ -96,12 +98,12 @@ export const uiConfig: UiConfig = {
   headerArea: {
     /** 右上角布局配置 - 基于当前UIScene中的实际值 */
     layout: {
-      /** 右上角元素的Y坐标基准位置 - 对应代码中的 headerY = 40 */
+      /** 右上角元素的Y坐标基准位置 - 对应代码中的 headerY */
       baseY: 40,
-      /** 暂停按钮距屏幕右边缘的距离 - 对应 pauseButtonX = width - 5 */
-      pauseButtonMarginRight: 5,
+      /** 暂停按钮距屏幕右边缘的距离 - 对应 pauseButtonX = width - pauseButtonMarginRight */
+      pauseButtonMarginRight: 10,
       /** 暂停按钮距屏幕顶部的距离 - 对应 pauseButtonY = 16 */
-      pauseButtonMarginTop: 16,
+      pauseButtonMarginTop: 20,
       /** 倒计时文本与暂停按钮的间距 - 对应 countdownX = pauseButtonX - 40 */
       countdownSpacing: 40,
       /** 工具显示区域与倒计时文本的间距 - 对应 toolDisplayX = countdownX - 200 */
@@ -109,6 +111,8 @@ export const uiConfig: UiConfig = {
     },
     /** 右上角文本样式配置 - 基于当前代码中的样式值 */
     textStyles: {
+      /** 暂停按钮字体大小 */
+      pauseButtonFontSize: '35px',
       /** 倒计时文本字体大小 - 对应代码中的 '24px' */
       countdownFontSize: '24px',
       /** 倒计时文本颜色 - 对应代码中的 '#ffd166' */
