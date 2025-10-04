@@ -9,17 +9,8 @@ import { createTextButton } from '@/game/utils/uiFactory'
 
 export default class UIScene extends Phaser.Scene {
   private headerLeftText?: Phaser.GameObjects.Text
-  private headerToolText?: Phaser.GameObjects.Text
-  private headerToolsContainer?: Phaser.GameObjects.Container
-  private rightHeaderContainer?: Phaser.GameObjects.Container
-  private rightHeaderElements: Phaser.GameObjects.GameObject[] = []
-  private headerLineY = 0
-  private toolIconBounds?: Phaser.Geom.Rectangle
-  private headerToolPairs: Array<{
-    container: Phaser.GameObjects.Container
-    icon: Phaser.GameObjects.Image
-    label: Phaser.GameObjects.Text
-  }> = []
+  private countdownText?: Phaser.GameObjects.Text
+  private hintText?: Phaser.GameObjects.Text
   private headerToolIcons: {
     magnify?: Phaser.GameObjects.Image
     watch?: Phaser.GameObjects.Image
@@ -30,9 +21,6 @@ export default class UIScene extends Phaser.Scene {
     watch?: Phaser.GameObjects.Text
     light?: Phaser.GameObjects.Text
   } = {}
-  private countdownText?: Phaser.GameObjects.Text
-  private footerToolText?: Phaser.GameObjects.Text
-  private hintText?: Phaser.GameObjects.Text
   private footerHintText?: Phaser.GameObjects.Text
   private toolUpdateHandler?: () => void
   private pauseButton?: Phaser.GameObjects.Text
@@ -45,20 +33,12 @@ export default class UIScene extends Phaser.Scene {
   private userId = ''
   private clueIndex = 0
   private clueTotal = 0
-
-  // 道具图标相关
   private toolsContainer?: Phaser.GameObjects.Container
   private toolIcons: {
-    magnify?: Phaser.GameObjects.Image | Phaser.GameObjects.Text
-    watch?: Phaser.GameObjects.Image | Phaser.GameObjects.Text
-    light?: Phaser.GameObjects.Image | Phaser.GameObjects.Text
+    magnify?: Phaser.GameObjects.Image
+    watch?: Phaser.GameObjects.Image
+    light?: Phaser.GameObjects.Image
   } = {}
-
-  private progressHandler = ({ index, total }: { index: number; total: number }) => {
-    this.clueIndex = index
-    this.clueTotal = total
-    this.updateHeaderLeftText()
-  }
   private countdownStartHandler = ({ totalMs }: { totalMs: number }) => this.startCountdown(totalMs)
   private countdownExtendHandler = ({ deltaMs }: { deltaMs: number }) => this.extendCountdown(deltaMs)
   private hintHandler = ({ hint }: { hint: string }) => this.showHint(hint)
@@ -85,7 +65,7 @@ export default class UIScene extends Phaser.Scene {
     const pauseButtonX = width - 5
     const pauseButtonY = 16
     const countdownX = pauseButtonX - 40
-    const toolDisplayX = countdownX - 230
+    const toolDisplayX = countdownX - 300
 
     const pauseCfg = getUiConfig('pauseButton')
     this.pauseButton = this.add.text(pauseButtonX, pauseButtonY, '⏸', {
@@ -121,19 +101,29 @@ export default class UIScene extends Phaser.Scene {
       wordWrap: { width: hintAreaWidth },
     }).setOrigin(0.5, 0.5)
 
-    // 道具状态（右上角）
-    this.headerToolText = this.add.text(toolDisplayX, headerY, '', {
-      fontFamily: 'sans-serif',
-      fontSize: '20px',
-      color: '#a9ffea',
-      align: 'left',
-    }).setOrigin(0, 0.5)
+    const headerToolCfg = getUiConfig('toolDisplay')
+    const topIconSize = headerToolCfg.headerIconSize
+    const iconLabelGap = 8
+    const pairSpacing = 75
 
-    this.footerToolText = this.add.text(width - 260, height - 140, '', {
-      fontFamily: 'sans-serif',
-      fontSize: '18px',
-      color: '#a9ffea',
-    }).setOrigin(0, 0.5)
+    const addToolPair = (type: keyof typeof this.headerToolIcons, textureKey: string, index: number) => {
+      const iconX = toolDisplayX + index * pairSpacing
+      const icon = this.add.image(iconX, headerY, textureKey)
+        .setDisplaySize(topIconSize, topIconSize)
+        .setOrigin(0, 0.5)
+      this.headerToolIcons[type] = icon
+
+      const label = this.add.text(iconX + topIconSize + iconLabelGap, headerY, 'x0', {
+        fontFamily: 'sans-serif',
+        fontSize: '20px',
+        color: '#a9ffea',
+      }).setOrigin(0, 0.5)
+      this.headerToolTexts[type] = label
+    }
+
+    addToolPair('magnify', 'icons_magnify', 0)
+    addToolPair('watch', 'icons_watch', 1)
+    addToolPair('light', 'icons_light', 2)
 
     this.footerHintText = this.add.text(40, height - 140, '', {
       fontFamily: 'sans-serif',
@@ -349,75 +339,6 @@ export default class UIScene extends Phaser.Scene {
     this.footerHintText?.setText(hint)
   }
 
-  private createHeaderToolDisplay(x: number, y: number) {
-    const useIcons = this.textures.exists('icons_magnify') && this.textures.exists('icons_watch') && this.textures.exists('icons_light')
-    const toolCfg = getUiConfig('toolDisplay')
-
-    if (useIcons) {
-      // 使用小图标创建道具显示
-      this.headerToolsContainer = this.add.container(x, y)
-      this.headerToolPairs = []
-
-      const smallIconSize = toolCfg.headerIconSize
-      const spacing = toolCfg.headerSpacing
-      const labelPadding = 6
-      let cursorX = 0
-      let maxHeight = 0
-
-      const createPair = (iconKey: string) => {
-        const pairContainer = this.add.container(cursorX, 0)
-        const icon = this.add.image(0, 0, iconKey)
-          .setDisplaySize(smallIconSize, smallIconSize)
-          .setOrigin(0, 0.5)
-
-        const label = this.add.text(icon.displayWidth + labelPadding, 0, 'x0', {
-          fontFamily: 'sans-serif',
-          fontSize: `${toolCfg.headerFontSize}px`,
-          color: '#a9ffea'
-        }).setOrigin(0, 0.5)
-
-        pairContainer.add([icon, label])
-        const pairWidth = icon.displayWidth + labelPadding + label.displayWidth
-        const pairHeight = Math.max(icon.displayHeight, label.displayHeight)
-        pairContainer.setSize(pairWidth, pairHeight)
-
-        cursorX += pairWidth + spacing
-        maxHeight = Math.max(maxHeight, pairHeight)
-
-        this.headerToolsContainer?.add(pairContainer)
-        this.headerToolPairs.push({ container: pairContainer, icon, label })
-      }
-
-      createPair('icons_magnify')
-      createPair('icons_watch')
-      createPair('icons_light')
-
-      cursorX -= spacing
-      this.headerToolsContainer.setSize(cursorX, maxHeight)
-      if (this.rightHeaderContainer) this.rightHeaderContainer.add(this.headerToolsContainer)
-      this.toolIconBounds = new Phaser.Geom.Rectangle(0, 0, cursorX, maxHeight)
-
-      // 降级文本（备用）
-      this.headerToolText = this.add.text(x, y, '', {
-        fontFamily: 'sans-serif',
-        fontSize: '18px',
-        color: '#a9ffea',
-        align: 'left',
-      }).setOrigin(0, 0.5).setVisible(false)
-      if (this.rightHeaderContainer) this.rightHeaderContainer.add(this.headerToolText)
-    } else {
-      // 使用emoji显示
-      this.headerToolText = this.add.text(x, y, '', {
-        fontFamily: 'sans-serif',
-        fontSize: '18px',
-        color: '#a9ffea',
-        align: 'left',
-      }).setOrigin(0, 0.5)
-      if (this.rightHeaderContainer) this.rightHeaderContainer.add(this.headerToolText)
-      this.toolIconBounds = this.headerToolText.getBounds()
-    }
-  }
-
   private createToolIcons() {
     const { width, height } = this.scale
     const useIcons = this.textures.exists('icons_magnify') && this.textures.exists('icons_watch') && this.textures.exists('icons_light')
@@ -489,112 +410,16 @@ export default class UIScene extends Phaser.Scene {
 
   private updateToolDisplay() {
     const counts = ToolManager.getCounts()
-    const useIcons = this.textures.exists('icons_magnify') && this.textures.exists('icons_watch') && this.textures.exists('icons_light')
 
-    if (useIcons && this.headerToolsContainer) {
-      // 使用小图标和文本显示
-      this.headerToolTexts.magnify?.setText(`x${counts.magnify}`)
-      this.headerToolTexts.watch?.setText(`x${counts.watch}`)
-      this.headerToolTexts.light?.setText(`x${counts.light}`)
+    this.headerToolTexts.magnify?.setText(`x${counts.magnify}`)
+    this.headerToolTexts.watch?.setText(`x${counts.watch}`)
+    this.headerToolTexts.light?.setText(`x${counts.light}`)
 
-      // 隐藏降级文本
-      this.headerToolText?.setVisible(false)
-      this.layoutToolPairs()
-      this.refreshRightHeaderElements()
-    } else {
-      // 使用emoji格式
-      const headerText = `🔍x${counts.magnify}  ⏱️x${counts.watch}  💡x${counts.light}`
-      this.headerToolText?.setText(headerText)
-      this.headerToolText?.setVisible(true)
-      this.toolIconBounds = this.headerToolText?.getBounds()
-      this.refreshRightHeaderElements()
-    }
-
-    // 更新右下角图标状态
     this.updateIconState('magnify', counts.magnify)
     this.updateIconState('watch', counts.watch)
     this.updateIconState('light', counts.light)
 
-    // 隐藏底部文本和提示（因为现在统一在顶部显示）
-    this.footerToolText?.setVisible(false)
     this.footerHintText?.setVisible(false)
-  }
-
-  private refreshRightHeaderElements() {
-    this.rightHeaderElements = [this.pauseButton, this.countdownText]
-    if (this.headerToolsContainer && this.headerToolsContainer.visible) {
-      this.rightHeaderElements.push(this.headerToolsContainer)
-    } else if (this.headerToolText && this.headerToolText.visible) {
-      this.rightHeaderElements.push(this.headerToolText)
-    }
-    this.layoutRightHeader(this.scale.width)
-  }
-
-  private layoutRightHeader(sceneWidth: number) {
-    if (!this.rightHeaderContainer) return
-    const pauseCfg = getUiConfig('pauseButton')
-    const spacing = pauseCfg.spacing
-    let offsetX = 0
-
-    this.rightHeaderElements.forEach((element, index) => {
-      if (!element || !element.active) return
-      const { width, height } = this.measureRightElement(element)
-      const posX = -offsetX
-      const posY = -height / 2
-
-      if ('setPosition' in element) {
-        ;(element as Phaser.GameObjects.GameObject & { setPosition: (x: number, y: number) => void }).setPosition(posX, posY)
-      }
-
-      offsetX += width
-      if (index < this.rightHeaderElements.length - 1) {
-        offsetX += spacing
-      }
-    })
-
-    this.rightHeaderContainer.setPosition(sceneWidth - pauseCfg.marginRight, pauseCfg.marginTop + this.headerLineY)
-  }
-
-  private measureRightElement(element: Phaser.GameObjects.GameObject) {
-    if ((element === this.headerToolsContainer || element === this.headerToolText) && this.toolIconBounds) {
-      return { width: this.toolIconBounds.width, height: this.toolIconBounds.height }
-    }
-
-    if ('width' in element && 'height' in element) {
-      const textObj = element as Phaser.GameObjects.Text
-      return { width: textObj.width || textObj.displayWidth, height: textObj.height || textObj.displayHeight }
-    }
-
-    const bounds = element.getBounds()
-    return { width: bounds.width, height: bounds.height }
-  }
-
-  private layoutToolPairs() {
-    if (!this.headerToolsContainer || this.headerToolPairs.length === 0) return
-    const toolCfg = getUiConfig('toolDisplay')
-    const spacing = toolCfg.headerSpacing
-    const labelPadding = 6
-    let cursorX = 0
-    let maxHeight = 0
-
-    this.headerToolPairs.forEach((pair, index) => {
-      const iconWidth = pair.icon.displayWidth
-      const iconHeight = pair.icon.displayHeight
-      pair.label.setX(iconWidth + labelPadding)
-
-      const pairWidth = iconWidth + labelPadding + pair.label.displayWidth
-      const pairHeight = Math.max(iconHeight, pair.label.displayHeight)
-
-      pair.container.setPosition(cursorX, 0)
-      pair.container.setSize(pairWidth, pairHeight)
-
-      cursorX += pairWidth
-      if (index < this.headerToolPairs.length - 1) cursorX += spacing
-      maxHeight = Math.max(maxHeight, pairHeight)
-    })
-
-    this.headerToolsContainer.setSize(cursorX, maxHeight)
-    this.toolIconBounds = new Phaser.Geom.Rectangle(0, 0, cursorX, maxHeight)
   }
 
   private updateIconState(type: ToolType, count: number) {
@@ -610,6 +435,11 @@ export default class UIScene extends Phaser.Scene {
       icon.setAlpha(1)
       icon.setInteractive({ useHandCursor: true })
     }
+  }
+
+  private progressHandler = () => {
+    this.updateHeaderLeftText()
+    this.updateToolDisplay()
   }
 
   private updateHeaderLeftText() {
