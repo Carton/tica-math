@@ -52,7 +52,7 @@ export default class UserScene extends Phaser.Scene {
     if (this.users.length > 0) {
       const backBtn = createTextButton(this, width / 2, height - 60, {
         text: Strings.t('ui.return'),
-        configKey: 'button',
+        configKey: 'secondaryButton',
       })
       backBtn.on('pointerup', () => this.scene.start('MainMenuScene'))
     }

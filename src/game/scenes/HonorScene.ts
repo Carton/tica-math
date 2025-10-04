@@ -42,7 +42,7 @@ export default class HonorScene extends Phaser.Scene {
     // 返回按钮
     const back = createTextButton(this, width / 2, height - 80, {
       text: Strings.t('ui.return'),
-      configKey: 'button',
+      configKey: 'secondaryButton',
     })
     back.on('pointerup', () => this.scene.start('MainMenuScene'))
 

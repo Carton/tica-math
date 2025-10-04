@@ -187,17 +187,17 @@ export default class MainMenuScene extends Phaser.Scene {
 
       const manualBtn = createTextButton(this, width / 2, startY + spacing, {
         text: Strings.t('ui.detective_manual'),
-        configKey: 'button',
+        configKey: 'secondaryButton',
       })
 
       const honorBtn = createTextButton(this, width / 2, startY + spacing * 2, {
         text: Strings.t('ui.honor_wall'),
-        configKey: 'button',
+        configKey: 'secondaryButton',
       })
 
       const manageBtn = createTextButton(this, width / 2, startY + spacing * 3, {
         text: Strings.t('ui.switch_user'),
-        configKey: 'button',
+        configKey: 'secondaryButton',
       })
 
       // 语言切换按钮

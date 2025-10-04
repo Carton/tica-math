@@ -59,13 +59,17 @@ export default class UIScene extends Phaser.Scene {
 
   create() {
     const { width, height } = this.scale
-    const headerY = 40
 
-    // 右上角坐标配置（可根据需要调整）
-    const pauseButtonX = width - 5
-    const pauseButtonY = 16
-    const countdownX = pauseButtonX - 40
-    const toolDisplayX = countdownX - 300
+    // 获取右上角区域配置
+    const headerAreaCfg = getUiConfig('headerArea')
+    const { layout, textStyles, tools } = headerAreaCfg
+
+    // 计算右上角元素位置
+    const headerY = layout.baseY
+    const pauseButtonX = width - layout.pauseButtonMarginRight
+    const pauseButtonY = layout.pauseButtonMarginTop
+    const countdownX = pauseButtonX - layout.countdownSpacing
+    const toolDisplayX = countdownX - layout.toolDisplaySpacing
 
     const pauseCfg = getUiConfig('pauseButton')
     this.pauseButton = this.add.text(pauseButtonX, pauseButtonY, '⏸', {
@@ -88,8 +92,8 @@ export default class UIScene extends Phaser.Scene {
 
     this.countdownText = this.add.text(countdownX, headerY, '00:00', {
       fontFamily: 'sans-serif',
-      fontSize: '24px',
-      color: '#ffd166',
+      fontSize: textStyles.countdownFontSize,
+      color: textStyles.countdownColor,
     }).setOrigin(1, 0.5)
 
     const hintAreaWidth = width * 0.36
@@ -101,22 +105,18 @@ export default class UIScene extends Phaser.Scene {
       wordWrap: { width: hintAreaWidth },
     }).setOrigin(0.5, 0.5)
 
-    const headerToolCfg = getUiConfig('toolDisplay')
-    const topIconSize = headerToolCfg.headerIconSize
-    const iconLabelGap = headerToolCfg.headerIconLabelGap
-    const pairSpacing = 75
-
+    // 使用新的右上角道具配置
     const addToolPair = (type: keyof typeof this.headerToolIcons, textureKey: string, index: number) => {
-      const iconX = toolDisplayX + index * pairSpacing
+      const iconX = toolDisplayX + index * tools.spacing
       const icon = this.add.image(iconX, headerY, textureKey)
-        .setDisplaySize(topIconSize, topIconSize)
+        .setDisplaySize(tools.iconSize, tools.iconSize)
         .setOrigin(0, 0.5)
       this.headerToolIcons[type] = icon
 
-      const label = this.add.text(iconX + topIconSize + iconLabelGap, headerY, 'x0', {
+      const label = this.add.text(iconX + tools.iconSize + tools.iconLabelGap, headerY, 'x0', {
         fontFamily: 'sans-serif',
-        fontSize: '20px',
-        color: '#a9ffea',
+        fontSize: textStyles.toolCountFontSize,
+        color: textStyles.toolCountColor,
       }).setOrigin(0, 0.5)
       this.headerToolTexts[type] = label
     }
@@ -261,7 +261,7 @@ export default class UIScene extends Phaser.Scene {
     // 主按钮 - 返回事务所
     const btnBack = createTextButton(this, 0, 110, {
       text: Strings.t('ui.back'),
-      configKey: 'secondaryButton',
+      configKey: 'primaryButton',
     })
 
     // 更新开关按钮文本

@@ -88,7 +88,7 @@ export default class ResultScene extends Phaser.Scene {
 
     const back = createTextButton(this, width / 2, buttonStartY, {
       text: Strings.t('ui.back'),
-      configKey: 'secondaryButton',
+      configKey: 'primaryButton',
     })
 
     const primaryLabel = resultPrimaryActionLabel(!!sum?.pass, Strings.t.bind(Strings))

@@ -3,7 +3,7 @@ import { getUiConfig } from '@/game/config/uiConfig'
 
 interface ButtonOptions {
   text?: string
-  configKey?: 'button' | 'primaryButton' | 'secondaryButton'
+  configKey?: 'primaryButton' | 'secondaryButton'
   width?: number
   onClick?: () => void
   backgroundColor?: string
@@ -14,7 +14,7 @@ interface ButtonOptions {
 const defaultFontFamily = 'sans-serif'
 
 export const createTextButton = (scene: Phaser.Scene, x: number, y: number, options: ButtonOptions) => {
-  const { text = '', onClick, configKey = 'button', width, backgroundColor, textColor, fontSize } = options
+  const { text = '', onClick, configKey = 'primaryButton', width, backgroundColor, textColor, fontSize } = options
   const cfg = getUiConfig(configKey)
 
   const button = scene.add.text(x, y, text, {
@@ -41,8 +41,9 @@ export const createTextButton = (scene: Phaser.Scene, x: number, y: number, opti
   }
 
   const extraY = Math.max(0, targetHeight - button.height)
-  const paddingTop = cfg.paddingY + extraY / 2
-  const paddingBottom = cfg.paddingY + extraY / 2
+  // 修复文字偏下问题：调整垂直padding的分配
+  const paddingTop = cfg.paddingY + Math.floor(extraY / 2) + (cfg.verticalOffset ?? 0)
+  const paddingBottom = cfg.paddingY + Math.ceil(extraY / 2) - (cfg.verticalOffset ?? 0)
   button.setPadding(cfg.paddingX, paddingTop, cfg.paddingX, paddingBottom)
   button.setFixedSize(targetWidth, targetHeight)
   button.setInteractive({ useHandCursor: true })
@@ -52,7 +53,7 @@ export const createTextButton = (scene: Phaser.Scene, x: number, y: number, opti
   return button
 }
 
-export const applyTextButtonStyle = (textObj: Phaser.GameObjects.Text, configKey: 'button' | 'primaryButton' | 'secondaryButton') => {
+export const applyTextButtonStyle = (textObj: Phaser.GameObjects.Text, configKey: 'primaryButton' | 'secondaryButton') => {
   const cfg = getUiConfig(configKey)
   textObj.setFontFamily(defaultFontFamily)
   textObj.setFontSize(cfg.fontSize)
@@ -60,8 +61,9 @@ export const applyTextButtonStyle = (textObj: Phaser.GameObjects.Text, configKey
   textObj.setBackgroundColor(cfg.backgroundColor)
 
   const extraY = Math.max(0, cfg.minHeight - textObj.height)
-  const paddingTop = cfg.paddingY + extraY / 2
-  const paddingBottom = cfg.paddingY + extraY / 2
+  // 修复文字偏下问题：调整垂直padding的分配
+  const paddingTop = cfg.paddingY + Math.floor(extraY / 2) + (cfg.verticalOffset ?? 0)
+  const paddingBottom = cfg.paddingY + Math.ceil(extraY / 2) - (cfg.verticalOffset ?? 0)
   textObj.setPadding(cfg.paddingX, paddingTop, cfg.paddingX, paddingBottom)
   textObj.setFixedSize(cfg.minWidth, cfg.minHeight)
   return textObj
