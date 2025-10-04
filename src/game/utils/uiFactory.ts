@@ -41,9 +41,14 @@ export const createTextButton = (scene: Phaser.Scene, x: number, y: number, opti
   }
 
   const extraY = Math.max(0, targetHeight - button.height)
-  // 修复文字偏下问题：调整垂直padding的分配
-  const paddingTop = cfg.paddingY + Math.floor(extraY / 2) + (cfg.verticalOffset ?? 0)
-  const paddingBottom = cfg.paddingY + Math.ceil(extraY / 2) - (cfg.verticalOffset ?? 0)
+  // 优化垂直居中算法：更精确的文字居中
+  const basePadding = cfg.paddingY
+  const verticalOffset = cfg.verticalOffset ?? 0
+
+  // 将 extraY 更均匀地分配，并考虑文字渲染的特殊性
+  const paddingTop = basePadding + Math.floor(extraY * 0.4) + verticalOffset
+  const paddingBottom = basePadding + Math.ceil(extraY * 0.6) - verticalOffset
+
   button.setPadding(cfg.paddingX, paddingTop, cfg.paddingX, paddingBottom)
   button.setFixedSize(targetWidth, targetHeight)
   button.setInteractive({ useHandCursor: true })
@@ -61,9 +66,14 @@ export const applyTextButtonStyle = (textObj: Phaser.GameObjects.Text, configKey
   textObj.setBackgroundColor(cfg.backgroundColor)
 
   const extraY = Math.max(0, cfg.minHeight - textObj.height)
-  // 修复文字偏下问题：调整垂直padding的分配
-  const paddingTop = cfg.paddingY + Math.floor(extraY / 2) + (cfg.verticalOffset ?? 0)
-  const paddingBottom = cfg.paddingY + Math.ceil(extraY / 2) - (cfg.verticalOffset ?? 0)
+  // 优化垂直居中算法：更精确的文字居中
+  const basePadding = cfg.paddingY
+  const verticalOffset = cfg.verticalOffset ?? 0
+
+  // 将 extraY 更均匀地分配，并考虑文字渲染的特殊性
+  const paddingTop = basePadding + Math.floor(extraY * 0.4) + verticalOffset
+  const paddingBottom = basePadding + Math.ceil(extraY * 0.6) - verticalOffset
+
   textObj.setPadding(cfg.paddingX, paddingTop, cfg.paddingX, paddingBottom)
   textObj.setFixedSize(cfg.minWidth, cfg.minHeight)
   return textObj

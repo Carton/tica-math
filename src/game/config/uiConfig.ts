@@ -17,14 +17,6 @@ export interface ToolDisplayConfig {
   readonly footerIconSize: number
 }
 
-export interface PauseButtonConfig {
-  readonly fontSize: number
-  readonly marginRight: number
-  readonly marginTop: number
-  readonly textColor: string
-  readonly spacing: number
-}
-
 /** 右上角区域配置接口 */
 export interface HeaderAreaConfig {
   /** 右上角整体布局配置 */
@@ -70,7 +62,6 @@ export interface UiConfig {
   readonly primaryButton: ButtonStyleConfig
   readonly secondaryButton: ButtonStyleConfig
   readonly toolDisplay: ToolDisplayConfig
-  readonly pauseButton: PauseButtonConfig
   readonly headerArea: HeaderAreaConfig
 }
 
@@ -78,22 +69,22 @@ export const uiConfig: UiConfig = {
   primaryButton: {
     minWidth: 160,
     minHeight: 52,
-    paddingX: 22,
-    paddingY: 10,
+    paddingX: 8, // 减少左右padding
+    paddingY: 6,  // 减少上下padding
     fontSize: 24,
     backgroundColor: '#2de1c2',
     textColor: '#0b1021',
-    verticalOffset: 0, // 添加垂直偏移配置来修复文字居中问题
+    verticalOffset: -4, // 向上偏移2像素来修复文字偏下问题
   },
   secondaryButton: {
     minWidth: 140,
     minHeight: 52,
-    paddingX: 18,
-    paddingY: 10,
+    paddingX: 8, // 减少左右padding
+    paddingY: 6,  // 减少上下padding
     fontSize: 22,
     backgroundColor: '#a9ffea',
     textColor: '#0b1021',
-    verticalOffset: 0, // 添加垂直偏移配置来修复文字居中问题
+    verticalOffset: -4, // 向上偏移2像素来修复文字偏下问题
   },
   toolDisplay: {
     headerIconSize: 32,
