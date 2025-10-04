@@ -11,6 +11,10 @@ export default class UIScene extends Phaser.Scene {
   private headerLeftText?: Phaser.GameObjects.Text
   private headerToolText?: Phaser.GameObjects.Text
   private headerToolsContainer?: Phaser.GameObjects.Container
+  private rightHeaderContainer?: Phaser.GameObjects.Container
+  private rightHeaderElements: Phaser.GameObjects.GameObject[] = []
+  private headerLineY = 0
+  private toolIconBounds?: Phaser.Geom.Rectangle
   private headerToolIcons: {
     magnify?: Phaser.GameObjects.Image
     watch?: Phaser.GameObjects.Image
@@ -71,21 +75,18 @@ export default class UIScene extends Phaser.Scene {
   create() {
     const { width, height } = this.scale
     const headerY = 40
+    this.headerLineY = headerY
 
     const pauseCfg = getUiConfig('pauseButton')
-    const pauseButtonX = width - pauseCfg.marginRight
-    const pauseButtonY = pauseCfg.marginTop
-    this.pauseButton = this.add.text(pauseButtonX, pauseButtonY, '⏸', {
+    this.rightHeaderContainer = this.add.container(width - pauseCfg.marginRight, pauseCfg.marginTop + headerY)
+
+    this.pauseButton = this.add.text(0, 0, '⏸', {
       fontFamily: 'sans-serif',
       fontSize: `${pauseCfg.fontSize}px`,
       color: pauseCfg.textColor,
-    }).setOrigin(1, 0).setInteractive({ useHandCursor: true })
-
+    }).setOrigin(1, 0.5).setInteractive({ useHandCursor: true })
     this.pauseButton.on('pointerup', this.handleEscKey)
-
-    const pauseBounds = this.pauseButton.getBounds()
-
-    const countdownX = pauseBounds.left - 40
+    this.rightHeaderContainer.add(this.pauseButton)
 
     this.userId = SaveManager.getCurrentUserId() || ''
     this.clueIndex = 0
@@ -97,11 +98,12 @@ export default class UIScene extends Phaser.Scene {
     }).setOrigin(0, 0.5)
     this.updateHeaderLeftText()
 
-    this.countdownText = this.add.text(countdownX, headerY, '00:00', {
+    this.countdownText = this.add.text(0, 0, '00:00', {
       fontFamily: 'sans-serif',
       fontSize: '24px',
       color: '#ffd166',
     }).setOrigin(1, 0.5)
+    this.rightHeaderContainer.add(this.countdownText)
 
     const hintAreaWidth = width * 0.36
     this.hintText = this.add.text(width / 2, headerY, '', {
@@ -112,8 +114,9 @@ export default class UIScene extends Phaser.Scene {
       wordWrap: { width: hintAreaWidth },
     }).setOrigin(0.5, 0.5)
 
-    const toolDisplayRight = this.countdownText.getBounds().left - 40
-    this.createHeaderToolDisplay(toolDisplayRight, headerY)
+    this.createHeaderToolDisplay(0, 0)
+    this.toolIconBounds = this.headerToolsContainer?.getBounds() ?? this.headerToolText?.getBounds()
+    this.refreshRightHeaderElements()
 
     this.footerToolText = this.add.text(width - 260, height - 140, '', {
       fontFamily: 'sans-serif',
@@ -345,59 +348,65 @@ export default class UIScene extends Phaser.Scene {
 
       const smallIconSize = toolCfg.headerIconSize
       const spacing = toolCfg.headerSpacing
+      let currentX = 0
 
-      // 创建三个道具的图标和文本
-      this.headerToolIcons.magnify = this.add.image(0, 0, 'icons_magnify')
-        .setDisplaySize(smallIconSize, smallIconSize)
-        .setOrigin(0.5, 0.5)
+      const createPair = (iconKey: string) => {
+        const icon = this.add.image(currentX, 0, iconKey)
+          .setDisplaySize(smallIconSize, smallIconSize)
+          .setOrigin(0, 0.5)
+        currentX += smallIconSize + 4
 
-      this.headerToolTexts.magnify = this.add.text(smallIconSize/2, 0, 'x0', {
-        fontFamily: 'sans-serif',
-        fontSize: `${toolCfg.headerFontSize}px`,
-        color: '#a9ffea'
-      }).setOrigin(0, 0.5)
+        const label = this.add.text(currentX, 0, 'x0', {
+          fontFamily: 'sans-serif',
+          fontSize: `${toolCfg.headerFontSize}px`,
+          color: '#a9ffea'
+        }).setOrigin(0, 0.5)
+        currentX = label.x + label.displayWidth + spacing
+        return { icon, label }
+      }
 
-      this.headerToolIcons.watch = this.add.image(spacing, 0, 'icons_watch')
-        .setDisplaySize(smallIconSize, smallIconSize)
-        .setOrigin(0.5, 0.5)
+      const magnifyPair = createPair('icons_magnify')
+      const watchPair = createPair('icons_watch')
+      const lightPair = createPair('icons_light')
 
-      this.headerToolTexts.watch = this.add.text(spacing + smallIconSize/2, 0, 'x0', {
-        fontFamily: 'sans-serif',
-        fontSize: `${toolCfg.headerFontSize}px`,
-        color: '#a9ffea'
-      }).setOrigin(0, 0.5)
+      currentX -= spacing
 
-      this.headerToolIcons.light = this.add.image(spacing * 2, 0, 'icons_light')
-        .setDisplaySize(smallIconSize, smallIconSize)
-        .setOrigin(0.5, 0.5)
-
-      this.headerToolTexts.light = this.add.text(spacing * 2 + smallIconSize/2, 0, 'x0', {
-        fontFamily: 'sans-serif',
-        fontSize: `${toolCfg.headerFontSize}px`,
-        color: '#a9ffea'
-      }).setOrigin(0, 0.5)
+      this.headerToolIcons.magnify = magnifyPair.icon
+      this.headerToolTexts.magnify = magnifyPair.label
+      this.headerToolIcons.watch = watchPair.icon
+      this.headerToolTexts.watch = watchPair.label
+      this.headerToolIcons.light = lightPair.icon
+      this.headerToolTexts.light = lightPair.label
 
       this.headerToolsContainer.add([
-        this.headerToolIcons.magnify, this.headerToolTexts.magnify,
-        this.headerToolIcons.watch, this.headerToolTexts.watch,
-        this.headerToolIcons.light, this.headerToolTexts.light
+        magnifyPair.icon, magnifyPair.label,
+        watchPair.icon, watchPair.label,
+        lightPair.icon, lightPair.label
       ])
+
+      this.headerToolsContainer.setSize(currentX, smallIconSize)
+      this.headerToolsContainer.setPosition(0, 0)
+      if (this.rightHeaderContainer) this.rightHeaderContainer.add(this.headerToolsContainer)
+      this.toolIconBounds = new Phaser.Geom.Rectangle(0, 0, currentX, smallIconSize)
 
       // 降级文本（备用）
       this.headerToolText = this.add.text(x, y, '', {
         fontFamily: 'sans-serif',
         fontSize: '18px',
         color: '#a9ffea',
-        align: 'center',
-      }).setOrigin(0.5, 0.5).setVisible(false)
+        align: 'left',
+      }).setOrigin(0, 0.5).setVisible(false)
+      if (this.rightHeaderContainer) this.rightHeaderContainer.add(this.headerToolText)
     } else {
       // 使用emoji显示
       this.headerToolText = this.add.text(x, y, '', {
         fontFamily: 'sans-serif',
         fontSize: '18px',
         color: '#a9ffea',
-        align: 'center',
-      }).setOrigin(0.5, 0.5)
+        align: 'left',
+      }).setOrigin(0, 0.5)
+      if (this.rightHeaderContainer) this.rightHeaderContainer.add(this.headerToolText)
+      this.toolIconBounds = this.headerToolText.getBounds()
     }
   }
 
@@ -482,11 +491,25 @@ export default class UIScene extends Phaser.Scene {
 
       // 隐藏降级文本
       this.headerToolText?.setVisible(false)
+      const lastLabel = this.headerToolTexts.light
+      if (lastLabel && this.headerToolsContainer) {
+        const width = lastLabel.x + lastLabel.displayWidth
+        const height = Math.max(
+          this.headerToolIcons.light?.displayHeight ?? 0,
+          lastLabel.displayHeight,
+          this.headerToolIcons.magnify?.displayHeight ?? 0
+        )
+        this.headerToolsContainer.setSize(width, height)
+        this.toolIconBounds = new Phaser.Geom.Rectangle(0, 0, width, height)
+      }
+      this.refreshRightHeaderElements()
     } else {
       // 使用emoji格式
       const headerText = `🔍x${counts.magnify}  ⏱️x${counts.watch}  💡x${counts.light}`
       this.headerToolText?.setText(headerText)
       this.headerToolText?.setVisible(true)
+      this.toolIconBounds = this.headerToolText?.getBounds()
+      this.refreshRightHeaderElements()
     }
 
     // 更新右下角图标状态
@@ -497,6 +520,55 @@ export default class UIScene extends Phaser.Scene {
     // 隐藏底部文本和提示（因为现在统一在顶部显示）
     this.footerToolText?.setVisible(false)
     this.footerHintText?.setVisible(false)
+  }
+
+  private refreshRightHeaderElements() {
+    this.rightHeaderElements = [this.pauseButton, this.countdownText]
+    if (this.headerToolsContainer && this.headerToolsContainer.visible) {
+      this.rightHeaderElements.push(this.headerToolsContainer)
+    } else if (this.headerToolText && this.headerToolText.visible) {
+      this.rightHeaderElements.push(this.headerToolText)
+    }
+    this.layoutRightHeader(this.scale.width)
+  }
+
+  private layoutRightHeader(sceneWidth: number) {
+    if (!this.rightHeaderContainer) return
+    const pauseCfg = getUiConfig('pauseButton')
+    const spacing = pauseCfg.spacing
+    let offsetX = 0
+
+    this.rightHeaderElements.forEach((element, index) => {
+      if (!element || !element.active) return
+      const { width, height } = this.measureRightElement(element)
+      const posX = -offsetX
+      const posY = -height / 2
+
+      if ('setPosition' in element) {
+        ;(element as Phaser.GameObjects.GameObject & { setPosition: (x: number, y: number) => void }).setPosition(posX, posY)
+      }
+
+      offsetX += width
+      if (index < this.rightHeaderElements.length - 1) {
+        offsetX += spacing
+      }
+    })
+
+    this.rightHeaderContainer.setPosition(sceneWidth - pauseCfg.marginRight, pauseCfg.marginTop + this.headerLineY)
+  }
+
+  private measureRightElement(element: Phaser.GameObjects.GameObject) {
+    if ((element === this.headerToolsContainer || element === this.headerToolText) && this.toolIconBounds) {
+      return { width: this.toolIconBounds.width, height: this.toolIconBounds.height }
+    }
+
+    if ('width' in element && 'height' in element) {
+      const textObj = element as Phaser.GameObjects.Text
+      return { width: textObj.width || textObj.displayWidth, height: textObj.height || textObj.displayHeight }
+    }
+
+    const bounds = element.getBounds()
+    return { width: bounds.width, height: bounds.height }
   }
 
   private updateIconState(type: ToolType, count: number) {

@@ -11,12 +11,24 @@ describe('uiFactory', () => {
       style,
       originX: 0,
       originY: 0,
+      width: style.wordWrap?.width ?? 0,
+      height: parseInt((style.fontSize ?? '24px').toString(), 10),
       fixedWidth: 0,
       fixedHeight: 0,
       interactiveConfig: undefined as unknown,
+      padding: { left: 0, right: 0, top: 0, bottom: 0 },
       setOrigin(originX: number, originY: number) {
         this.originX = originX
         this.originY = originY
+        return this
+      },
+      setFontSize(size: number) {
+        this.fontSize = size
+        this.height = size
+        return this
+      },
+      setPadding(left: number, top: number, right: number, bottom: number) {
+        this.padding = { left, right, top, bottom }
         return this
       },
       setFixedSize(width: number, height: number) {
@@ -36,6 +48,9 @@ describe('uiFactory', () => {
       emit(event: string, ...args: unknown[]) {
         handlers[event]?.forEach(h => h(...args))
       },
+      setFontFamily: jest.fn().mockReturnThis(),
+      setColor: jest.fn().mockReturnThis(),
+      setBackgroundColor: jest.fn().mockReturnThis(),
     }))
 
     return {
