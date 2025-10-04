@@ -103,7 +103,7 @@ export default class UIScene extends Phaser.Scene {
 
     const headerToolCfg = getUiConfig('toolDisplay')
     const topIconSize = headerToolCfg.headerIconSize
-    const iconLabelGap = 8
+    const iconLabelGap = headerToolCfg.headerIconLabelGap
     const pairSpacing = 75
 
     const addToolPair = (type: keyof typeof this.headerToolIcons, textureKey: string, index: number) => {

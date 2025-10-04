@@ -13,6 +13,7 @@ export interface ToolDisplayConfig {
   readonly headerIconSize: number
   readonly headerFontSize: number
   readonly headerSpacing: number
+  readonly headerIconLabelGap: number
   readonly footerIconSize: number
 }
 
@@ -64,6 +65,7 @@ export const uiConfig: UiConfig = {
     headerIconSize: 32,
     headerFontSize: 18,
     headerSpacing: 60,
+    headerIconLabelGap: 4,
     footerIconSize: 80,
   },
   pauseButton: {
