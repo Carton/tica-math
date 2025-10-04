@@ -2,6 +2,7 @@ import Phaser from 'phaser'
 import { AssetConfig, AUDIO_LOADING_CONFIG } from '@/game/config/assetConfig'
 import { emit } from '@/game/managers/EventBus'
 import { AudioManager } from '@/game/managers/AudioManager'
+import { DebugHelper } from '@/utils/debugHelper'
 
 export class LoadManager {
   private static scene: Phaser.Scene | null = null
@@ -47,20 +48,20 @@ export class LoadManager {
 
         // 如果所有图片都加载完成
         if (loadedCount >= totalAssets) {
-          console.log('✅ 核心图片资源加载完成')
+          DebugHelper.debugLog('Load', '核心图片资源加载完成')
           resolve()
         }
       })
 
       // 监听所有文件加载完成
       this.scene!.load.on('complete', () => {
-        console.log('✅ 核心图片资源加载完成')
+        DebugHelper.debugLog('Load', '核心图片资源加载完成')
         resolve()
       })
 
       // 监听加载错误
       this.scene!.load.on('loaderror', (file: any) => {
-        console.error(`❌ 加载失败: ${file.key}`)
+        DebugHelper.debugLog('Load', `加载失败: ${file.key}`, { file })
         reject(new Error(`Failed to load: ${file.key}`))
       })
 
@@ -132,11 +133,11 @@ export class LoadManager {
       tempLoader.once('complete', () => {
         clearTimeout(timeoutId)
         this.loadedAssets.add(key)
-        console.log(`✅ 音频加载完成: ${key}`)
+        DebugHelper.debugLog('Audio', `音频加载完成: ${key}`)
 
         // 检查AudioManager是否有期望播放这个BGM
         if (AudioManager.getRequestedBgmKey() === key) {
-          console.log(`🎵 自动播放请求的BGM: ${key}`)
+          DebugHelper.debugLog('BGM', `自动播放请求的BGM: ${key}`)
           AudioManager.tryStartBgm(key)
           AudioManager.clearRequestedBgmKey() // 清除期望
         }
@@ -217,9 +218,9 @@ export class LoadManager {
     // 在主菜单BGM加载完成后，开始加载游戏BGM
     try {
       // 直接加载游戏BGM，不重新加载主菜单BGM
-      console.log('🎵 开始预加载游戏BGM...')
+      DebugHelper.debugLog('BGM', '开始预加载游戏BGM...')
       await this.loadAudioAsync(bgmKeys, AUDIO_LOADING_CONFIG.bgmTimeout)
-      console.log('✅ 游戏BGM预加载完成')
+      DebugHelper.debugLog('BGM', '游戏BGM预加载完成')
     } catch (error) {
       console.warn('⚠️ 游戏BGM预加载失败，将在游戏场景中重试:', error)
     }

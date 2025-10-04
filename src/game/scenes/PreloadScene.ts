@@ -5,6 +5,7 @@ import { ToolManager } from '@/game/managers/ToolManager'
 import { AudioManager } from '@/game/managers/AudioManager'
 import { LoadManager } from '@/game/managers/LoadManager'
 import { on } from '@/game/managers/EventBus'
+import { DebugHelper } from '@/utils/debugHelper'
 
 export default class PreloadScene extends Phaser.Scene {
   constructor() {
@@ -12,7 +13,7 @@ export default class PreloadScene extends Phaser.Scene {
   }
 
   preload() {
-    console.log('🚀 开始加载核心资源...')
+    DebugHelper.debugLog('Load', '开始加载核心资源...')
 
     // 加载配置文件
     this.load.json('difficulty', 'game/config/digit-difficulty.json')
@@ -41,16 +42,16 @@ export default class PreloadScene extends Phaser.Scene {
 
     // 设置加载事件监听器
     this.load.on('complete', () => {
-      console.log('✅ 核心图片和音效资源加载完成')
+      DebugHelper.debugLog('Load', '核心图片和音效资源加载完成')
     })
 
     this.load.on('loaderror', (file: any) => {
-      console.error(`❌ 核心资源加载失败: ${file.key}`)
+      DebugHelper.debugLog('Load', `核心资源加载失败: ${file.key}`, { file })
     })
   }
 
   create() {
-    console.log('🎮 初始化游戏系统...')
+    DebugHelper.debugLog('System', '初始化游戏系统...')
 
     const diff = this.cache.json.get('difficulty')
 
@@ -94,7 +95,7 @@ export default class PreloadScene extends Phaser.Scene {
     // 移除 ui:choice 事件的音效，因为答题音效已经由 ui:feedback 处理
     on('tool:use', () => AudioManager.playSfx('sfx_click'))
 
-    console.log('✅ 游戏系统初始化完成，进入主菜单')
+    DebugHelper.debugLog('System', '游戏系统初始化完成，进入主菜单')
     this.scene.start('MainMenuScene')
   }
 }

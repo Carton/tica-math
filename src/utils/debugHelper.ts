@@ -3,6 +3,27 @@ import { SaveManager } from '@/game/managers/SaveManager'
 
 export class DebugHelper {
   /**
+   * 调试日志输出 - 只在debug模式下显示
+   * @param category 日志分类（如 'BGM', 'Audio', 'Load' 等）
+   * @param message 日志消息
+   * @param data 可选的额外数据
+   */
+  public static debugLog(category: string, message: string, data?: any): void {
+    if (!this.isDebugMode()) {
+      return
+    }
+
+    const timestamp = new Date().toLocaleTimeString()
+    const prefix = `[${timestamp}] [${category}]`
+
+    if (data !== undefined) {
+      console.log(`${prefix} ${message}`, data)
+    } else {
+      console.log(`${prefix} ${message}`)
+    }
+  }
+
+  /**
    * 检查是否为调试模式
    * 统一的调试模式判断逻辑，避免重复实现
    */

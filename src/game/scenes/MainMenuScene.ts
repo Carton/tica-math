@@ -7,6 +7,7 @@ import { Strings } from '@/game/managers/Strings'
 import type { LanguageCode } from '@/game/managers/Strings'
 import { createTextButton } from '@/game/utils/uiFactory'
 import { on, off } from '@/game/managers/EventBus'
+import { DebugHelper } from '@/utils/debugHelper'
 
 export default class MainMenuScene extends Phaser.Scene {
   private bgmStatusText?: Phaser.GameObjects.Text
@@ -31,7 +32,7 @@ export default class MainMenuScene extends Phaser.Scene {
     LoadManager.init(this)
 
     // 声明主菜单要播放的BGM
-    console.log('🎵 主菜单声明要播放BGM: bgm_main')
+    DebugHelper.debugLog('BGM', '主菜单声明要播放BGM: bgm_main')
     AudioManager.requestBgm('bgm_main')
 
     // 开始预加载所有BGM（如果还没有开始）
@@ -318,7 +319,7 @@ export default class MainMenuScene extends Phaser.Scene {
    * 开始预加载所有BGM（主菜单BGM + 游戏BGM）
    */
   private async startAllBGMPreload() {
-    console.log('🎵 开始预加载所有BGM...')
+    DebugHelper.debugLog('BGM', '开始预加载所有BGM...')
 
     try {
       // 并行预加载主菜单BGM和游戏BGM
@@ -328,7 +329,7 @@ export default class MainMenuScene extends Phaser.Scene {
       ]
 
       await Promise.allSettled(promises)
-      console.log('✅ 所有BGM预加载完成')
+      DebugHelper.debugLog('BGM', '所有BGM预加载完成')
     } catch (error) {
       console.warn('⚠️ BGM预加载过程中出现错误:', error)
     }
@@ -340,11 +341,11 @@ export default class MainMenuScene extends Phaser.Scene {
   private checkAndInitializeBGMStatus(width: number, height: number) {
     // 检查主菜单BGM是否已经加载完成
     if (LoadManager.isAudioLoaded('bgm_main')) {
-      console.log('✅ 主菜单BGM已加载，隐藏状态指示器')
+      DebugHelper.debugLog('BGM', '主菜单BGM已加载，隐藏状态指示器')
       // BGM已加载完成，不需要显示状态指示器
       // 可以选择隐藏或者显示"已就绪"状态后淡出
     } else {
-      console.log('⏳ 主菜单BGM尚未加载，显示状态指示器')
+      DebugHelper.debugLog('BGM', '主菜单BGM尚未加载，显示状态指示器')
       // BGM还未加载完成，显示状态指示器
       this.createBGMStatusIndicator(width, height)
       this.updateBGMStatus('loading')
@@ -393,7 +394,7 @@ export default class MainMenuScene extends Phaser.Scene {
   private updateBGMStatus(status: 'loading' | 'ready' | 'failed') {
     try {
       if (!this.bgmStatusText || !this.bgmLoadingIndicator) {
-        console.log('BGM状态指示器未初始化，跳过状态更新')
+        DebugHelper.debugLog('BGM', 'BGM状态指示器未初始化，跳过状态更新')
         return
       }
 
@@ -419,7 +420,7 @@ export default class MainMenuScene extends Phaser.Scene {
       const text = Strings.t(textKey)
       this.bgmStatusText.setText(text)
       this.bgmStatusText.setColor(color)
-      console.log(`BGM状态更新: ${text}`)
+      DebugHelper.debugLog('BGM', `BGM状态更新: ${text}`)
 
       // 加载完成或失败后3秒隐藏指示器
       if (status === 'ready' || status === 'failed') {
@@ -448,6 +449,6 @@ export default class MainMenuScene extends Phaser.Scene {
   shutdown() {
     // 重置BGM加载标志，允许重新进入时重新加载
     this.bgmLoadStarted = false
-    console.log('MainMenuScene shutdown - BGM加载状态已重置')
+    DebugHelper.debugLog('BGM', 'MainMenuScene shutdown - BGM加载状态已重置')
   }
 }
