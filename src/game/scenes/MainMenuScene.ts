@@ -4,6 +4,7 @@ import { ToolManager } from '@/game/managers/ToolManager'
 import { AudioManager } from '@/game/managers/AudioManager'
 import { Strings } from '@/game/managers/Strings'
 import type { LanguageCode } from '@/game/managers/Strings'
+import { createTextButton } from '@/game/utils/uiFactory'
 
 export default class MainMenuScene extends Phaser.Scene {
   constructor() {
@@ -176,47 +177,41 @@ export default class MainMenuScene extends Phaser.Scene {
       createLanguageButton()
     } else {
       // 按钮模式 - 只有在背景无法加载时显示
-      const buttonStyle = {
-        fontFamily: 'sans-serif',
-        fontSize: '20px',
-        color: '#0b1021',
-        backgroundColor: '#2de1c2',
-        padding: { x: 16, y: 10 }
-      }
-
       const startY = title.y + 120
-      const spacing = 60
-      const buttonWidth = 110  // 统一按钮宽度
+      const spacing = 70
 
-      const startBtn = this.add.text(width / 2, startY, Strings.t('ui.start_game'), buttonStyle)
-        .setOrigin(0.5).setInteractive({ useHandCursor: true })
+      const startBtn = createTextButton(this, width / 2, startY, {
+        text: Strings.t('ui.start_game'),
+        style: { backgroundColor: '#2de1c2' },
+        configKey: 'primaryButton',
+      })
 
-      const manualBtn = this.add.text(width / 2, startY + spacing, Strings.t('ui.detective_manual'), buttonStyle)
-        .setOrigin(0.5).setInteractive({ useHandCursor: true })
+      const manualBtn = createTextButton(this, width / 2, startY + spacing, {
+        text: Strings.t('ui.detective_manual'),
+        style: { backgroundColor: '#2de1c2' },
+        configKey: 'button',
+      })
 
-      const honorBtn = this.add.text(width / 2, startY + spacing * 2, Strings.t('ui.honor_wall'), buttonStyle)
-        .setOrigin(0.5).setInteractive({ useHandCursor: true })
+      const honorBtn = createTextButton(this, width / 2, startY + spacing * 2, {
+        text: Strings.t('ui.honor_wall'),
+        style: { backgroundColor: '#2de1c2' },
+        configKey: 'button',
+      })
 
-      const manageBtn = this.add.text(width / 2, startY + spacing * 3, Strings.t('ui.switch_user'), buttonStyle)
-        .setOrigin(0.5).setInteractive({ useHandCursor: true })
+      const manageBtn = createTextButton(this, width / 2, startY + spacing * 3, {
+        text: Strings.t('ui.switch_user'),
+        style: { backgroundColor: '#2de1c2' },
+        configKey: 'button',
+      })
 
       // 语言切换按钮
       const currentLang = Strings.getLanguage()
       const nextLang = currentLang === 'zh-CN' ? Strings.t('ui.language_english') : Strings.t('ui.language_chinese')
-      const langBtn = this.add.text(width / 2, startY + spacing * 4, nextLang, {
-        fontFamily: 'sans-serif',
-        fontSize: '16px',
-        color: '#0b1021',
-        backgroundColor: '#ff9f43',
-        padding: { x: 12, y: 8 }
-      }).setOrigin(0.5).setInteractive({ useHandCursor: true })
-      langBtn.setFixedSize(buttonWidth, 0)
-
-      // 设置所有按钮为统一宽度
-      startBtn.setFixedSize(buttonWidth, 0)
-      manualBtn.setFixedSize(buttonWidth, 0)
-      honorBtn.setFixedSize(buttonWidth, 0)
-      manageBtn.setFixedSize(buttonWidth, 0)
+      const langBtn = createTextButton(this, width / 2, startY + spacing * 4, {
+        text: nextLang,
+        style: { backgroundColor: '#ff9f43', fontSize: '20px' },
+        configKey: 'secondaryButton',
+      })
 
       // 按钮事件处理
       startBtn.on('pointerup', () => {

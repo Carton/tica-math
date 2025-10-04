@@ -1,6 +1,7 @@
 import Phaser from 'phaser'
 import { Strings } from '@/game/managers/Strings'
 import type { SkillTag } from '@/game/utils/types'
+import { createTextButton } from '@/game/utils/uiFactory'
 
 export default class ManualScene extends Phaser.Scene {
   private scrollContainer!: Phaser.GameObjects.Container
@@ -139,13 +140,11 @@ export default class ManualScene extends Phaser.Scene {
     }
 
     // 返回按钮
-    const back = this.add.text(width / 2, height - 40, Strings.t('ui.return'), {
-      fontFamily: 'sans-serif',
-      fontSize: '22px',
-      color: '#0b1021',
-      backgroundColor: '#a9ffea',
-      padding: { x: 16, y: 8 }
-    }).setOrigin(0.5).setInteractive({ useHandCursor: true })
+    const back = createTextButton(this, width / 2, height - 50, {
+      text: Strings.t('ui.return'),
+      style: { backgroundColor: '#a9ffea' },
+      configKey: 'button',
+    })
     back.on('pointerup', () => this.scene.start('MainMenuScene'))
 
     this.input.keyboard?.on('keydown-ESC', () => this.scene.start('MainMenuScene'))

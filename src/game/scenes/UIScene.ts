@@ -4,6 +4,8 @@ import { ToolManager, type ToolType } from '@/game/managers/ToolManager'
 import { SaveManager } from '@/game/managers/SaveManager'
 import { AudioManager } from '@/game/managers/AudioManager'
 import { Strings } from '@/game/managers/Strings'
+import { getUiConfig } from '@/game/config/uiConfig'
+import { createTextButton } from '@/game/utils/uiFactory'
 
 export default class UIScene extends Phaser.Scene {
   private headerLeftText?: Phaser.GameObjects.Text
@@ -24,6 +26,7 @@ export default class UIScene extends Phaser.Scene {
   private hintText?: Phaser.GameObjects.Text
   private footerHintText?: Phaser.GameObjects.Text
   private toolUpdateHandler?: () => void
+  private pauseButton?: Phaser.GameObjects.Text
   private remainingMs = 0
   private timer?: Phaser.Time.TimerEvent
   private pausedOverlay?: Phaser.GameObjects.Rectangle
@@ -67,7 +70,24 @@ export default class UIScene extends Phaser.Scene {
 
   create() {
     const { width, height } = this.scale
-    const headerY = 34
+    const headerY = 40
+
+    const pauseCfg = getUiConfig('pauseButton')
+    const pauseButtonX = width - pauseCfg.marginRight
+    const pauseButtonY = pauseCfg.marginTop
+    this.pauseButton = this.add.text(pauseButtonX, pauseButtonY, '⏸', {
+      fontFamily: 'sans-serif',
+      fontSize: `${pauseCfg.fontSize}px`,
+      color: pauseCfg.textColor,
+      backgroundColor: pauseCfg.bgColor,
+      padding: { x: pauseCfg.paddingX, y: pauseCfg.paddingY },
+    }).setOrigin(1, 0).setInteractive({ useHandCursor: true })
+
+    this.pauseButton.on('pointerup', this.handleEscKey)
+
+    const pauseBounds = this.pauseButton.getBounds()
+
+    const countdownX = pauseBounds.left - 40
 
     this.userId = SaveManager.getCurrentUserId() || ''
     this.clueIndex = 0
@@ -79,9 +99,9 @@ export default class UIScene extends Phaser.Scene {
     }).setOrigin(0, 0.5)
     this.updateHeaderLeftText()
 
-    this.countdownText = this.add.text(width - 40, headerY, '00:00', {
+    this.countdownText = this.add.text(countdownX, headerY, '00:00', {
       fontFamily: 'sans-serif',
-      fontSize: '20px',
+      fontSize: '24px',
       color: '#ffd166',
     }).setOrigin(1, 0.5)
 
@@ -94,8 +114,8 @@ export default class UIScene extends Phaser.Scene {
       wordWrap: { width: hintAreaWidth },
     }).setOrigin(0.5, 0.5)
 
-    // 创建右上角道具显示容器
-    this.createHeaderToolDisplay(width * 0.82, headerY)
+    const toolDisplayRight = this.countdownText.getBounds().left - 40
+    this.createHeaderToolDisplay(toolDisplayRight, headerY)
 
     this.footerToolText = this.add.text(width - 260, height - 140, '', {
       fontFamily: 'sans-serif',
@@ -124,12 +144,16 @@ export default class UIScene extends Phaser.Scene {
       btnTrue = sTrue
       btnFalse = sFalse
     } else {
-      const tTrue = this.add.text(width / 2 - 120, height - 80, Strings.t('user.truth_button'), {
-        fontFamily: 'sans-serif', fontSize: '24px', color: '#0b1021', backgroundColor: '#2de1c2', padding: { x: 14, y: 8 }
-      }).setOrigin(0.5).setInteractive({ useHandCursor: true })
-      const tFalse = this.add.text(width / 2 + 120, height - 80, Strings.t('user.false_button'), {
-        fontFamily: 'sans-serif', fontSize: '24px', color: '#0b1021', backgroundColor: '#ff6b6b', padding: { x: 14, y: 8 }
-      }).setOrigin(0.5).setInteractive({ useHandCursor: true })
+      const tTrue = createTextButton(this, width / 2 - 140, height - 90, {
+        text: Strings.t('user.truth_button'),
+        style: { backgroundColor: '#2de1c2' },
+        configKey: 'primaryButton',
+      })
+      const tFalse = createTextButton(this, width / 2 + 140, height - 90, {
+        text: Strings.t('user.false_button'),
+        style: { backgroundColor: '#ff6b6b' },
+        configKey: 'primaryButton',
+      })
       btnTrue = tTrue
       btnFalse = tFalse
     }
@@ -213,28 +237,32 @@ export default class UIScene extends Phaser.Scene {
     const txt = this.add.text(0, -80, Strings.t('user.pause'), { fontFamily: 'sans-serif', fontSize: '26px', color: '#ffffff' }).setOrigin(0.5)
 
     // 音效开关按钮
-    const btnSfx = this.add.text(-80, -30, Strings.t('user.sfx_on'), {
-      fontFamily: 'sans-serif', fontSize: '16px', color: '#0b1021',
-      backgroundColor: '#a9ffea', padding: { x: 12, y: 6 }
-    }).setOrigin(0.5).setInteractive({ useHandCursor: true })
+    const btnSfx = createTextButton(this, -90, -30, {
+      text: Strings.t('user.sfx_on'),
+      style: { backgroundColor: '#a9ffea', fontSize: '20px' },
+      configKey: 'secondaryButton',
+    })
 
     // BGM开关按钮
-    const btnBgm = this.add.text(80, -30, Strings.t('user.bgm_on'), {
-      fontFamily: 'sans-serif', fontSize: '16px', color: '#0b1021',
-      backgroundColor: '#a9ffea', padding: { x: 12, y: 6 }
-    }).setOrigin(0.5).setInteractive({ useHandCursor: true })
+    const btnBgm = createTextButton(this, 90, -30, {
+      text: Strings.t('user.bgm_on'),
+      style: { backgroundColor: '#a9ffea', fontSize: '20px' },
+      configKey: 'secondaryButton',
+    })
 
     // 主按钮 - 继续游戏
-    const btnResume = this.add.text(0, 30, Strings.t('user.resume_game'), {
-      fontFamily: 'sans-serif', fontSize: '20px', color: '#0b1021',
-      backgroundColor: '#2de1c2', padding: { x: 16, y: 8 }
-    }).setOrigin(0.5).setInteractive({ useHandCursor: true })
+    const btnResume = createTextButton(this, 0, 40, {
+      text: Strings.t('user.resume_game'),
+      style: { backgroundColor: '#2de1c2' },
+      configKey: 'primaryButton',
+    })
 
     // 主按钮 - 返回事务所
-    const btnBack = this.add.text(0, 80, Strings.t('ui.back'), {
-      fontFamily: 'sans-serif', fontSize: '18px', color: '#0b1021',
-      backgroundColor: '#a9ffea', padding: { x: 16, y: 8 }
-    }).setOrigin(0.5).setInteractive({ useHandCursor: true })
+    const btnBack = createTextButton(this, 0, 110, {
+      text: Strings.t('ui.back'),
+      style: { backgroundColor: '#a9ffea' },
+      configKey: 'secondaryButton',
+    })
 
     // 更新开关按钮文本
     const updateButtonTexts = () => {
@@ -313,13 +341,14 @@ export default class UIScene extends Phaser.Scene {
 
   private createHeaderToolDisplay(x: number, y: number) {
     const useIcons = this.textures.exists('icons_magnify') && this.textures.exists('icons_watch') && this.textures.exists('icons_light')
+    const toolCfg = getUiConfig('toolDisplay')
 
     if (useIcons) {
       // 使用小图标创建道具显示
       this.headerToolsContainer = this.add.container(x, y)
 
-      const smallIconSize = 20
-      const spacing = 45
+      const smallIconSize = toolCfg.headerIconSize
+      const spacing = toolCfg.headerSpacing
 
       // 创建三个道具的图标和文本
       this.headerToolIcons.magnify = this.add.image(0, 0, 'icons_magnify')
@@ -328,7 +357,7 @@ export default class UIScene extends Phaser.Scene {
 
       this.headerToolTexts.magnify = this.add.text(smallIconSize/2, 0, 'x0', {
         fontFamily: 'sans-serif',
-        fontSize: '14px',
+        fontSize: `${toolCfg.headerFontSize}px`,
         color: '#a9ffea'
       }).setOrigin(0, 0.5)
 
@@ -338,7 +367,7 @@ export default class UIScene extends Phaser.Scene {
 
       this.headerToolTexts.watch = this.add.text(spacing + smallIconSize/2, 0, 'x0', {
         fontFamily: 'sans-serif',
-        fontSize: '14px',
+        fontSize: `${toolCfg.headerFontSize}px`,
         color: '#a9ffea'
       }).setOrigin(0, 0.5)
 
@@ -348,7 +377,7 @@ export default class UIScene extends Phaser.Scene {
 
       this.headerToolTexts.light = this.add.text(spacing * 2 + smallIconSize/2, 0, 'x0', {
         fontFamily: 'sans-serif',
-        fontSize: '14px',
+        fontSize: `${toolCfg.headerFontSize}px`,
         color: '#a9ffea'
       }).setOrigin(0, 0.5)
 
@@ -379,12 +408,13 @@ export default class UIScene extends Phaser.Scene {
   private createToolIcons() {
     const { width, height } = this.scale
     const useIcons = this.textures.exists('icons_magnify') && this.textures.exists('icons_watch') && this.textures.exists('icons_light')
+    const toolCfg = getUiConfig('toolDisplay')
 
     // 创建道具图标容器 - 位置在右下角
     this.toolsContainer = this.add.container(width - 300, height - 90)
 
-    const iconSpacing = 20
-    const iconSize = 72
+    const iconSpacing = 24
+    const iconSize = toolCfg.footerIconSize
 
     if (useIcons) {
       // 使用PNG图标

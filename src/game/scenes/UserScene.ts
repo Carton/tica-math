@@ -1,6 +1,7 @@
 import Phaser from 'phaser'
 import { SaveManager } from '@/game/managers/SaveManager'
 import { Strings } from '@/game/managers/Strings'
+import { createTextButton } from '@/game/utils/uiFactory'
 
 export default class UserScene extends Phaser.Scene {
   // 输入相关
@@ -36,7 +37,11 @@ export default class UserScene extends Phaser.Scene {
 
     // 标题与"新建用户"按钮
     this.add.text(width / 2, 60, Strings.t('ui.select_user'), { fontFamily: 'sans-serif', fontSize: '32px', color: '#ffffff' }).setOrigin(0.5)
-    const createBtnTop = this.add.text(width - 120, 20, Strings.t('ui.new_user'), { fontFamily: 'sans-serif', fontSize: '16px', color: '#0b1021', backgroundColor: '#ffd166', padding: { x: 12, y: 6 } }).setInteractive({ useHandCursor: true })
+    const createBtnTop = createTextButton(this, width - 140, 40, {
+      text: Strings.t('ui.new_user'),
+      style: { backgroundColor: '#ffd166', fontSize: '20px' },
+      configKey: 'secondaryButton',
+    }).setOrigin(0.5, 0.5)
     createBtnTop.on('pointerup', () => this.openCreateDialog())
 
     // 用户列表（分页）
@@ -44,9 +49,11 @@ export default class UserScene extends Phaser.Scene {
 
     // 返回按钮（仅当已有用户时）
     if (this.users.length > 0) {
-      const backBtn = this.add.text(width / 2, height - 40, Strings.t('ui.return'), {
-        fontFamily: 'sans-serif', fontSize: '16px', color: '#0b1021', backgroundColor: '#a9ffea', padding: { x: 16, y: 8 }
-      }).setOrigin(0.5).setInteractive({ useHandCursor: true })
+      const backBtn = createTextButton(this, width / 2, height - 60, {
+        text: Strings.t('ui.return'),
+        style: { backgroundColor: '#a9ffea' },
+        configKey: 'button',
+      })
       backBtn.on('pointerup', () => this.scene.start('MainMenuScene'))
     }
     // ESC 返回
@@ -124,8 +131,12 @@ export default class UserScene extends Phaser.Scene {
     // 分页控件
     const totalPages = Math.max(1, Math.ceil(this.users.length / this.pageSize))
     const pagerY = y + 10
-    this.pagePrevBtn = this.add.text(listLeft + 20, pagerY, Strings.t('ui.prev_page'), { fontFamily: 'sans-serif', fontSize: '14px', color: '#a9ffea', backgroundColor: '#132235', padding: { x: 10, y: 6 } })
-      .setInteractive({ useHandCursor: totalPages > 1 })
+    this.pagePrevBtn = createTextButton(this, listLeft + 120, pagerY, {
+      text: Strings.t('ui.prev_page'),
+      style: { backgroundColor: '#132235', color: '#a9ffea', fontSize: '18px' },
+      configKey: 'secondaryButton',
+      useHandCursor: totalPages > 1,
+    }).setOrigin(0.5)
       .on('pointerup', () => {
         if (this.pageIndex > 0) {
           this.pageIndex -= 1
@@ -135,8 +146,12 @@ export default class UserScene extends Phaser.Scene {
 
     this.pageIndicator = this.add.text(listLeft + rowWidth / 2, pagerY, `${this.pageIndex + 1} / ${totalPages}`, { fontFamily: 'monospace', fontSize: '14px', color: '#a9ffea' }).setOrigin(0.5)
 
-    this.pageNextBtn = this.add.text(listLeft + rowWidth - 90, pagerY, Strings.t('ui.next_page'), { fontFamily: 'sans-serif', fontSize: '14px', color: '#a9ffea', backgroundColor: '#132235', padding: { x: 10, y: 6 } })
-      .setInteractive({ useHandCursor: totalPages > 1 })
+    this.pageNextBtn = createTextButton(this, listLeft + rowWidth - 120, pagerY, {
+      text: Strings.t('ui.next_page'),
+      style: { backgroundColor: '#132235', color: '#a9ffea', fontSize: '18px' },
+      configKey: 'secondaryButton',
+      useHandCursor: totalPages > 1,
+    }).setOrigin(0.5)
       .on('pointerup', () => {
         if (this.pageIndex < totalPages - 1) {
           this.pageIndex += 1
@@ -164,8 +179,16 @@ export default class UserScene extends Phaser.Scene {
     const hint = this.add.text(cx, cy + 20, Strings.t('ui.enter_user_id'), { fontFamily: 'sans-serif', fontSize: '14px', color: '#666666' }).setOrigin(0.5)
     this.errorMessage = this.add.text(cx, cy + 44, '', { fontFamily: 'sans-serif', fontSize: '14px', color: '#ff4444' }).setOrigin(0.5)
 
-    const ok = this.add.text(cx - 60, cy + 80, Strings.t('ui.create'), { fontFamily: 'sans-serif', fontSize: '16px', color: '#0b1021', backgroundColor: '#2de1c2', padding: { x: 16, y: 8 } }).setOrigin(0.5).setInteractive({ useHandCursor: true })
-    const cancel = this.add.text(cx + 60, cy + 80, Strings.t('ui.cancel'), { fontFamily: 'sans-serif', fontSize: '16px', color: '#0b1021', backgroundColor: '#666666', padding: { x: 16, y: 8 } }).setOrigin(0.5).setInteractive({ useHandCursor: true })
+    const ok = createTextButton(this, cx - 100, cy + 80, {
+      text: Strings.t('ui.create'),
+      style: { backgroundColor: '#2de1c2' },
+      configKey: 'primaryButton',
+    })
+    const cancel = createTextButton(this, cx + 100, cy + 80, {
+      text: Strings.t('ui.cancel'),
+      style: { backgroundColor: '#666666', color: '#ffffff' },
+      configKey: 'secondaryButton',
+    })
 
     ok.on('pointerup', () => this.createUser())
     cancel.on('pointerup', () => this.closeCreateDialog())

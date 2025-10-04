@@ -5,6 +5,7 @@ import { AudioManager } from '@/game/managers/AudioManager'
 import { ToolManager } from '@/game/managers/ToolManager'
 import { SaveManager } from '@/game/managers/SaveManager'
 import { Strings } from '@/game/managers/Strings'
+import { createTextButton } from '@/game/utils/uiFactory'
 
 export default class ResultScene extends Phaser.Scene {
   constructor() {
@@ -85,14 +86,18 @@ export default class ResultScene extends Phaser.Scene {
     // 计算按钮位置，如果有连击加成提示则向下移动
     const buttonStartY = detail.y + (sum?.pass && (sum?.comboMax ?? 0) >= 3 && SaveManager.calculateComboEXPBonus(sum?.comboMax ?? 0, Math.round((sum?.accuracy ?? 0) * 100)) > 0 ? 160 : 120)
 
-    const back = this.add.text(width / 2, buttonStartY, Strings.t('ui.back'), {
-      fontFamily: 'sans-serif', fontSize: '24px', color: '#0b1021', backgroundColor: '#a9ffea', padding: { x: 16, y: 8 }
-    }).setOrigin(0.5).setInteractive({ useHandCursor: true })
+    const back = createTextButton(this, width / 2, buttonStartY, {
+      text: Strings.t('ui.back'),
+      style: { backgroundColor: '#a9ffea' },
+      configKey: 'secondaryButton',
+    })
 
     const primaryLabel = resultPrimaryActionLabel(!!sum?.pass, Strings.t.bind(Strings))
-    const primary = this.add.text(width / 2, back.y + 60, primaryLabel, {
-      fontFamily: 'sans-serif', fontSize: '22px', color: '#0b1021', backgroundColor: '#2de1c2', padding: { x: 16, y: 8 }
-    }).setOrigin(0.5).setInteractive({ useHandCursor: true })
+    const primary = createTextButton(this, width / 2, back.y + 80, {
+      text: primaryLabel,
+      style: { backgroundColor: '#2de1c2' },
+      configKey: 'primaryButton',
+    })
 
     back.on('pointerup', () => {
       this.scene.stop('UIScene')
