@@ -30,14 +30,20 @@ export default class MainMenuScene extends Phaser.Scene {
     // 初始化LoadManager并开始异步加载BGM
     LoadManager.init(this)
 
-    // 只有第一次启动时才加载BGM，避免从其他场景返回时重复加载
-    if (!this.bgmLoadStarted) {
-      this.startBGMLoading()
-      this.bgmLoadStarted = true
-    }
+    // 声明主菜单要播放的BGM
+    console.log('🎵 主菜单声明要播放BGM: bgm_main')
+    AudioManager.requestBgm('bgm_main')
 
-    // 创建BGM加载状态指示器（右下角）
-    this.createBGMStatusIndicator(width, height)
+    // 开始预加载所有BGM（如果还没有开始）
+    if (!this.bgmLoadStarted) {
+      // 创建BGM加载状态指示器（右下角）
+      this.createBGMStatusIndicator(width, height)
+      this.startAllBGMPreload()
+      this.bgmLoadStarted = true
+    } else {
+      // BGM已经预加载完成，检查当前状态
+      this.checkAndInitializeBGMStatus(width, height)
+    }
 
     // 尝试渲染像素律所背景（若资源存在）
     let titleY = height / 2 - 80
@@ -309,60 +315,53 @@ export default class MainMenuScene extends Phaser.Scene {
   }
 
   /**
-   * 开始异步加载BGM
+   * 开始预加载所有BGM（主菜单BGM + 游戏BGM）
    */
-  private async startBGMLoading() {
-    console.log('🎵 开始加载主菜单BGM...')
-    this.updateBGMStatus('loading')
+  private async startAllBGMPreload() {
+    console.log('🎵 开始预加载所有BGM...')
 
     try {
-      // 加载主菜单BGM
-      await LoadManager.preloadMainMenuBGM()
-      this.updateBGMStatus('ready')
-      console.log('✅ 主菜单BGM加载完成')
+      // 并行预加载主菜单BGM和游戏BGM
+      const promises = [
+        LoadManager.preloadMainMenuBGM(),
+        LoadManager.preloadGameBGM()
+      ]
 
-
-      // 如果BGM开关开启，尝试播放
-      if (AudioManager.bgmEnabled) {
-        AudioManager.tryStartBgm('bgm_main')
-      }
-
+      await Promise.allSettled(promises)
+      console.log('✅ 所有BGM预加载完成')
     } catch (error) {
-      console.warn('⚠️ 主菜单BGM加载失败:', error)
-      this.updateBGMStatus('failed')
+      console.warn('⚠️ BGM预加载过程中出现错误:', error)
     }
   }
 
   /**
-   * 在后台预加载游戏BGM
+   * 检查BGM状态并初始化状态指示器（用于从其他场景返回时）
    */
-  private async preloadGameBGMInBackground() {
-    try {
-      console.log('🎵 开始预加载游戏BGM...')
-      await LoadManager.preloadGameBGM()
-      console.log('✅ 游戏BGM预加载完成')
-    } catch (error) {
-      console.warn('⚠️ 游戏BGM预加载失败:', error)
+  private checkAndInitializeBGMStatus(width: number, height: number) {
+    // 检查主菜单BGM是否已经加载完成
+    if (LoadManager.isAudioLoaded('bgm_main')) {
+      console.log('✅ 主菜单BGM已加载，隐藏状态指示器')
+      // BGM已加载完成，不需要显示状态指示器
+      // 可以选择隐藏或者显示"已就绪"状态后淡出
+    } else {
+      console.log('⏳ 主菜单BGM尚未加载，显示状态指示器')
+      // BGM还未加载完成，显示状态指示器
+      this.createBGMStatusIndicator(width, height)
+      this.updateBGMStatus('loading')
     }
   }
 
-  /**
+/**
    * 设置音频事件监听器
    */
   private setupAudioEventListeners() {
     // 监听BGM加载完成
     const onAudioLoaded = ({ key }: { key: string }) => {
-      // 只有主菜单BGM完成时才更新UI状态
+      // 主菜单BGM完成时更新UI状态（如果还未就绪）
       if (key === 'bgm_main') {
         this.updateBGMStatus('ready')
-        console.log('✅ 主菜单BGM加载完成')
-        // 主菜单BGM加载完成后，自动开始预加载游戏BGM
-        this.preloadGameBGMInBackground()
       }
-      // 游戏BGM完成时不显示UI状态，只记录日志
-      else if (key === 'bgm_game') {
-        console.log('✅ 游戏BGM预加载完成')
-      }
+      // 其他BGM（如游戏BGM）加载完成时，由LoadManager自动处理，这里不做任何操作
     }
 
     // 监听BGM加载失败

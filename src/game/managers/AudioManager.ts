@@ -1,5 +1,6 @@
 import Phaser from 'phaser'
 import { on } from '@/game/managers/EventBus'
+import { LoadManager } from '@/game/managers/LoadManager'
 
 type SoundCache = Record<string, Phaser.Sound.BaseSound>
 
@@ -12,6 +13,7 @@ export class AudioManager {
   private static _sfxEnabled = true
   private static _bgmEnabled = true
   private static defaultBgmKey = 'bgm_main' // 记录默认BGM
+  private static requestedBgmKey: string | null = null // 当前期望的BGM
 
   static init(scene: Phaser.Scene) {
     this.scene = scene
@@ -106,6 +108,53 @@ export class AudioManager {
   static toggleBgm() {
     this.setBgmEnabled(!this._bgmEnabled)
     return this._bgmEnabled
+  }
+
+  /**
+   * 请求播放指定的BGM
+   * 场景调用来声明自己想要播放的BGM
+   * 如果音频已加载，立即播放；如果未加载，等待加载完成事件
+   */
+  static requestBgm(key: string) {
+    // 如果是相同的BGM请求，忽略重复请求
+    if (this.requestedBgmKey === key) {
+      return
+    }
+
+    this.requestedBgmKey = key
+    console.log(`🎵 场景声明要播放BGM: ${key}`)
+
+    if (!this._bgmEnabled) {
+      console.log('🔇 BGM已关闭')
+      this.requestedBgmKey = null
+      return
+    }
+
+    // 检查是否已加载，使用LoadManager的加载状态
+    if (LoadManager.isAudioLoaded(key)) {
+      console.log(`✅ BGM已预加载，立即播放: ${key}`)
+      this.tryStartBgm(key)
+      this.requestedBgmKey = null
+      return
+    }
+
+    // 备用检测：检查场景音频管理器
+    if (this.scene && this.scene.sound) {
+      try {
+        const existingSound = this.scene.sound.get(key)
+        if (existingSound) {
+          console.log(`✅ BGM已在场景中，立即播放: ${key}`)
+          this.tryStartBgm(key)
+          this.requestedBgmKey = null
+          return
+        }
+      } catch (error) {
+        // BGM可能还未加载，继续等待逻辑
+      }
+    }
+
+    // 如果未加载，等待LoadManager的audio:loaded事件触发播放
+    console.log(`⏳ BGM尚未加载，等待加载完成: ${key}`)
   }
 
   static playSfx(key: string, config: Phaser.Types.Sound.SoundConfig = { volume: 0.6 }) {

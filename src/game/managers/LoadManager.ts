@@ -1,6 +1,7 @@
 import Phaser from 'phaser'
 import { AssetConfig, AUDIO_LOADING_CONFIG } from '@/game/config/assetConfig'
 import { emit } from '@/game/managers/EventBus'
+import { AudioManager } from '@/game/managers/AudioManager'
 
 export class LoadManager {
   private static scene: Phaser.Scene | null = null
@@ -132,6 +133,14 @@ export class LoadManager {
         clearTimeout(timeoutId)
         this.loadedAssets.add(key)
         console.log(`✅ 音频加载完成: ${key}`)
+
+        // 检查AudioManager是否有期望播放这个BGM
+        if (AudioManager.requestedBgmKey === key) {
+          console.log(`🎵 自动播放请求的BGM: ${key}`)
+          AudioManager.tryStartBgm(key)
+          AudioManager.requestedBgmKey = null // 清除期望
+        }
+
         emit('audio:loaded', { key })
         resolve()
       })

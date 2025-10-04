@@ -84,8 +84,9 @@ export default class GameScene extends Phaser.Scene {
       }
     }
 
-    // 开始播放游戏界面背景音乐
-    AudioManager.tryStartBgm('bgm_game')
+    // 请求播放游戏界面背景音乐
+    console.log('🎵 游戏场景请求播放BGM: bgm_game')
+    AudioManager.requestBgm('bgm_game')
 
     this.nextQuestion()
   }
