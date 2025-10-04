@@ -125,7 +125,7 @@ describe('插值逻辑单元测试', () => {
 
       expect(result.a).toBe(80) // (100 + 60) / 2
       expect(result.b).toBe(20) // (0 + 40) / 2
-      expect((result as any).c).toBeUndefined() // b中没有c字段
+      expect('c' in result).toBe(false) // b中没有c字段
     })
 
     test('应该保持记录结构', () => {
@@ -152,7 +152,7 @@ describe('插值逻辑单元测试', () => {
       const result = lerpRecord(a, b, 0.5)
 
       expect(result.skill1).toBe(55) // (70 + 40) / 2
-      expect((result as any).skill2).toBeUndefined() // a中无skill2
+      expect('skill2' in result).toBe(false) // a中无skill2
     })
   })
 

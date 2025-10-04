@@ -11,7 +11,7 @@ describe('uiFactory', () => {
       style,
       originX: 0,
       originY: 0,
-      width: style.wordWrap?.width ?? 0,
+      width: 0,
       height: parseInt((style.fontSize ?? '24px').toString(), 10),
       fixedWidth: 0,
       fixedHeight: 0,
@@ -35,6 +35,8 @@ describe('uiFactory', () => {
       setFixedSize(width: number, height: number) {
         this.fixedWidth = width
         this.fixedHeight = height
+        this.width = width
+        this.height = height
         return this
       },
       setInteractive(config: any) {
