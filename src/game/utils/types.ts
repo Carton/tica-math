@@ -46,20 +46,6 @@ export interface ExpressionConfig {
 
 export type Operator = 'plus' | 'minus' | 'mul' | 'div'
 
-// 保持向后兼容的旧接口
-export interface DifficultyParams {
-  numberRange: { min: number; max: number }
-  operators: { plus: boolean; minus: boolean; mul: boolean; div: boolean }
-  operatorWeights: { plus: number; minus: number; mul: number; div: number }
-  allowFractions: boolean
-  allowDecimals: boolean
-  allowNegative: boolean
-  threeTermsProbability: number
-  allowParentheses: boolean
-  timePerQuestionMs: number
-  questionCount: number
-}
-
 export interface ResultSummary {
   correctCount: number
   totalCount: number

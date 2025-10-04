@@ -12,12 +12,11 @@ describe('负数检查测试', () => {
         digitRange: { min: 2, max: 3 },
         skills: { lastDigit: 70, estimate: 30, parity: 0, castingOutNines: 0, carryBorrow: 0, specialDigits: 0 },
         expressions: {
-          twoTerms: { simple: { plus: 50, minus: 50, mul: 0, div: 0 } }
+          twoTerms: { simple: { plus: 50, minus: 50, mul: 0, div: 0 } },
+          threeTerms: { noParentheses: { plusMinus: 0, withMul: 0, withDiv: 0 }, withParentheses: { plusMinus: 0, mul: 0, div: 0 } }
         },
-        threeTerms: { noParentheses: {}, withParentheses: {} },
         allowNegative: false,
         allowFractions: false,
-        allowDecimals: false,
         timePerQuestionMs: 15000,
         questionCount: 10
       }
@@ -34,11 +33,10 @@ describe('负数检查测试', () => {
         skills: { lastDigit: 50, estimate: 30, parity: 10, castingOutNines: 0, carryBorrow: 10, specialDigits: 0 },
         expressions: {
           twoTerms: { simple: { plus: 40, minus: 40, mul: 10, div: 10 } },
-          threeTerms: { noParentheses: {}, withParentheses: {} }
+          threeTerms: { noParentheses: { plusMinus: 0, withMul: 0, withDiv: 0 }, withParentheses: { plusMinus: 0, mul: 0, div: 0 } }
         },
         allowNegative: true,
         allowFractions: false,
-        allowDecimals: false,
         timePerQuestionMs: 15000,
         questionCount: 10
       }
@@ -85,12 +83,11 @@ describe('负数检查测试', () => {
             digitRange: { min: 2, max: 3 },
             skills: { lastDigit: 50, estimate: 50, parity: 0, castingOutNines: 0, carryBorrow: 0, specialDigits: 0 },
             expressions: {
-              twoTerms: { simple: { plus: 30, minus: 30, mul: 0, div: 40 } }
+              twoTerms: { simple: { plus: 30, minus: 30, mul: 0, div: 40 } },
+              threeTerms: { noParentheses: { plusMinus: 0, withMul: 0, withDiv: 0 }, withParentheses: { plusMinus: 0, mul: 0, div: 0 } }
             },
-            threeTerms: { noParentheses: {}, withParentheses: {} },
             allowNegative: false,
             allowFractions: false,
-            allowDecimals: false,
             timePerQuestionMs: 15000,
             questionCount: 10
           }
@@ -120,11 +117,10 @@ describe('负数检查测试', () => {
             skills: { lastDigit: 30, estimate: 30, parity: 20, castingOutNines: 0, carryBorrow: 20, specialDigits: 0 },
             expressions: {
               twoTerms: { simple: { plus: 20, minus: 20, mul: 0, div: 0 } },
-              threeTerms: { noParentheses: { plusMinus: 50, withMul: 0, withDiv: 0 }, withParentheses: {} }
+              threeTerms: { noParentheses: { plusMinus: 50, withMul: 0, withDiv: 0 }, withParentheses: { plusMinus: 0, mul: 0, div: 0 } }
             },
             allowNegative: false,
             allowFractions: false,
-            allowDecimals: false,
             timePerQuestionMs: 15000,
             questionCount: 10
           }
@@ -197,12 +193,11 @@ describe('负数检查测试', () => {
             digitRange: { min: 2, max: 2 }, // 最小2位数
             skills: { lastDigit: 100, estimate: 0, parity: 0, castingOutNines: 0, carryBorrow: 0, specialDigits: 0 },
             expressions: {
-              twoTerms: { simple: { plus: 100, minus: 0, mul: 0, div: 0 } }
+              twoTerms: { simple: { plus: 100, minus: 0, mul: 0, div: 0 } },
+              threeTerms: { noParentheses: { plusMinus: 0, withMul: 0, withDiv: 0 }, withParentheses: { plusMinus: 0, mul: 0, div: 0 } }
             },
-            threeTerms: { noParentheses: {}, withParentheses: {} },
             allowNegative: false,
             allowFractions: false,
-            allowDecimals: false,
             timePerQuestionMs: 15000,
             questionCount: 10
           }
@@ -228,12 +223,11 @@ describe('负数检查测试', () => {
             digitRange: { min: 2, max: 3 },
             skills: { lastDigit: 25, estimate: 25, parity: 25, castingOutNines: 0, carryBorrow: 25, specialDigits: 0 },
             expressions: {
-              twoTerms: { simple: { plus: 25, minus: 25, mul: 25, div: 25 } }
+              twoTerms: { simple: { plus: 25, minus: 25, mul: 25, div: 25 } },
+              threeTerms: { noParentheses: { plusMinus: 0, withMul: 0, withDiv: 0 }, withParentheses: { plusMinus: 0, mul: 0, div: 0 } }
             },
-            threeTerms: { noParentheses: {}, withParentheses: {} },
             allowNegative: false,
             allowFractions: false,
-            allowDecimals: false,
             timePerQuestionMs: 15000,
             questionCount: 10
           }
@@ -280,14 +274,13 @@ describe('负数检查测试', () => {
             {
               level: 1,
               digitRange: { min: 2, max: 3 },
-              skills: { [skill]: 100 },
+              skills: { [skill]: 100 } as any,
               expressions: {
-                twoTerms: { simple: { plus: 50, minus: 50, mul: 0, div: 0 } }
+                twoTerms: { simple: { plus: 50, minus: 50, mul: 0, div: 0 } },
+                threeTerms: { noParentheses: { plusMinus: 0, withMul: 0, withDiv: 0 }, withParentheses: { plusMinus: 0, mul: 0, div: 0 } }
               },
-              threeTerms: { noParentheses: {}, withParentheses: {} },
               allowNegative: false,
               allowFractions: false,
-              allowDecimals: false,
               timePerQuestionMs: 15000,
               questionCount: 10
             }
@@ -301,9 +294,9 @@ describe('负数检查测试', () => {
           const correctValue = question.metadata.correctValue
           const shownValue = question.metadata.shownValue
 
-          expect(correctValue).toBeGreaterThanOrEqual(0, `技能 ${skill} 出现负数: ${correctValue}`)
-          expect(shownValue).toBeGreaterThanOrEqual(0, `技能 ${skill} 错误答案出现负数: ${shownValue}`)
-          expect(question.targetSkills).toContain(skill, `题目应该包含技能 ${skill}`)
+          expect(correctValue).toBeGreaterThanOrEqual(0)
+          expect(shownValue).toBeGreaterThanOrEqual(0)
+          expect(question.targetSkills).toContain(skill as any)
         }
       })
     })

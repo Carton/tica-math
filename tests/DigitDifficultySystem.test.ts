@@ -28,7 +28,6 @@ const testDigitDifficultyConfig = {
       },
       allowNegative: false,
       allowFractions: false,
-      allowDecimals: false,
       timePerQuestionMs: 15000,
       questionCount: 10
     },
@@ -54,7 +53,6 @@ const testDigitDifficultyConfig = {
       },
       allowNegative: false,
       allowFractions: false,
-      allowDecimals: false,
       timePerQuestionMs: 12000,
       questionCount: 12
     },
@@ -84,7 +82,6 @@ const testDigitDifficultyConfig = {
       },
       allowNegative: true,
       allowFractions: false,
-      allowDecimals: false,
       timePerQuestionMs: 10000,
       questionCount: 15
     }

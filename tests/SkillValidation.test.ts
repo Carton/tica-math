@@ -102,7 +102,7 @@ function createConfigForSkill(skill: string): any {
           twoTerms: { simple: { plus: 100, minus: 0, mul: 0, div: 0 }, },
           threeTerms: { noParentheses: {}, }
         },
-        allowNegative: false, allowFractions: false, allowDecimals: false,
+        allowNegative: false, allowFractions: false,
         timePerQuestionMs: 14000, questionCount: 10
       }
     ]
@@ -138,7 +138,7 @@ describe('技能集成测试套件', () => {
       }
 
       // 检查是否包含目标技能
-      if (question.targetSkills.includes(skill)) {
+      if (question.targetSkills.includes(skill as any)) {
         targetSkillMatchCount++
       }
 
@@ -219,7 +219,7 @@ describe('技能集成测试套件', () => {
       for (let i = 0; i < testCount; i++) {
         const question = QuestionGenerator.createQuestion(testLevel)
 
-        if (question.targetSkills.includes(skill)) {
+        if (question.targetSkills.includes(skill as any)) {
           skillQuestions++
           const { correctValue, shownValue } = question.metadata
 

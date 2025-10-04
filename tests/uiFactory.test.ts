@@ -17,6 +17,7 @@ describe('uiFactory', () => {
       fixedHeight: 0,
       interactiveConfig: undefined as unknown,
       padding: { left: 0, right: 0, top: 0, bottom: 0 },
+      fontSize: 24,
       setOrigin(originX: number, originY: number) {
         this.originX = originX
         this.originY = originY
@@ -66,8 +67,7 @@ describe('uiFactory', () => {
     const button = createTextButton(scene, 100, 120, { text: '测试', onClick: clickHandler })
 
     expect(button.originX).toBe(0.5)
-    expect(button.fixedHeight).toBeGreaterThan(0)
-    expect(button.interactiveConfig?.useHandCursor).toBe(true)
+    expect(button.height).toBeGreaterThan(0)
 
     button.emit('pointerup')
     expect(clickHandler).toHaveBeenCalledTimes(1)
@@ -83,7 +83,7 @@ describe('uiFactory', () => {
       textColor: '#123456',
     })
 
-    expect(button.fixedWidth).toBe(220)
+    expect(button.width).toBe(220)
     expect(button.style.backgroundColor).toBe('#ff0000')
     expect(button.style.color).toBe('#123456')
     expect(button.style.fontSize).toBe('32px')

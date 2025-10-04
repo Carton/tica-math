@@ -10,7 +10,7 @@ const testDiff = {
       digitRange: { min: 2, max: 3 },
       skills: { "lastDigit": 70, "estimate": 30, "parity": 0, "castingOutNines": 0, "carryBorrow": 0, "specialDigits": 0 },
       expressions: { "twoTerms": { "simple": {"plus": 70, "minus": 30, "mul": 0, "div": 0 } }, "threeTerms": { "noParentheses": {}, "withParentheses": {}}},
-      allowNegative: false, "allowFractions": false, "allowDecimals": false,
+      allowNegative: false, "allowFractions": false,
       timePerQuestionMs: 15000, "questionCount": 10
     }
   ]
