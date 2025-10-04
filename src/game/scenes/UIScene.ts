@@ -436,7 +436,9 @@ export default class UIScene extends Phaser.Scene {
     }
   }
 
-  private progressHandler = () => {
+  private progressHandler = (data: { index: number; total: number }) => {
+    this.clueIndex = data.index
+    this.clueTotal = data.total
     this.updateHeaderLeftText()
     this.updateToolDisplay()
   }
