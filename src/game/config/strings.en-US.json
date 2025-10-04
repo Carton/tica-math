@@ -1,6 +1,6 @@
 {
   "ui": {
-    "back": "Return to Agency",
+    "back_to_agency": "Return to Agency",
     "true": "True",
     "false": "False",
     "clue": "Clue",
@@ -8,9 +8,9 @@
     "switch_user": "Switch User",
     "detective_manual": "Detective Manual",
     "honor_wall": "Honor Wall",
-    "return": "Return",
+    "back": "Back",
     "next_page": "Next Page ▶",
-    "prev_page": "◀ Previous",
+    "prev_page": "◀ Previous Page",
     "new_user": "New User",
     "create": "Create",
     "cancel": "Cancel",

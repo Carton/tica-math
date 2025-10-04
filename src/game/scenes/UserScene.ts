@@ -51,7 +51,7 @@ export default class UserScene extends Phaser.Scene {
     // 返回按钮（仅当已有用户时）
     if (this.users.length > 0) {
       const backBtn = createTextButton(this, width / 2, height - 60, {
-        text: Strings.t('ui.return'),
+        text: Strings.t('ui.back'),
         configKey: 'secondaryButton',
       })
       backBtn.on('pointerup', () => this.scene.start('MainMenuScene'))

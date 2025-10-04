@@ -1,6 +1,6 @@
 {
   "ui": {
-    "back": "返回事务所",
+    "back_to_agency": "返回事务所",
     "true": "真相",
     "false": "伪证",
     "clue": "线索",
@@ -8,7 +8,7 @@
     "switch_user": "切换用户",
     "detective_manual": "侦探手册",
     "honor_wall": "荣誉墙",
-    "return": "返回",
+    "back": "返回",
     "next_page": "下一页 ▶",
     "prev_page": "◀ 上一页",
     "new_user": "新建用户",

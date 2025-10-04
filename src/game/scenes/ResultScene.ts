@@ -87,7 +87,7 @@ export default class ResultScene extends Phaser.Scene {
     const buttonStartY = detail.y + (sum?.pass && (sum?.comboMax ?? 0) >= 3 && SaveManager.calculateComboEXPBonus(sum?.comboMax ?? 0, Math.round((sum?.accuracy ?? 0) * 100)) > 0 ? 160 : 120)
 
     const back = createTextButton(this, width / 2, buttonStartY, {
-      text: Strings.t('ui.back'),
+      text: Strings.t('ui.back_to_agency'),
       configKey: 'primaryButton',
     })
 

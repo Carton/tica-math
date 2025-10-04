@@ -260,7 +260,7 @@ export default class UIScene extends Phaser.Scene {
 
     // 主按钮 - 返回事务所
     const btnBack = createTextButton(this, 0, 110, {
-      text: Strings.t('ui.back'),
+      text: Strings.t('ui.back_to_agency'),
       configKey: 'primaryButton',
     })
 

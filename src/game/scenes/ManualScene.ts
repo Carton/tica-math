@@ -141,7 +141,7 @@ export default class ManualScene extends Phaser.Scene {
 
     // 返回按钮
     const back = createTextButton(this, width / 2, height - 50, {
-      text: Strings.t('ui.return'),
+      text: Strings.t('ui.back'),
       configKey: 'secondaryButton',
     })
     back.on('pointerup', () => this.scene.start('MainMenuScene'))
