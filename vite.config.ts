@@ -11,9 +11,18 @@ export default defineConfig({
   build: {
     outDir: '../dist',
     emptyOutDir: true,
+    chunkSizeWarningLimit: 1500, // 增加警告限制到 1500KB
     rollupOptions: {
       input: {
         main: resolve(__dirname, 'src/index.html')
+      },
+      output: {
+        manualChunks: {
+          // 将 Phaser 单独分离出来
+          phaser: ['phaser'],
+          // 将其他大的第三方库分离
+          vendor: ['workbox-precaching', 'workbox-routing', 'workbox-strategies', 'workbox-expiration']
+        }
       }
     }
   },
@@ -38,7 +47,7 @@ export default defineConfig({
     VitePWA({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.png', 'robots.txt'],
-      strategies: 'injectManifest',
+      strategies: 'generateSW',
       precacheEntries: [
         // 预缓存核心图片文件
         'images/bg_office.jpg',
