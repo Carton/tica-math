@@ -131,5 +131,10 @@
     "hide_panel": "Hide Panel",
     "confirm_reset": "Are you sure you want to reset the game?",
     "enter_level": "Enter level number (1-100):"
+  },
+  "audio": {
+    "bgm_loading": "🎵 Music Loading...",
+    "bgm_ready": "🎵 Music Ready",
+    "bgm_failed": "🎵 Music Failed"
   }
 }

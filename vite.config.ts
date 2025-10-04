@@ -38,6 +38,34 @@ export default defineConfig({
     VitePWA({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.png', 'robots.txt'],
+      strategies: 'injectManifest',
+      precacheEntries: [
+        // 预缓存核心图片文件
+        'images/bg_office.jpg',
+        'images/bg_desk.jpg',
+        'images/paper_note.webp',
+        'images/stamp_true.webp',
+        'images/stamp_false.webp',
+        'images/icons_magnify.png',
+        'images/icons_watch.png',
+        'images/icons_light.png',
+      ],
+      runtimeCaching: [
+        {
+          urlPattern: /^https?:\/\/.*\.(?:ogg|mp3)$/,
+          handler: 'CacheFirst',
+          options: {
+            cacheName: 'audio-cache',
+            expiration: {
+              maxEntries: 20,
+              maxAgeSeconds: 30 * 24 * 60 * 60, // 30 days
+            },
+            cacheableResponse: {
+              statuses: [0, 200],
+            },
+          },
+        },
+      ],
       manifest: {
         name: 'Tica 侦探事务所：数字谜案',
         short_name: 'Tica谜案',
@@ -45,7 +73,10 @@ export default defineConfig({
         display: 'standalone',
         background_color: '#0b1021',
         theme_color: '#0b1021',
-        icons: []
+        icons: [],
+        description: '一款侦探主题的数学学习游戏，教导孩子快速计算验证技巧',
+        categories: ['education', 'games', 'puzzle'],
+        lang: 'zh-CN'
       }
     }),
     {
