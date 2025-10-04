@@ -321,6 +321,9 @@ function generateTwoTermsExpression(plan: ExpressionPlan, allowNegative: boolean
       let dividend: number | null = null
       let divisor: number | null = null
 
+      const targetMin = Math.min(plan.operands[0].digits, plan.operands[1].digits)
+      const targetMax = Math.max(plan.operands[0].digits, plan.operands[1].digits)
+
       for (let attempt = 0; attempt < 40; attempt++) {
         let candidateDivisor = randomInt(minDivisor, maxDivisor)
         if (candidateDivisor < 2) candidateDivisor = 2
@@ -350,9 +353,6 @@ function generateTwoTermsExpression(plan: ExpressionPlan, allowNegative: boolean
         const dividendDigits = Math.abs(dividend).toString().length
         const divisorDigits = Math.abs(candidateDivisor).toString().length
         const totalDigits = dividendDigits + divisorDigits
-
-        const targetMin = Math.min(plan.operands[0].digits, plan.operands[1].digits)
-        const targetMax = Math.max(plan.operands[0].digits, plan.operands[1].digits)
 
         const digitBalanceOk =
           dividendDigits >= targetMax &&

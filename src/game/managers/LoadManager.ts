@@ -135,10 +135,10 @@ export class LoadManager {
         console.log(`✅ 音频加载完成: ${key}`)
 
         // 检查AudioManager是否有期望播放这个BGM
-        if (AudioManager.requestedBgmKey === key) {
+        if (AudioManager.getRequestedBgmKey() === key) {
           console.log(`🎵 自动播放请求的BGM: ${key}`)
           AudioManager.tryStartBgm(key)
-          AudioManager.requestedBgmKey = null // 清除期望
+          AudioManager.clearRequestedBgmKey() // 清除期望
         }
 
         emit('audio:loaded', { key })

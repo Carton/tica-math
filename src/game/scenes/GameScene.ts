@@ -9,6 +9,7 @@ import { SaveManager } from '@/game/managers/SaveManager'
 import { isPass, nextLevel } from '@/game/utils/gameFlow'
 import { AudioManager } from '@/game/managers/AudioManager'
 import { DebugHelper } from '@/utils/debugHelper'
+import { Strings } from '@/game/managers/Strings'
 
 export default class GameScene extends Phaser.Scene {
   private questionIndex = 0

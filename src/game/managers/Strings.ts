@@ -11,7 +11,7 @@ export type StringsSchema = {
   user: Record<string, string>
 }
 
-type LanguageCode = 'zh-CN' | 'en-US'
+export type LanguageCode = 'zh-CN' | 'en-US'
 
 export class Strings {
   private static data: StringsSchema | null = null

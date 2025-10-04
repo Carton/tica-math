@@ -35,9 +35,9 @@ export default class UIScene extends Phaser.Scene {
   private clueTotal = 0
   private toolsContainer?: Phaser.GameObjects.Container
   private toolIcons: {
-    magnify?: Phaser.GameObjects.Image
-    watch?: Phaser.GameObjects.Image
-    light?: Phaser.GameObjects.Image
+    magnify?: Phaser.GameObjects.Image | Phaser.GameObjects.Text
+    watch?: Phaser.GameObjects.Image | Phaser.GameObjects.Text
+    light?: Phaser.GameObjects.Image | Phaser.GameObjects.Text
   } = {}
   private countdownStartHandler = ({ totalMs }: { totalMs: number }) => this.startCountdown(totalMs)
   private countdownExtendHandler = ({ deltaMs }: { deltaMs: number }) => this.extendCountdown(deltaMs)
@@ -71,11 +71,10 @@ export default class UIScene extends Phaser.Scene {
     const countdownX = pauseButtonX - layout.countdownSpacing
     const toolDisplayX = countdownX - layout.toolDisplaySpacing
 
-    const pauseCfg = getUiConfig('pauseButton')
     this.pauseButton = this.add.text(pauseButtonX, pauseButtonY, '⏸', {
       fontFamily: 'sans-serif',
-      fontSize: `${pauseCfg.fontSize}px`,
-      color: pauseCfg.textColor,
+      fontSize: headerAreaCfg.textStyles.countdownFontSize,
+      color: headerAreaCfg.textStyles.countdownColor,
     }).setOrigin(1, 0).setInteractive({ useHandCursor: true })
 
     this.pauseButton.on('pointerup', this.handleEscKey)
@@ -397,9 +396,9 @@ export default class UIScene extends Phaser.Scene {
     })
 
     this.toolsContainer.add([
-      this.toolIcons.magnify,
-      this.toolIcons.watch,
-      this.toolIcons.light
+      this.toolIcons.magnify!,
+      this.toolIcons.watch!,
+      this.toolIcons.light!
     ])
   }
 

@@ -15,6 +15,15 @@ export class AudioManager {
   private static defaultBgmKey = 'bgm_main' // 记录默认BGM
   private static requestedBgmKey: string | null = null // 当前期望的BGM
 
+  // 提供公共访问器
+  static getRequestedBgmKey(): string | null {
+    return this.requestedBgmKey
+  }
+
+  static clearRequestedBgmKey(): void {
+    this.requestedBgmKey = null
+  }
+
   static init(scene: Phaser.Scene) {
     this.scene = scene
 
@@ -117,7 +126,7 @@ export class AudioManager {
    */
   static requestBgm(key: string) {
     // 如果是相同的BGM请求，忽略重复请求
-    if (this.requestedBgmKey === key) {
+    if (this.getRequestedBgmKey() === key) {
       return
     }
 
@@ -126,7 +135,7 @@ export class AudioManager {
 
     if (!this._bgmEnabled) {
       console.log('🔇 BGM已关闭')
-      this.requestedBgmKey = null
+      this.clearRequestedBgmKey()
       return
     }
 
@@ -134,7 +143,7 @@ export class AudioManager {
     if (LoadManager.isAudioLoaded(key)) {
       console.log(`✅ BGM已预加载，立即播放: ${key}`)
       this.tryStartBgm(key)
-      this.requestedBgmKey = null
+      this.clearRequestedBgmKey()
       return
     }
 
@@ -145,7 +154,7 @@ export class AudioManager {
         if (existingSound) {
           console.log(`✅ BGM已在场景中，立即播放: ${key}`)
           this.tryStartBgm(key)
-          this.requestedBgmKey = null
+          this.clearRequestedBgmKey()
           return
         }
       } catch (error) {

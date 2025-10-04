@@ -46,6 +46,9 @@ export type EventPayloads = {
   'tool:hints': { targetSkills: string[]; hint: string }
   'progress:update': { index: number; total: number }
   'audio:play': { key: string }
+  'load:progress': { progress: number; current: string; loaded: number; total: number }
+  'audio:loaded': { key: string }
+  'audio:error': { key: string; error: any }
 }
 
 export function emit<K extends keyof EventPayloads>(key: K, payload: EventPayloads[K]) {

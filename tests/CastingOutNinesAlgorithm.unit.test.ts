@@ -1,12 +1,7 @@
 // CastingOutNines算法单元测试 - 直接测试castingOutNines技能逻辑
 // 这个测试应该达到100%通过率，因为它直接测试算法本身
 
-// 辅助函数
-function digitSum(n: number): number {
-  let s = 0, abs = Math.abs(n);
-  while (abs > 0) { s += abs % 10; abs = Math.floor(abs / 10); }
-  return s;
-}
+import { digitSum } from './testUtils'
 
 function digitSumMod9(n: number): number {
   return digitSum(n) % 9;

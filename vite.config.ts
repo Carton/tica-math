@@ -77,7 +77,7 @@ export default defineConfig({
       ],
       manifest: {
         name: 'Tica 侦探事务所：数字谜案',
-        short_name: 'Tica谜案',
+        short_name: 'Tica 数字谜案',
         start_url: '.',
         display: 'standalone',
         background_color: '#0b1021',

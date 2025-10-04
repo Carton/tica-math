@@ -93,13 +93,6 @@ export const uiConfig: UiConfig = {
     headerIconLabelGap: 4,
     footerIconSize: 80,
   },
-  pauseButton: {
-    fontSize: 36,
-    marginRight: 18,
-    marginTop: 12,
-    textColor: '#ffffff',
-    spacing: 36,
-  },
   headerArea: {
     /** 右上角布局配置 - 基于当前UIScene中的实际值 */
     layout: {

@@ -2,13 +2,7 @@
 // 这测试的是实际游戏中的表现，包括技能权重选择、题目适用性检查等
 import { QuestionGenerator } from '@/game/managers/QuestionGenerator'
 import { DifficultyManager } from '@/game/managers/DifficultyManager'
-
-// 辅助函数：数字各位数之和
-function digitSum(n: number): number {
-  let s = 0, abs = Math.abs(n);
-  while (abs > 0) { s += abs % 10; abs = Math.floor(abs / 10); }
-  return s;
-}
+import { digitSum } from './testUtils'
 
 // 辅助函数：数字和模9
 function digitSumMod9(n: number): number {
