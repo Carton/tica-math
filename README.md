@@ -4,7 +4,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![GitHub stars](https://img.shields.io/github/stars/Carton/tica-math.svg?style=social&label=Star)](https://github.com/Carton/tica-math)
 
-📖 [中文版 README](docs/README_cn.md) | 🎮 [Play Demo](https://carton.github.io/tica-math/) | ⭐ [Give us a star!](https://github.com/Carton/tica-math/)
+📖 [中文版 README](docs/README_cn.md) | 🎮 [Play Online](https://carton.github.io/tica-math/) | ⭐ [Give us a star!](https://github.com/Carton/tica-math/)
 
 ---
 
@@ -121,5 +121,6 @@ git checkout main
 ## License
 
 MIT License
+
 
 
