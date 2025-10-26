@@ -26,6 +26,43 @@ Perfect for children aged 8-10, this game transforms mathematical learning into 
 
 **🎭 Trivia**: Tica, the protagonist detective, is named after the developer's daughter!
 
+---
+
+## 🌟 Key Features
+
+### 🧠 **6 Mathematical Reasoning Skills**
+- **Last Digit Tracking** - Verify calculations by checking the final digit
+- **Estimation Power** - Quick approximation techniques for fast validation
+- **Odd/Even Code** - Parity checking methods for calculation verification
+- **Casting Out Nines** - Classic digital root technique for error detection
+- **Carry/Borrow Detection** - Identify common arithmetic mistakes
+- **Special Digit Fingerprint** - Advanced divisibility rules (3s, 9s, etc.)
+
+### 🎮 **Engaging Gameplay**
+- 🔧 Three detective tools: Magnifying Glass, Pocket Watch, and Lightning Bolt
+- 🎯 Adaptive difficulty system with 100+ levels
+- ⏱️ Time-based challenges with combo rewards
+- 🏆 Comprehensive achievement system with badge collection
+
+### 📱 **Modern Features**
+- 📱 PWA support - Play offline on any device
+- 👥 Multi-user profile system
+- 🌐 Full internationalization (English/Chinese)
+- 🎵 Dynamic audio system with sound effects and background music
+
+## 🛠️ Technology Stack
+
+### 🎮 **Frontend & Game Engine**
+- **Phaser 3.90.0** - Modern HTML5 game framework
+- **TypeScript 5.0+** - Type-safe JavaScript development
+- **Vite 4.x** - Fast build tool and dev server
+
+### 🌐 **Internationalization**
+- **i18n System** - Full English/Chinese language support
+- **Dynamic Language Switching** - Runtime language changes
+
+---
+
 ## 🚀 Quick Start
 
 ### 🎮 Play Online
@@ -79,61 +116,10 @@ git push origin gh-pages
 # Return to main branch
 git checkout main
 ```
-
-### Custom Domain
-
-Add CNAME record in GitHub Pages settings, or modify the `cname` field in `.github/workflows/deploy.yml`.
-
-## 🌟 Key Features
-
-### 🧠 **6 Mathematical Reasoning Skills**
-- **Last Digit Tracking** - Verify calculations by checking the final digit
-- **Estimation Power** - Quick approximation techniques for fast validation
-- **Odd/Even Code** - Parity checking methods for calculation verification
-- **Casting Out Nines** - Classic digital root technique for error detection
-- **Carry/Borrow Detection** - Identify common arithmetic mistakes
-- **Special Digit Fingerprint** - Advanced divisibility rules (3s, 9s, etc.)
-
-### 🎮 **Engaging Gameplay**
-- 🕵️‍♀️ Immersive detective storyline with character progression
-- 🔧 Three detective tools: Magnifying Glass, Pocket Watch, and Lightning Bolt
-- 🎯 Adaptive difficulty system with 100+ levels
-- ⏱️ Time-based challenges with combo rewards
-- 🏆 Comprehensive achievement system with badge collection
-
-### 📱 **Modern Features**
-- 📱 PWA support - Play offline on any device
-- 👥 Multi-user profile system
-- 🌐 Full internationalization (English/Chinese)
-- 💾 Cloud save functionality
-- 🎵 Dynamic audio system with sound effects and background music
-
-## 🛠️ Technology Stack
-
-### 🎮 **Frontend & Game Engine**
-- **Phaser 3.90.0** - Modern HTML5 game framework
-- **TypeScript 5.0+** - Type-safe JavaScript development
-- **Vite 4.x** - Fast build tool and dev server
-
-### 🧪 **Testing & Quality**
-- **Jest** - Comprehensive testing framework
-- **ESLint** - Code quality and style enforcement
-- **191+ Unit Tests** - 100% test coverage for core logic
-
-### 🚀 **Deployment & Distribution**
-- **GitHub Pages** - Static hosting and CI/CD
-- **PWA** - Progressive Web App with offline support
-- **GitHub Actions** - Automated deployment pipeline
-
-### 🌐 **Internationalization**
-- **i18n System** - Full English/Chinese language support
-- **Dynamic Language Switching** - Runtime language changes
-
 ---
-
-**🎯 Development Approach**: Built with modern web technologies and educational best practices, featuring a comprehensive test suite and maintainable codebase architecture.
 
 ## License
 
 MIT License
+
 
