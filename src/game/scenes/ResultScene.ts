@@ -1,5 +1,5 @@
 import Phaser from 'phaser'
-import type { ResultSummary, WrongAnswer } from '@/game/utils/types'
+import type { ResultSummary, WrongAnswer, WrongAnswerType } from '@/game/utils/types'
 import { resultPrimaryActionLabel } from '@/game/utils/gameFlow'
 import { AudioManager } from '@/game/managers/AudioManager'
 import { ToolManager } from '@/game/managers/ToolManager'
@@ -230,9 +230,17 @@ export default class ResultScene extends Phaser.Scene {
       wordWrap: { width: 280 } // 增加宽度
     }).setOrigin(0, 0.5)
 
-    // 用户选择和正确答案 - 在同一行显示
-    const userChoice = wrongAnswer.userChoice ? Strings.t('ui.true') : Strings.t('ui.false')
-    const userChoiceColor = wrongAnswer.userChoice ? '#4ecdc4' : '#ff6b6b'
+    // 根据错误类型获取用户选择文本
+    const getUserChoiceText = (wrongType: WrongAnswerType): string => {
+      if (wrongType === 'timeout') {
+        return Strings.t('results.timeout')
+      } else {
+        return wrongAnswer.userChoice ? Strings.t('ui.true') : Strings.t('ui.false')
+      }
+    }
+
+    const userChoice = getUserChoiceText(wrongAnswer.wrongType)
+    const userChoiceColor = wrongAnswer.wrongType === 'timeout' ? '#ffa500' : (wrongAnswer.userChoice ? '#4ecdc4' : '#ff6b6b')
     const correctChoice = wrongAnswer.correctAnswer ? Strings.t('ui.true') : Strings.t('ui.false')
 
     // 分别创建用户选择和正确答案文本，使用不同颜色
@@ -248,7 +256,7 @@ export default class ResultScene extends Phaser.Scene {
 
 
     // 正确答案文本 - 使用绿色
-    const correctChoiceTextObj = this.add.text(-cardWidth / 2 + 475, 0, `${correctAnswerText}: ${correctChoice}`, {
+    const correctChoiceTextObj = this.add.text(-cardWidth / 2 + 485, 0, `${correctAnswerText}: ${correctChoice}`, {
       fontFamily: 'sans-serif',
       fontSize: '14px',
       color: '#95e1d3'

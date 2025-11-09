@@ -46,10 +46,13 @@ export interface ExpressionConfig {
 
 export type Operator = 'plus' | 'minus' | 'mul' | 'div'
 
+export type WrongAnswerType = 'wrong_choice' | 'timeout'
+
 export interface WrongAnswer {
   questionString: string
   userChoice: boolean
   correctAnswer: boolean
+  wrongType: WrongAnswerType
   metadata: {
     expr: string
     correctValue: number

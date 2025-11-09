@@ -2,7 +2,7 @@ import Phaser from 'phaser'
 import { emit, on, off } from '@/game/managers/EventBus'
 import { DifficultyManager } from '@/game/managers/DifficultyManager'
 import { QuestionGenerator } from '@/game/managers/QuestionGenerator'
-import type { Question, ResultSummary, WrongAnswer } from '@/game/utils/types'
+import type { Question, ResultSummary, WrongAnswer, WrongAnswerType } from '@/game/utils/types'
 import { ToolManager } from '@/game/managers/ToolManager'
 import { gradeByAccuracy } from '@/game/utils/scoring'
 import { SaveManager } from '@/game/managers/SaveManager'
@@ -185,6 +185,7 @@ export default class GameScene extends Phaser.Scene {
         questionString: this.current.questionString,
         userChoice: choice,
         correctAnswer: this.current.isTrue,
+        wrongType: 'wrong_choice',
         metadata: {
           expr: this.current.metadata.expr,
           correctValue: this.current.metadata.correctValue,
@@ -205,12 +206,13 @@ export default class GameScene extends Phaser.Scene {
     this.showWrongFeedback()
     this.combo = 0
 
-    // 记录超时题目为错题（用户选择为false，因为超时意味着没有正确判断）
+    // 记录超时题目为错题
     if (this.current) {
       this.wrongAnswers.push({
         questionString: this.current.questionString,
         userChoice: false, // 超时视为错误选择
         correctAnswer: this.current.isTrue,
+        wrongType: 'timeout',
         metadata: {
           expr: this.current.metadata.expr,
           correctValue: this.current.metadata.correctValue,

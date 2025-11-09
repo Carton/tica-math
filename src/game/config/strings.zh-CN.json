@@ -85,7 +85,9 @@
     "combo_bonus_text": "🔥 连击加成 +{0} EXP！",
     "wrong_answers_title": "错题回顾 ({0}题)",
     "your_choice": "你的选择",
-    "correct_answer": "正确答案"
+    "correct_answer": "正确答案",
+    "timeout": "超时",
+    "wrong_choice": "答错"
   },
   "errors": {
     "user_id_empty": "用户ID不能为空",

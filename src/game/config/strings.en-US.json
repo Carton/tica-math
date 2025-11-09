@@ -109,7 +109,9 @@
     "combo_bonus_text": "🔥 Combo Bonus +{0} EXP!",
     "wrong_answers_title": "Wrong Answers Review ({0} questions)",
     "your_choice": "Your Choice",
-    "correct_answer": "Correct Answer"
+    "correct_answer": "Correct Answer",
+    "timeout": "Timeout",
+    "wrong_choice": "Wrong Answer"
   },
   "errors": {
     "user_id_empty": "User ID cannot be empty",

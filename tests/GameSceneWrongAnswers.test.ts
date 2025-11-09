@@ -1,4 +1,4 @@
-import type { Question, WrongAnswer } from '@/game/utils/types'
+import type { Question, WrongAnswer, WrongAnswerType } from '@/game/utils/types'
 
 describe('GameScene Wrong Answers Collection', () => {
   // 模拟GameScene的错题收集逻辑
@@ -18,6 +18,7 @@ describe('GameScene Wrong Answers Collection', () => {
           questionString: current.questionString,
           userChoice: choice,
           correctAnswer: current.isTrue,
+          wrongType: 'wrong_choice',
           metadata: {
             expr: current.metadata.expr,
             correctValue: current.metadata.correctValue,
@@ -33,6 +34,7 @@ describe('GameScene Wrong Answers Collection', () => {
         questionString: current.questionString,
         userChoice: false, // 超时视为错误选择
         correctAnswer: current.isTrue,
+        wrongType: 'timeout',
         metadata: {
           expr: current.metadata.expr,
           correctValue: current.metadata.correctValue,
@@ -217,6 +219,7 @@ describe('GameScene Wrong Answers Collection', () => {
           questionString: '15 + 25 = 40',
           userChoice: false,
           correctAnswer: true,
+          wrongType: 'wrong_choice',
           metadata: {
             expr: '15 + 25',
             correctValue: 40,
