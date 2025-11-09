@@ -82,7 +82,10 @@
     "grade": "评级：",
     "combo": "连击：",
     "tools_used": "道具使用：",
-    "combo_bonus_text": "🔥 连击加成 +{0} EXP！"
+    "combo_bonus_text": "🔥 连击加成 +{0} EXP！",
+    "wrong_answers_title": "错题回顾 ({0}题)",
+    "your_choice": "你的选择",
+    "correct_answer": "正确答案"
   },
   "errors": {
     "user_id_empty": "用户ID不能为空",

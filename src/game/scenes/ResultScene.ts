@@ -48,22 +48,12 @@ export default class ResultScene extends Phaser.Scene {
 
     // 添加错题显示区域
     let wrongAnswersSection: Phaser.GameObjects.Container | undefined
-    let wrongAnswersY = detail.y + 100
+    let wrongAnswersY = detail.y + 140
 
     if (sum?.wrongAnswers && sum.wrongAnswers.length > 0) {
-      // 错题标题
-      const wrongTitle = this.add.text(width / 2, wrongAnswersY, `错题回顾 (${sum.wrongAnswers.length}题)`, {
-        fontFamily: 'sans-serif',
-        fontSize: '24px',
-        color: '#ff6b6b',
-        fontStyle: 'bold'
-      }).setOrigin(0.5)
-
-      wrongAnswersY += 40
-
       // 创建错题显示区域
       wrongAnswersSection = this.createWrongAnswersSection(width, wrongAnswersY, sum.wrongAnswers)
-      wrongAnswersY += 190 // 错题区域高度（调整为实际使用的180px + 10px间距）
+      wrongAnswersY += 115 // 错题区域高度（180px + 15px间距）
     }
 
     // 如果有连击加成，给连击数字添加特殊效果
@@ -105,7 +95,7 @@ export default class ResultScene extends Phaser.Scene {
 
     // 计算按钮位置
     const hasComboBonus = sum?.pass && (sum?.comboMax ?? 0) >= 3 && SaveManager.calculateComboEXPBonus(sum?.comboMax ?? 0, Math.round((sum?.accuracy ?? 0) * 100)) > 0
-    const buttonStartY = wrongAnswersY + (hasComboBonus ? 80 : 40)
+    const buttonStartY = wrongAnswersY + (hasComboBonus ? 60 : 30) // 减少间距
 
     const back = createTextButton(this, width / 2, buttonStartY, {
       text: Strings.t('ui.back_to_agency'),
@@ -149,8 +139,9 @@ export default class ResultScene extends Phaser.Scene {
     // 创建滚动容器
     const container = this.add.container(screenWidth / 2, startY)
 
-    // 背景面板
-    const panelWidth = screenWidth * 0.8
+    // 背景面板 - 根据错题卡片宽度调整，为滚动条留出空间
+    const cardWidth = 650 // 错题卡片宽度
+    const panelWidth = cardWidth + 60 // 为滚动条和边距留出空间
     const panelHeight = 180 // 减小高度，避免空间浪费
     const panel = this.add.rectangle(0, 0, panelWidth, panelHeight, 0x1a1a2e, 0.9)
       .setStrokeStyle(2, 0x16213e)
@@ -166,9 +157,9 @@ export default class ResultScene extends Phaser.Scene {
     const scrollContent = this.add.container(0, 0)
 
     // 题目卡片间距和尺寸
-    const cardHeight = 60
-    const cardSpacing = 10
-    let currentY = -panelHeight / 2 + 40 // 从顶部开始，留出更多空间
+    const cardHeight = 30 // 使用新的卡片高度
+    const cardSpacing = 6 // 进一步减小间距
+    let currentY = -panelHeight / 2 + 25 // 从顶部开始，留出空间
 
     wrongAnswers.forEach((wrongAnswer, index) => {
       const card = this.createWrongAnswerCard(0, currentY, wrongAnswer, index + 1)
@@ -217,9 +208,9 @@ export default class ResultScene extends Phaser.Scene {
   private createWrongAnswerCard(x: number, y: number, wrongAnswer: WrongAnswer, questionNumber: number): Phaser.GameObjects.Container {
     const card = this.add.container(x, y)
 
-    // 卡片背景
-    const cardWidth = 600
-    const cardHeight = 60
+    // 卡片背景 - 增加宽度以容纳更多信息
+    const cardWidth = 650
+    const cardHeight = 30 // 进一步减小高度
     const bg = this.add.rectangle(0, 0, cardWidth, cardHeight, 0x0f3460, 0.8)
       .setStrokeStyle(1, 0x16213e)
 
@@ -231,32 +222,39 @@ export default class ResultScene extends Phaser.Scene {
       fontStyle: 'bold'
     }).setOrigin(0, 0.5)
 
-    // 题目表达式
-    const question = this.add.text(-cardWidth / 2 + 50, -10, wrongAnswer.questionString, {
+    // 题目表达式 - 增加可用宽度
+    const question = this.add.text(-cardWidth / 2 + 50, 0, wrongAnswer.questionString, {
       fontFamily: 'monospace',
       fontSize: '14px',
       color: '#ffffff',
-      wordWrap: { width: 300 }
+      wordWrap: { width: 280 } // 增加宽度
     }).setOrigin(0, 0.5)
 
-    // 用户选择
-    const userChoice = wrongAnswer.userChoice ? '真相' : '伪证'
+    // 用户选择和正确答案 - 在同一行显示
+    const userChoice = wrongAnswer.userChoice ? Strings.t('ui.true') : Strings.t('ui.false')
     const userChoiceColor = wrongAnswer.userChoice ? '#4ecdc4' : '#ff6b6b'
-    const userChoiceText = this.add.text(cardWidth / 2 - 180, -10, `你的选择: ${userChoice}`, {
+    const correctChoice = wrongAnswer.correctAnswer ? Strings.t('ui.true') : Strings.t('ui.false')
+
+    // 分别创建用户选择和正确答案文本，使用不同颜色
+    const yourChoiceText = Strings.t('results.your_choice')
+    const correctAnswerText = Strings.t('results.correct_answer')
+
+    // 用户选择文本 - 使用对应的颜色
+    const userChoiceTextObj = this.add.text(-cardWidth / 2 + 340, 0, `${yourChoiceText}: ${userChoice}`, {
       fontFamily: 'sans-serif',
       fontSize: '14px',
       color: userChoiceColor
     }).setOrigin(0, 0.5)
 
-    // 正确答案
-    const correctChoice = wrongAnswer.correctAnswer ? '真相' : '伪证'
-    const correctText = this.add.text(cardWidth / 2 - 180, 10, `正确答案: ${correctChoice}`, {
+
+    // 正确答案文本 - 使用绿色
+    const correctChoiceTextObj = this.add.text(-cardWidth / 2 + 475, 0, `${correctAnswerText}: ${correctChoice}`, {
       fontFamily: 'sans-serif',
       fontSize: '14px',
       color: '#95e1d3'
     }).setOrigin(0, 0.5)
 
-    card.add([bg, number, question, userChoiceText, correctText])
+    card.add([bg, number, question, userChoiceTextObj, correctChoiceTextObj])
     return card
   }
 }
