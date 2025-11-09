@@ -2,7 +2,7 @@ import Phaser from 'phaser'
 import { emit, on, off } from '@/game/managers/EventBus'
 import { DifficultyManager } from '@/game/managers/DifficultyManager'
 import { QuestionGenerator } from '@/game/managers/QuestionGenerator'
-import type { Question, ResultSummary } from '@/game/utils/types'
+import type { Question, ResultSummary, WrongAnswer } from '@/game/utils/types'
 import { ToolManager } from '@/game/managers/ToolManager'
 import { gradeByAccuracy } from '@/game/utils/scoring'
 import { SaveManager } from '@/game/managers/SaveManager'
@@ -21,6 +21,7 @@ export default class GameScene extends Phaser.Scene {
   private totalTimeMs = 0
   private combo = 0
   private comboMax = 0
+  private wrongAnswers: WrongAnswer[] = []
 
   private choiceHandler = ({ choice }: { choice: boolean }) => this.handleChoice(choice)
   private timeoutHandler = () => this.handleTimeout()
@@ -42,6 +43,7 @@ export default class GameScene extends Phaser.Scene {
     this.totalTimeMs = 0
     this.combo = 0
     this.comboMax = 0
+    this.wrongAnswers = []
   }
 
   create() {
@@ -178,6 +180,17 @@ export default class GameScene extends Phaser.Scene {
       this.showCorrectStamp(choice)
     } else {
       this.combo = 0
+      // 记录错题信息
+      this.wrongAnswers.push({
+        questionString: this.current.questionString,
+        userChoice: choice,
+        correctAnswer: this.current.isTrue,
+        metadata: {
+          expr: this.current.metadata.expr,
+          correctValue: this.current.metadata.correctValue,
+          shownValue: this.current.metadata.shownValue
+        }
+      })
       // 在答案错误时添加背景闪烁红色效果（特别是在音效关闭时提供视觉反馈）
       this.showWrongFeedback()
     }
@@ -191,6 +204,21 @@ export default class GameScene extends Phaser.Scene {
     // 超时也添加错误反馈效果
     this.showWrongFeedback()
     this.combo = 0
+
+    // 记录超时题目为错题（用户选择为false，因为超时意味着没有正确判断）
+    if (this.current) {
+      this.wrongAnswers.push({
+        questionString: this.current.questionString,
+        userChoice: false, // 超时视为错误选择
+        correctAnswer: this.current.isTrue,
+        metadata: {
+          expr: this.current.metadata.expr,
+          correctValue: this.current.metadata.correctValue,
+          shownValue: this.current.metadata.shownValue
+        }
+      })
+    }
+
     this.questionIndex += 1
     this.time.delayedCall(120, () => this.nextQuestion())
   }
@@ -342,6 +370,7 @@ export default class GameScene extends Phaser.Scene {
       grade,
       pass,
       level: this.level,
+      wrongAnswers: this.wrongAnswers.length > 0 ? this.wrongAnswers : undefined,
     }
     SaveManager.updateWithResult(this.level, summary)
 

@@ -46,6 +46,17 @@ export interface ExpressionConfig {
 
 export type Operator = 'plus' | 'minus' | 'mul' | 'div'
 
+export interface WrongAnswer {
+  questionString: string
+  userChoice: boolean
+  correctAnswer: boolean
+  metadata: {
+    expr: string
+    correctValue: number
+    shownValue: number
+  }
+}
+
 export interface ResultSummary {
   correctCount: number
   totalCount: number
@@ -57,4 +68,5 @@ export interface ResultSummary {
   grade: 'S' | 'A' | 'B' | 'C'
   pass: boolean
   level: number
+  wrongAnswers?: WrongAnswer[]
 }

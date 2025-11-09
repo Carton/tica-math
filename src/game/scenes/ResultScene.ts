@@ -1,5 +1,5 @@
 import Phaser from 'phaser'
-import type { ResultSummary } from '@/game/utils/types'
+import type { ResultSummary, WrongAnswer } from '@/game/utils/types'
 import { resultPrimaryActionLabel } from '@/game/utils/gameFlow'
 import { AudioManager } from '@/game/managers/AudioManager'
 import { ToolManager } from '@/game/managers/ToolManager'
@@ -23,7 +23,7 @@ export default class ResultScene extends Phaser.Scene {
       AudioManager.playSfx('sfx_lose_level') // 闯关失败播放失败音效
     }
 
-    const title = this.add.text(width / 2, height / 2 - 140, sum?.pass ? Strings.t('results.case_cleared') : Strings.t('results.professor_escaped'), {
+    const title = this.add.text(width / 2, height / 2 - 180, sum?.pass ? Strings.t('results.case_cleared') : Strings.t('results.professor_escaped'), {
       fontFamily: 'sans-serif', fontSize: '36px', color: '#ffffff'
     }).setOrigin(0.5)
 
@@ -42,16 +42,36 @@ export default class ResultScene extends Phaser.Scene {
     }
 
     const detailText = `${expDetail}${Strings.t('results.accuracy')}${Math.round((sum?.accuracy ?? 0) * 100)}%\n${Strings.t('results.grade')}${sum?.grade ?? 'C'}\n${Strings.t('results.combo')}${sum?.comboMax ?? 0}，${Strings.t('results.tools_used')}${sum?.toolsUsed ?? 0}`
-    const detail = this.add.text(width / 2, title.y + 70, detailText, {
-      fontFamily: 'sans-serif', fontSize: '20px', color: '#a9ffea', align: 'center'
+    const detail = this.add.text(width / 2, title.y + 60, detailText, {
+      fontFamily: 'sans-serif', fontSize: '18px', color: '#a9ffea', align: 'center'
     }).setOrigin(0.5)
+
+    // 添加错题显示区域
+    let wrongAnswersSection: Phaser.GameObjects.Container | undefined
+    let wrongAnswersY = detail.y + 100
+
+    if (sum?.wrongAnswers && sum.wrongAnswers.length > 0) {
+      // 错题标题
+      const wrongTitle = this.add.text(width / 2, wrongAnswersY, `错题回顾 (${sum.wrongAnswers.length}题)`, {
+        fontFamily: 'sans-serif',
+        fontSize: '24px',
+        color: '#ff6b6b',
+        fontStyle: 'bold'
+      }).setOrigin(0.5)
+
+      wrongAnswersY += 40
+
+      // 创建错题显示区域
+      wrongAnswersSection = this.createWrongAnswersSection(width, wrongAnswersY, sum.wrongAnswers)
+      wrongAnswersY += 190 // 错题区域高度（调整为实际使用的180px + 10px间距）
+    }
 
     // 如果有连击加成，给连击数字添加特殊效果
     if (sum?.pass && (sum?.comboMax ?? 0) >= 3) {
       const comboBonus = SaveManager.calculateComboEXPBonus(sum?.comboMax ?? 0, Math.round((sum?.accuracy ?? 0) * 100))
       if (comboBonus > 0) {
         // 创建连击加成的提示文字
-        const bonusText = this.add.text(width / 2, detail.y + 80,
+        const bonusText = this.add.text(width / 2, wrongAnswersY + 20,
           Strings.t('results.combo_bonus_text').replace('{0}', comboBonus.toString()), {
           fontFamily: 'sans-serif',
           fontSize: '24px',
@@ -83,8 +103,9 @@ export default class ResultScene extends Phaser.Scene {
       }
     }
 
-    // 计算按钮位置，如果有连击加成提示则向下移动
-    const buttonStartY = detail.y + (sum?.pass && (sum?.comboMax ?? 0) >= 3 && SaveManager.calculateComboEXPBonus(sum?.comboMax ?? 0, Math.round((sum?.accuracy ?? 0) * 100)) > 0 ? 160 : 120)
+    // 计算按钮位置
+    const hasComboBonus = sum?.pass && (sum?.comboMax ?? 0) >= 3 && SaveManager.calculateComboEXPBonus(sum?.comboMax ?? 0, Math.round((sum?.accuracy ?? 0) * 100)) > 0
+    const buttonStartY = wrongAnswersY + (hasComboBonus ? 80 : 40)
 
     const back = createTextButton(this, width / 2, buttonStartY, {
       text: Strings.t('ui.back_to_agency'),
@@ -122,5 +143,120 @@ export default class ResultScene extends Phaser.Scene {
     })
 
     this.input.keyboard?.once('keydown-ENTER', () => primary.emit('pointerup'))
+  }
+
+  private createWrongAnswersSection(screenWidth: number, startY: number, wrongAnswers: WrongAnswer[]): Phaser.GameObjects.Container {
+    // 创建滚动容器
+    const container = this.add.container(screenWidth / 2, startY)
+
+    // 背景面板
+    const panelWidth = screenWidth * 0.8
+    const panelHeight = 180 // 减小高度，避免空间浪费
+    const panel = this.add.rectangle(0, 0, panelWidth, panelHeight, 0x1a1a2e, 0.9)
+      .setStrokeStyle(2, 0x16213e)
+
+    // 创建遮罩图形 - 用于限制可见区域
+    const maskGraphics = this.add.graphics()
+    maskGraphics.fillStyle(0xffffff)
+    maskGraphics.fillRect(screenWidth / 2 - panelWidth / 2, startY - panelHeight / 2, panelWidth, panelHeight)
+    const mask = maskGraphics.createGeometryMask()
+    maskGraphics.setVisible(false) // 确保遮罩图形不可见
+
+    // 创建可滚动内容区域
+    const scrollContent = this.add.container(0, 0)
+
+    // 题目卡片间距和尺寸
+    const cardHeight = 60
+    const cardSpacing = 10
+    let currentY = -panelHeight / 2 + 40 // 从顶部开始，留出更多空间
+
+    wrongAnswers.forEach((wrongAnswer, index) => {
+      const card = this.createWrongAnswerCard(0, currentY, wrongAnswer, index + 1)
+      scrollContent.add(card)
+      currentY += cardHeight + cardSpacing
+    })
+
+    // 设置滚动区域
+    const contentHeight = currentY + 30
+    const maxY = Math.max(0, contentHeight - panelHeight)
+
+    // 添加滚动功能
+    let scrollY = 0
+    const scrollSpeed = 3 // 稍微加快滚动速度
+
+    // 创建滚动条
+    if (maxY > 0) {
+      const scrollbarWidth = 8
+      const scrollbarHeight = Math.max(20, panelHeight * (panelHeight / contentHeight))
+      const scrollbar = this.add.rectangle(panelWidth / 2 - 20, 0, scrollbarWidth, scrollbarHeight, 0x4a5568, 0.8)
+
+      // 鼠标滚轮事件 - 使用更精确的边界检测
+      this.input.on('wheel', (pointer: any, gameObjects: any, deltaX: number, deltaY: number, deltaZ: number) => {
+        const bounds = panel.getBounds()
+        if (pointer.x >= bounds.x && pointer.x <= bounds.x + bounds.width &&
+            pointer.y >= bounds.y && pointer.y <= bounds.y + bounds.height) {
+          scrollY = Phaser.Math.Clamp(scrollY - deltaY * scrollSpeed, -maxY, 0)
+          scrollContent.y = scrollY
+
+          // 更新滚动条位置
+          const scrollbarY = (scrollY / maxY) * (panelHeight / 2 - scrollbarHeight / 2)
+          scrollbar.y = scrollbarY
+        }
+      })
+
+      container.add(scrollbar)
+    }
+
+    // 应用遮罩到滚动内容
+    scrollContent.setMask(mask)
+
+    container.add([panel, scrollContent]) // 不添加maskGraphics到容器
+    return container
+  }
+
+  private createWrongAnswerCard(x: number, y: number, wrongAnswer: WrongAnswer, questionNumber: number): Phaser.GameObjects.Container {
+    const card = this.add.container(x, y)
+
+    // 卡片背景
+    const cardWidth = 600
+    const cardHeight = 60
+    const bg = this.add.rectangle(0, 0, cardWidth, cardHeight, 0x0f3460, 0.8)
+      .setStrokeStyle(1, 0x16213e)
+
+    // 题目编号
+    const number = this.add.text(-cardWidth / 2 + 15, 0, `#${questionNumber}`, {
+      fontFamily: 'monospace',
+      fontSize: '16px',
+      color: '#e94560',
+      fontStyle: 'bold'
+    }).setOrigin(0, 0.5)
+
+    // 题目表达式
+    const question = this.add.text(-cardWidth / 2 + 50, -10, wrongAnswer.questionString, {
+      fontFamily: 'monospace',
+      fontSize: '14px',
+      color: '#ffffff',
+      wordWrap: { width: 300 }
+    }).setOrigin(0, 0.5)
+
+    // 用户选择
+    const userChoice = wrongAnswer.userChoice ? '真相' : '伪证'
+    const userChoiceColor = wrongAnswer.userChoice ? '#4ecdc4' : '#ff6b6b'
+    const userChoiceText = this.add.text(cardWidth / 2 - 180, -10, `你的选择: ${userChoice}`, {
+      fontFamily: 'sans-serif',
+      fontSize: '14px',
+      color: userChoiceColor
+    }).setOrigin(0, 0.5)
+
+    // 正确答案
+    const correctChoice = wrongAnswer.correctAnswer ? '真相' : '伪证'
+    const correctText = this.add.text(cardWidth / 2 - 180, 10, `正确答案: ${correctChoice}`, {
+      fontFamily: 'sans-serif',
+      fontSize: '14px',
+      color: '#95e1d3'
+    }).setOrigin(0, 0.5)
+
+    card.add([bg, number, question, userChoiceText, correctText])
+    return card
   }
 }
