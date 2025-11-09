@@ -51,20 +51,6 @@ export const AssetConfig = {
   ],
 }
 
-/** Service Worker 缓存的音频文件列表 */
-export const CACHABLE_AUDIO_FILES = [
-  'audio/bgm_main.ogg',
-  'audio/bgm_game.ogg',
-  'audio/sfx_click.mp3',
-  'audio/sfx_stamp.mp3',
-  'audio/sfx_wrong.mp3',
-  'audio/sfx_success.mp3',
-  'audio/sfx_lose_level.mp3',
-  'audio/sfx_win_level.mp3',
-  'audio/sfx_combo.mp3',
-  'audio/sfx_combo1.mp3',
-]
-
 /** 音频加载配置 */
 export const AUDIO_LOADING_CONFIG = {
   /** BGM加载超时时间（毫秒） */
